@@ -29,33 +29,41 @@ void* Scheduler::busy_wait(void* qbuffer, pthread_mutex_t* mutex) {
 	printf("from scheduler, queue0: %p\n", buffer);
 
 	int seen[1] = {0};
-	while(1) {
+	
+	int num_kernels = 289;
+	int num_iters = 1;
+	int it = 0;
+
+	while(it < num_iters) {
 		for (int i=0; i<1; i++) {
 
 			pthread_mutex_lock(mutex);
 			volatile int sz = buffer->size();
 			if (sz > 0) {
-				printf("i: %d , sz is: %d\n", i, sz);
+				//printf("i: %d , sz is: %d\n", i, sz);
 				struct kernel_record record = buffer->front();
-				printf("kernel record func ptr is %p, args is %p\n", record.func, record.args);
-				buffer->pop();
+				//buffer->pop();
 
 				// run
-				function(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
-				//cudaLaunchKernel(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
+				if (!record.run) {
+					buffer->front().stream = 0;
+					buffer->front().run = true;   
+					seen[i] += 1;
+					printf("%d, kernel record func ptr is %p, args is %p, run is %d, stream is %d\n", seen[i], record.func, record.args, record.run, sched_stream);
 
-				//int i = 500;
-				//void* cargs[] = {&i};
-				//cudaLaunchKernel((void*)toy_kernel, dim3(1), dim3(1), cargs, 0, sched_stream);
-
-				seen[i] += 1;
+				}
 			}
 			pthread_mutex_unlock(mutex);
 
 		}
-		if (seen[0]==301)
-			break;
+		if (seen[0]==num_kernels) {
+			it += 1;
+			seen[0] = 0;
+			printf("restart! %d\n", it);
+		}
 	}
+
+	printf("exit!!\n");
 	
 }
 
@@ -69,9 +77,9 @@ extern "C" {
 
 	void* sched_func(Scheduler* scheduler) { //void* buffer, pthread_mutex_t* mutex) {
 
-		//Scheduler* scheduler = (Scheduler*)(sched);
+		//Scheduler* scheduler = (Scheduler*)sched;
 
-		void* klib = dlopen("/home/fot/elastic-spot-ml/scheduling/cpp_backend/cuda_capture/libint.so", RTLD_NOW | RTLD_GLOBAL);
+		void* klib = dlopen("/home/fot/gpu_share/cpp_backend/cuda_capture/libinttemp.so", RTLD_NOW | RTLD_GLOBAL);
 		if (!klib) {
 			fprintf(stderr, "Error: %s\n", dlerror());				    
 	    		return NULL;

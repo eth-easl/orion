@@ -1,8 +1,8 @@
 CC=g++
-NVCC=/usr/local/cuda-11.4/bin/nvcc
-CFLAGS=-O3
-CUDAINCLUDE=/usr/local/cuda-11.4/include/
-CUDALIB=/usr/local/cuda-11.4/lib64
+NVCC=/usr/local/cuda-10.2/bin/nvcc
+CFLAGS=-O0
+CUDAINCLUDE=/usr/local/cuda-10.2/include/
+CUDALIB=/usr/local/cuda-10.2/lib64
 
 kernel_launch.o: kernel_launch.cu
 	$(NVCC) $(CFLAGS) -Xcompiler -fPIC -c kernel_launch.cu

@@ -4,7 +4,7 @@
 #include <dlfcn.h>
 #include <queue>
 #include <pthread.h>
-#include "cuda_capture/intercept_custom.h"
+#include "cuda_capture/intercept_temp.h"
 
 struct sched_args {
 	

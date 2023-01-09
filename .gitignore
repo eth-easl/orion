@@ -1,0 +1,6 @@
+*.csv
+*.sqlite
+*.qdrep
+*.pyc
+*.so
+*.o

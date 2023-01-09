@@ -6,3 +6,5 @@ This repo contains the implementation of our scheduler for fine-grained GPU shar
 * inconsistent results of cuda capturing mechanism - differences with the Nsight Nsys trace
 * seg fault at multi-threaded execution, even when printing!
 * multiple kernels when printing - why?
+
+Until memory problem is solved, we keep the scheduler as a 'referee' which blocks kernel execution accordingly.
