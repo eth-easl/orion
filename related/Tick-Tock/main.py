@@ -2,8 +2,12 @@ from train_info import TrainInfo
 import torch
 import threading
 import time
+import argparse
 
 from models.train_imagenet import setup
+
+parser = argparse.ArgumentParser(description='PyTorch ImageNet Training using torchvision models')
+parser.add_argument('--policy', default='simple', type=str, help='policy used')
 
 def train_wrapper(barrier, my_stream, event_cudaf0, event0, event_cudaf1, event1, tid, num_epochs, device, train_info):
 
@@ -22,11 +26,11 @@ def train_wrapper(barrier, my_stream, event_cudaf0, event0, event_cudaf1, event1
         train_iter = enumerate(train_loader)
 
         barrier.wait()
+        start = time.time()
 
         batch_idx, batch = next(train_iter)
 
         while batch_idx < 100: #train_size:
-
             
             if tid == 0:
                 event1.wait()
@@ -57,6 +61,10 @@ def train_wrapper(barrier, my_stream, event_cudaf0, event0, event_cudaf1, event1
                 optimizer.zero_grad()
                 batch_idx, batch = next(train_iter)
 
+        barrier.wait()
+        end = time.time()
+        print(f"TID: {tid}, training took {end-start} sec.")
+
 
 def train_wrapper_simple(num_epochs, device):
     model, optimizer, train_loader, metric_fn = setup()
@@ -81,29 +89,33 @@ def train_wrapper_simple(num_epochs, device):
             batch_idx, batch = next(train_iter)
 
 
-barrier = threading.Barrier(2)
+if __name__ == "__main__":
 
-stream0 = torch.cuda.Stream(device=0)
-stream1 = torch.cuda.Stream(device=0)
+    args = parser.parse_args()
+    if args.policy == "tick-tock":
+    
+        barrier = threading.Barrier(2)
 
-event_cudaf0 = torch.cuda.Event()
-event0 = threading.Event()
+        stream0 = torch.cuda.Stream(device=0)
+        stream1 = torch.cuda.Stream(device=0)
 
-event_cudaf1 = torch.cuda.Event()
-event1 = threading.Event()
-event1.set() # thread0 starts
+        event_cudaf0 = torch.cuda.Event()
+        event0 = threading.Event()
 
+        event_cudaf1 = torch.cuda.Event()
+        event1 = threading.Event()
+        event1.set() # thread0 starts
 
-train_dir = '/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train'
-train_info = TrainInfo('resnet50', 32, 2, 'SGD', train_dir)
+        train_dir = '/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train'
+        train_info = TrainInfo('resnet50', 32, 2, 'SGD', train_dir)
 
-thread0 = threading.Thread(target=train_wrapper, args=(barrier, stream0, event_cudaf0, event0, event_cudaf1, event1, 0, 1, 0, train_info))
-thread0.start()
+        thread0 = threading.Thread(target=train_wrapper, args=(barrier, stream0, event_cudaf0, event0, event_cudaf1, event1, 0, 1, 0, train_info))
+        thread0.start()
 
-thread1 = threading.Thread(target=train_wrapper, args=(barrier, stream0, event_cudaf0, event0, event_cudaf1, event1, 1, 1, 0, train_info))
-thread1.start()
+        thread1 = threading.Thread(target=train_wrapper, args=(barrier, stream1, event_cudaf0, event0, event_cudaf1, event1, 1, 1, 0, train_info))
+        thread1.start()
 
-thread0.join()
-thread1.join()
+        thread0.join()
+        thread1.join()
 
-print("All threads joined!!!!!!!!!!")
+        print("All threads joined!!!!!!!!!!")
