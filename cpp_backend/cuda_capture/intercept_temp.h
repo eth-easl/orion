@@ -4,6 +4,10 @@
 #include <queue>
 #include <pthread.h>
 #include <cuda.h>
+#include <sys/types.h>
+#include <syscall.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 struct kernel_record {
 

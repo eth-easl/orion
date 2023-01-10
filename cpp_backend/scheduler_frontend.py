@@ -1,5 +1,6 @@
 from ctypes import *
 import torch
+import numpy as np
 
 class PyScheduler:
     
@@ -9,18 +10,15 @@ class PyScheduler:
         self._scheduler = sched_lib.sched_init()
         self._sched_lib = sched_lib
     
-    def run_scheduler(self, barrier): #queue0, mutex0):
-
-        barrier.wait()
-        #print("queue0 is: ", queue0)
+    def run_scheduler(self, barrier, tids): #queue0, mutex0):
         
         torch.cuda.profiler.cudart().cudaProfilerStart()
-        self._sched_lib.sched_func(self._scheduler) #queue0, mutex0)
 
-        torch.cuda.synchronize()
-
-        torch.cuda.profiler.cudart().cudaProfilerStop()
+        #self._sched_lib.sched_func.argtypes = (c_void_p, c_void_p)
+        self._sched_lib.setup(self._scheduler, tids[0], tids[1])
 
         barrier.wait()
+        self._sched_lib.sched_func(self._scheduler)
+
 
 

@@ -14,12 +14,14 @@ struct sched_args {
 
 };
 
+
 //void* sched_func(void* args);
 
 class Scheduler {
 
 	public:
-		void* busy_wait(void* buffer, pthread_mutex_t* mutex);
+		void* busy_wait(void** buffers, pthread_mutex_t** mutexes, int num_clients);
+
 };
 
 //void* sched_func(void* sched);

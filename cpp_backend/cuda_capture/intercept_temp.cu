@@ -2,6 +2,16 @@
 
 using namespace std;
 
+queue<kernel_record> kqueue0;
+queue<kernel_record> kqueue1;
+pthread_mutex_t mutex0;
+pthread_mutex_t mutex1;
+pthread_t thread_ids[2];
+
+queue<kernel_record>* kqueues[2] = {&kqueue0, &kqueue1};
+pthread_mutex_t* mutexes[2] = {&mutex0, &mutex1};
+int i=0;
+
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 	
 	printf("%d, ", i);
@@ -27,6 +37,7 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 	printf("Caught cudaMalloc!\n");
+	printf("mutex0 address is %p\n", &mutex0);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
@@ -36,11 +47,6 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 }
 
-queue<kernel_record> kqueue0;
-pthread_mutex_t mutex0;
-int i=0;
-
-
 cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream ) {
 
 
@@ -49,29 +55,45 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
-
 	cudaError_t err = cudaSuccess;
 
 	struct kernel_record new_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
 
-
 	// push at queue
-	pthread_mutex_lock(&mutex0);
-	kqueue0.push(new_record);
-	pthread_mutex_unlock(&mutex0);
+
+#ifdef SYS_gettid
+	pid_t tid = syscall(SYS_gettid);
+#else
+#error "SYS_gettid unavailable on this system"
+#endif
+	printf("My id is %d\n", tid);
+
+	int idx=-1;
+	if (tid == thread_ids[0])
+		idx = 0;
+	else if (tid == thread_ids[1])
+		idx = 1;
+	else
+		printf("----------------------- INVALID!!!!!!!!! -------------------\n");
+
+	printf("idx: %d, queues: %p, queue: %p, mutex: %p\n", idx, kqueues, kqueues[0], mutexes[0]);
+
+	pthread_mutex_lock(mutexes[0]);
+	kqueues[0]->push(new_record);
+	pthread_mutex_unlock(mutexes[0]);
 
 	// wait and run
 	while (true) {
-		pthread_mutex_lock(&mutex0);
-		if (kqueue0.front().run) {
-			cudaStream_t sched_stream = kqueue0.front().sched_stream;
-			kqueue0.pop();
+		pthread_mutex_lock(mutexes[0]);
+		if (kqueues[0]->front().run) {
+			cudaStream_t sched_stream = kqueues[0]->front().sched_stream;
+			kqueues[0]->pop();
 			printf("-------- run with stream %d!!!\n", sched_stream);
-			pthread_mutex_unlock(&mutex0);
+			pthread_mutex_unlock(mutexes[0]);
 			err = (*function)(func, gridDim, blockDim, args, sharedMem, sched_stream); 
 			return err;
 		}
-		pthread_mutex_unlock(&mutex0);
+		pthread_mutex_unlock(mutexes[0]);
 	}
 }
 

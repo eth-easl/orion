@@ -2,21 +2,19 @@
 
 using namespace std;
 
-__global__ void my_kernel(int num) {
-	printf("------- Num is %d\n", num);
-}
+void* klib;
 
 
-
-void* Scheduler::busy_wait(void* qbuffer, pthread_mutex_t* mutex) {
+void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
 	
 
 	printf("entered busy wait!\n");	
-	queue<struct kernel_record>* buffer = (queue<struct kernel_record>*)qbuffer;
-	printf("queue size is %d\n", buffer->size());
-
-	printf("from scheduler: %p\n", buffer);
 			
+	queue<struct kernel_record>** buffers = (queue<struct kernel_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
+	//(queue<struct kernel_record>**)qbuffers;
+	for (int i=0; i<num_clients; i++)
+		buffers[i] = (queue<struct kernel_record>*)(qbuffers[i]);
+
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym(RTLD_DEFAULT, "cudaLaunchKernel");
 
@@ -26,44 +24,45 @@ void* Scheduler::busy_wait(void* qbuffer, pthread_mutex_t* mutex) {
 	pthread_t mytid = pthread_self();
 	printf("--------------- Scheduler id is %d\n", mytid);
 
-	printf("from scheduler, queue0: %p\n", buffer);
 
-	int seen[1] = {0};
+	int seen[num_clients] = {0};
 	
 	int num_kernels = 289;
-	int num_iters = 1;
+	int num_iters = 10;
 	int it = 0;
 
+	printf("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
+
 	while(it < num_iters) {
-		for (int i=0; i<1; i++) {
+		for (int i=0; i<num_clients; i++) {
+			while (seen[i] < num_kernels) {
+				pthread_mutex_lock(mutexes[i]);
+				volatile int sz = buffers[i]->size();
+				if (sz > 0) {
+					//printf("i: %d , sz is: %d\n", i, sz);
+					struct kernel_record record = buffers[i]->front();
+					//buffer->pop();
 
-			pthread_mutex_lock(mutex);
-			volatile int sz = buffer->size();
-			if (sz > 0) {
-				//printf("i: %d , sz is: %d\n", i, sz);
-				struct kernel_record record = buffer->front();
-				//buffer->pop();
+					// run
+					if (!record.run) {
+						buffers[i]->front().sched_stream = sched_stream;
+						buffers[i]->front().run = true;   
+						seen[i] += 1;
+						printf("%d, kernel record func ptr is %p, args is %p, run is %d, stream is %d\n", seen[i], record.func, record.args, record.run, sched_stream);
 
-				// run
-				if (!record.run) {
-					buffer->front().stream = 0;
-					buffer->front().run = true;   
-					seen[i] += 1;
-					printf("%d, kernel record func ptr is %p, args is %p, run is %d, stream is %d\n", seen[i], record.func, record.args, record.run, sched_stream);
-
+					}
 				}
+				pthread_mutex_unlock(mutexes[i]);
 			}
-			pthread_mutex_unlock(mutex);
 
 		}
-		if (seen[0]==num_kernels) {
-			it += 1;
-			seen[0] = 0;
-			printf("restart! %d\n", it);
-		}
+		it += 1;
+		for (int i=0; i<num_clients; i++)
+			seen[i] = 0;
+		printf("restart! %d\n", it);
 	}
 
-	printf("exit!!\n");
+	return NULL;
 	
 }
 
@@ -75,21 +74,33 @@ extern "C" {
 		return sched;
 	}
 
-	void* sched_func(Scheduler* scheduler) { //void* buffer, pthread_mutex_t* mutex) {
+	void setup(Scheduler* scheduler, int tid0, int tid1) {
 
-		//Scheduler* scheduler = (Scheduler*)sched;
-
-		void* klib = dlopen("/home/fot/gpu_share/cpp_backend/cuda_capture/libinttemp.so", RTLD_NOW | RTLD_GLOBAL);
+		klib = dlopen("/home/fot/gpu_share/cpp_backend/cuda_capture/libinttemp.so", RTLD_NOW | RTLD_GLOBAL);
 		if (!klib) {
-			fprintf(stderr, "Error: %s\n", dlerror());				    
-	    		return NULL;
+			fprintf(stderr, "Error: %s\n", dlerror());
+			return;
 		}
 		
-		void*  buffer = dlsym(klib, "kqueue0"); 
-		pthread_mutex_t* mutex = (pthread_mutex_t*)dlsym(klib, "mutex0"); 
+		pthread_t* thread_ids_all = (pthread_t*)dlsym(klib, "thread_ids");
+		thread_ids_all[0] = tid0;
+		thread_ids_all[1] = tid1;
+		
+		printf("here!\n");
+
+	}
+
+	void* sched_func(Scheduler* scheduler) { //void* buffer, pthread_mutex_t* mutex) {
+
+		void** buffers = (void**)dlsym(klib, "kqueues"); 
+	
+		printf("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
+		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes"); 
+		int num_clients = 2;
 
 		printf("entered sched func!\n");
-		scheduler->busy_wait(buffer, mutex);
+		scheduler->busy_wait(buffers, mutexes, num_clients);
+		printf("exited sched func!\n");  
 		return NULL;
 	}
 }

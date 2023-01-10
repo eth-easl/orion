@@ -21,7 +21,7 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
 
     # do only forward for now, experimental
 
-    print("thread id:  ", threading.get_ident())
+    print("-------------- thread id:  ", threading.get_native_id())
 
     data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
 
@@ -29,7 +29,7 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
     barrier.wait()
 
     
-    for i in range(1):
+    for i in range(10):
         print("Start epoch: ", i)
 
         start = time.time()
@@ -58,3 +58,4 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
             #barrier.wait()
         
         print("Epoch took: ", time.time()-start)
+
