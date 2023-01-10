@@ -8,7 +8,7 @@ from sync_info import SyncInfo
 from models.train_imagenet import setup
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training using torchvision models')
-parser.add_argument('--policy', default='simple', type=str, help='policy used')
+parser.add_argument('--policy', default='temporal', type=str, help='policy used')
 
 def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
@@ -31,8 +31,10 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
         batch_idx, batch = next(train_iter)
 
-        while batch_idx < 10: #train_size:
+        while batch_idx < 1000: #train_size:
             
+            #print(f"Thread {tid} started iteration {batch_idx}")
+
             # wait for the forward pass of the other thread to finish before starting yours
             if tid == 0:
                 sync_info.eventf1.wait()
@@ -44,11 +46,11 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
                 sync_info.eventf0.clear()
 
             with torch.cuda.stream(my_stream):
-                print(f"time: {time.time()}, thread {tid} starts FORWARD {batch_idx} on stream {my_stream}")
+                #print(f"time: {time.time()}, thread {tid} starts FORWARD {batch_idx} on stream {my_stream}")
                 data, target = batch[0].to(device), batch[1].to(device)
                 output = model(data)
                 loss = metric_fn(output, target)
-                print(f"------------------------ time: {time.time()}, thread {tid} ends FORWARD {batch_idx}")
+                #print(f"------------------------ time: {time.time()}, thread {tid} ends FORWARD {batch_idx}")
 
             # notify that forward is finished
             if tid == 0:
@@ -71,11 +73,11 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
 
             with torch.cuda.stream(my_stream):
-                print(f"time: {time.time()}, thread {tid} starts BACKWARD {batch_idx} on stream {my_stream}") 
+                #print(f"time: {time.time()}, thread {tid} starts BACKWARD {batch_idx} on stream {my_stream}") 
                 loss.backward()
                 optimizer.step()
                 optimizer.zero_grad()
-                print(f"------------------------ time: {time.time()}, thread {tid} ends BACKWARD {batch_idx}")
+                #print(f"------------------------ time: {time.time()}, thread {tid} ends BACKWARD {batch_idx}")
                 batch_idx, batch = next(train_iter)
 
 
@@ -94,8 +96,8 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
         print(f"TID: {tid}, training took {end-start} sec.")
 
 
-def train_wrapper_simple(num_epochs, device):
-    model, optimizer, train_loader, metric_fn = setup()
+def train_wrapper_simple(train_info, num_epochs, device):
+    model, optimizer, train_loader, metric_fn = setup(train_info, device)
     model = model.to(device)
 
     for epoch in range(num_epochs):
@@ -105,9 +107,12 @@ def train_wrapper_simple(num_epochs, device):
 
         train_iter = enumerate(train_loader)
 
+        start = time.time()
+
         batch_idx, batch = next(train_iter)
 
-        while batch_idx < train_size:
+        while batch_idx < 1000: #train_size:
+            #print(f"entered iteration {batch_idx}")
             optimizer.zero_grad()
             data, target = batch[0].to(device), batch[1].to(device)
             output = model(data)
@@ -115,11 +120,17 @@ def train_wrapper_simple(num_epochs, device):
             loss.backward()
             optimizer.step()
             batch_idx, batch = next(train_iter)
+        end = time.time()
+        print(f"Training took: {end-start} sec.")
 
 
 if __name__ == "__main__":
 
     args = parser.parse_args()
+    
+    train_dir = '/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train'
+    train_info = TrainInfo('mobilenet_v2', 32, 8, 'SGD', train_dir)
+
     if args.policy == "tick-tock":
     
         barrier = threading.Barrier(2)
@@ -140,17 +151,20 @@ if __name__ == "__main__":
         eventf1.set() # t0 starts
         eventb1.set()
 
-        train_dir = '/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train'
-        train_info = TrainInfo('resnet50', 32, 2, 'SGD', train_dir)
         sync_info = SyncInfo(barrier, event_cudaf0, event_cudab0, eventf0, eventb0, event_cudaf1, event_cudab1, eventf1, eventb1)
 
-        thread0 = threading.Thread(target=train_wrapper, args=(stream0, sync_info, 0, 1, 0, train_info))
+        thread0 = threading.Thread(target=train_wrapper, args=(stream0, sync_info, 0, 5, 0, train_info))
         thread0.start()
 
-        thread1 = threading.Thread(target=train_wrapper, args=(stream1, sync_info, 1, 1, 0, train_info))
+        thread1 = threading.Thread(target=train_wrapper, args=(stream1, sync_info, 1, 5, 0, train_info))
         thread1.start()
 
         thread0.join()
         thread1.join()
 
         print("All threads joined!!!!!!!!!!")
+
+    elif args.policy == "temporal":
+
+        train_wrapper_simple(train_info, 5, 0)
+        train_wrapper_simple(train_info, 5, 0)
