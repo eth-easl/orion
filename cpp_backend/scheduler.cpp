@@ -28,12 +28,12 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	int seen[num_clients] = {0};
 	
 	int num_kernels = 289;
-	int num_iters = 10;
+	int num_iters = 1;
 	int it = 0;
 
 	printf("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
 
-	while(it < num_iters) {
+	while (it < num_iters) {
 		for (int i=0; i<num_clients; i++) {
 			while (seen[i] < num_kernels) {
 				pthread_mutex_lock(mutexes[i]);
@@ -41,16 +41,21 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 				if (sz > 0) {
 					//printf("i: %d , sz is: %d\n", i, sz);
 					struct kernel_record record = buffers[i]->front();
-					//buffer->pop();
+					
+					// case 1
+					(*function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
+					cudaDeviceSynchronize();
+					buffers[i]->pop();
 
 					// run
-					if (!record.run) {
-						buffers[i]->front().sched_stream = sched_stream;
+					// case 2
+					/*if (!record.run) {
+					/	buffers[i]->front().sched_stream = sched_stream;
 						buffers[i]->front().run = true;   
-						seen[i] += 1;
-						printf("%d, kernel record func ptr is %p, args is %p, run is %d, stream is %d\n", seen[i], record.func, record.args, record.run, sched_stream);
+						seen[i] += 1;*/
+						//printf("%d, kernel record func ptr is %p, args is %p, run is %d, stream is %d\n", seen[i], record.func, record.args, record.run, sched_stream);
 
-					}
+					//}
 				}
 				pthread_mutex_unlock(mutexes[i]);
 			}
@@ -92,11 +97,13 @@ extern "C" {
 
 	void* sched_func(Scheduler* scheduler) { //void* buffer, pthread_mutex_t* mutex) {
 
+		
+		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues"); 
 	
 		printf("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
 		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes"); 
-		int num_clients = 2;
+		int num_clients = 1;
 
 		printf("entered sched func!\n");
 		scheduler->busy_wait(buffers, mutexes, num_clients);

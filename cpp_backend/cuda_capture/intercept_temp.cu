@@ -36,13 +36,26 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	printf("Caught cudaMalloc!\n");
-	printf("mutex0 address is %p\n", &mutex0);
+	printf("Caught cudaMalloc! allocate region of %ld bytes\n", *devPtr, size);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
 	
 	cudaError_t err = (*function)(devPtr, size);
+	printf("Memory allocated at address %p\n", *devPtr);
+	return err;
+
+}
+
+
+cudaError_t cudaFree(void* devPtr) {
+
+	printf("Caught cudaFree! Free pointer that holds address %p\n", devPtr);
+
+	cudaError_t (*function)(void* devPtr);
+	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaFree");
+
+	cudaError_t err; //= (*function)(devPtr);
 	return err;
 
 }
@@ -50,7 +63,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream ) {
 
 
-	//printf("Captured a cudaLaunchKernel! id is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", i, func, stream, gridDim, blockDim, sharedMem);
+	printf("Captured a cudaLaunchKernel! id is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", i, func, stream, gridDim, blockDim, sharedMem);
 
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -74,16 +87,25 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	else if (tid == thread_ids[1])
 		idx = 1;
 	else
-		printf("----------------------- INVALID!!!!!!!!! -------------------\n");
+		idx = 0;
+		//printf("----------------------- INVALID!!!!!!!!! -------------------\n");
 
-	printf("idx: %d, queues: %p, queue: %p, mutex: %p\n", idx, kqueues, kqueues[0], mutexes[0]);
+	//printf("idx: %d, queues: %p, queue: %p, mutex: %p\n", idx, kqueues, kqueues[idx], mutexes[idx]);
 
-	pthread_mutex_lock(mutexes[0]);
-	kqueues[0]->push(new_record);
-	pthread_mutex_unlock(mutexes[0]);
+	if (stream==0) {
+	
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+	}
+	else {
+		printf("------------------------ before submitting\n");
+		err = (*function)(func, gridDim, blockDim, args, sharedMem, stream);
+		printf("------------------------ after submitting\n");
+	}
 
 	// wait and run
-	while (true) {
+	/* while (true) {
 		pthread_mutex_lock(mutexes[0]);
 		if (kqueues[0]->front().run) {
 			cudaStream_t sched_stream = kqueues[0]->front().sched_stream;
@@ -94,7 +116,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			return err;
 		}
 		pthread_mutex_unlock(mutexes[0]);
-	}
+	} */
 }
 
 int main() {

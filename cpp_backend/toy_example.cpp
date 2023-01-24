@@ -21,9 +21,6 @@ pthread_barrier_t barrier;
 
 void* app(void* args) {
 
-	// wait
-	pthread_t mytid = pthread_self();
-	printf("My thread id is %d\n", mytid);
 
 	//pthread_barrier_wait(&barrier);
 
@@ -45,6 +42,7 @@ void* app(void* args) {
 		//for (int i=0; i<10; i++) {
 		//	cudaLaunchKernel((void*)toy_kernel_two, dim3(1), dim3(1), cargs2, 0, NULL);    
 		//}
+		//cudaFree((void*)arr);
 	}
 	while(1) ;
 
@@ -76,17 +74,17 @@ int main() {
      	pthread_t thread1, thread2, thread_sched;
 	Scheduler* sched = sched_init();
 
+	#ifdef SYS_gettid
+		pid_t tid = syscall(SYS_gettid);
+	#else
+		#error "SYS_gettid unavailable on this system"
+	#endif
+
+	printf("Main: My tid is %d\n", tid);
+	setup(sched, tid, 0);
+
 	int ret = pthread_barrier_init(&barrier, NULL, 2);
 		
-	/*struct sched_args sargs;
-	sargs.mutexes = (pthread_mutex_t**)malloc(2*sizeof(pthread_mutex_t*));
-	sargs.mutexes[0] = mutex0;
-	sargs.mutexes[1] = mutex1;
-
-	sargs.barrier = &barrier;
-	sargs.buffer = (volatile void**)malloc(2*sizeof(void*));
-	sargs.buffer[0] = kqueue_struct0;
-	sargs.buffer[1] = kqueue_struct1;*/
 
 	// T1 here - app
 	int t1 = pthread_create(&thread1, NULL, app, NULL);
