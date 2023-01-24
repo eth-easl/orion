@@ -33,16 +33,35 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 	//printf("\n");
 }
 
+//void free(void* p)
+//{
+//	printf("In free!!!!!!!!\n");
+//}
+
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	printf("Caught cudaMalloc! allocate region of %ld bytes\n", *devPtr, size);
+	printf("Caught cudaMalloc! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
 	
 	cudaError_t err = (*function)(devPtr, size);
-	printf("Memory allocated at address %p\n", *devPtr);
+	printf("Memory allocated at address %p, size is %ld\n", *devPtr, size);
+	return err;
+
+}
+
+
+cudaError_t cudaMallocManaged(void** devPtr, size_t size, unsigned int flags) {
+
+	printf("Caught cudaMallocMANAGED! allocate region of %ld bytes\n", size);
+
+	cudaError_t (*function)(void** devPtr, size_t size, unsigned int flags);
+	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMallocManaged");
+
+	cudaError_t err = (*function)(devPtr, size, flags);
+	printf("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
 }
@@ -59,6 +78,35 @@ cudaError_t cudaFree(void* devPtr) {
 	return err;
 
 }
+
+
+
+cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind) {
+	
+	printf("Caught cudaMemcpy!\n");
+	
+	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
+	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpy");
+
+	cudaError_t err = (*function)(dst, src, count, kind);
+	return err;
+
+}	
+
+
+cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream) {    
+
+	printf("Caught cudaMemcpyAsync! src is %p, dst is %p, size is %d\n", src, dst, count);
+
+	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
+	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpyAsync");
+
+	cudaError_t err = (*function)(dst, src, count, kind, stream);
+	return err;
+
+}       
+
+
 
 cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream ) {
 
@@ -92,7 +140,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 	//printf("idx: %d, queues: %p, queue: %p, mutex: %p\n", idx, kqueues, kqueues[idx], mutexes[idx]);
 
-	if (stream==0) {
+	if (0) { //stream==0) {
 	
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
