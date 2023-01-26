@@ -29,7 +29,7 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
     barrier.wait()
 
     
-    for i in range(10):
+    for i in range(1):
         print("Start epoch: ", i)
 
         start = time.time()

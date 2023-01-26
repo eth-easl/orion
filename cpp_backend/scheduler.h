@@ -4,6 +4,9 @@
 #include <dlfcn.h>
 #include <queue>
 #include <pthread.h>
+#include <syscall.h>
+#include <pwd.h>
+#include <string.h>
 #include "cuda_capture/intercept_temp.h"
 
 struct sched_args {

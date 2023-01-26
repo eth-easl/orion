@@ -1,6 +1,6 @@
 CC=g++
 NVCC=/usr/local/cuda-10.2/bin/nvcc
-CFLAGS=-O0
+CFLAGS=-O3 -DDEBUG
 CUDAINCLUDE=/usr/local/cuda-10.2/include/
 CUDALIB=/usr/local/cuda-10.2/lib64
 

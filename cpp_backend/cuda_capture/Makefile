@@ -1,13 +1,10 @@
 NVCC=/usr/local/cuda-10.2/bin/nvcc
 
-libint.so: intercept_custom.cu
-	$(NVCC) -Xcompiler -fPIC -G -g -o libint.so --shared intercept_custom.cu -lcudart
-
 libinttemp.so: intercept_temp.cu
-	$(NVCC) -Xcompiler -fPIC -G -g -o libinttemp.so --shared intercept_temp.cu -lcudart
+	$(NVCC) -Xcompiler -fPIC -G -DDEBUG -g -o libinttemp.so --shared intercept_temp.cu -lcudart -lcudnn
 
 all:
-	make libint.so libinttemp.so
+	make libinttemp.so
 
 clean:
 	rm -rf libint.so
