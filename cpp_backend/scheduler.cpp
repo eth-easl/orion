@@ -1,3 +1,9 @@
+#ifdef DEBUG
+# define DEBUG_PRINT(...) fprintf(stdout, __VA_ARGS__)
+#else
+# define DEBUG_PRINT(...) do {} while (0)
+#endif
+
 #include "scheduler.h"
 
 using namespace std;
@@ -8,22 +14,37 @@ void* klib;
 void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
 	
 
-	printf("entered busy wait!\n");	
+	DEBUG_PRINT("entered busy wait!\n");	
 			
-	queue<struct kernel_record>** buffers = (queue<struct kernel_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
+	queue<struct func_record>** buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
 	//(queue<struct kernel_record>**)qbuffers;
 	for (int i=0; i<num_clients; i++)
-		buffers[i] = (queue<struct kernel_record>*)(qbuffers[i]);
+		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
-	*(void **)(&function) = dlsym(RTLD_DEFAULT, "cudaLaunchKernel");
+	// for kernel
+	cudaError_t (*kernel_function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
+	*(void **)(&kernel_function) = dlsym(RTLD_DEFAULT, "cudaLaunchKernel");
+
+	// for cudnn conv
+	cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
+	*(void **)(&cudnn_conv_function) = dlsym(RTLD_DEFAULT, "cudnnConvolutionForward");
+	assert(cudnn_conv_function != NULL);
+
+	// for bnorm train
+	cudnnStatus_t (*cudnn_bnorm_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
+
+	*(void **)(&cudnn_bnorm_function) = dlsym(RTLD_DEFAULT, "cudnnBatchNormalizationForwardTrainingEx");
+	assert(cudnn_bnorm_function != NULL);
+
+	// for bnorm infer
+	cudnnStatus_t (*cudnn_bnorm_infer_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
+
+	*(void **)(&cudnn_bnorm_infer_function) = dlsym(RTLD_DEFAULT, "cudnnBatchNormalizationForwardInference");
+	assert(cudnn_bnorm_infer_function != NULL);
+
 
 	cudaStream_t sched_stream;
 	cudaStreamCreate(&sched_stream);
-
-	pthread_t mytid = pthread_self();
-	printf("--------------- Scheduler id is %d\n", mytid);
-
 
 	int seen[num_clients] = {0};
 	
@@ -31,7 +52,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	int num_iters = 1;
 	int it = 0;
 
-	printf("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
+	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
 
 	while (it < num_iters) {
 		for (int i=0; i<num_clients; i++) {
@@ -39,12 +60,40 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 				pthread_mutex_lock(mutexes[i]);
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
-					//printf("i: %d , sz is: %d\n", i, sz);
-					struct kernel_record record = buffers[i]->front();
+					struct func_record frecord = buffers[i]->front();
 					
 					// case 1
-					(*function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
-					cudaDeviceSynchronize();
+					if (frecord.type == KERNEL_RECORD) {
+						DEBUG_PRINT("found a new kernel record!\n");
+						kernel_record record = frecord.data.krecord;
+						(*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
+					}
+
+					else if (frecord.type == CUDNN_CONV_RECORD) {					
+						DEBUG_PRINT("found a new cudnn conv record!\n");
+						cudnnConvolutionForward_record record = frecord.data.cudnnConvRecord;
+						cudnnSetStream(record.handle, 0);
+						(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
+						cudnnSetStream(record.handle, 0); // TODO: I want to set the default stream here
+					}
+
+					else if (frecord.type == CUDNN_BNORM_RECORD) {
+						DEBUG_PRINT("found a new bnorm record!\n");
+						cudnnBatchNormalizationForwardTrainingEx_record record = frecord.data.cudnnBNormRecord;
+						cudnnSetStream(record.handle, 0);
+						(*cudnn_bnorm_function)(record.handle, record.mode, record.bnOps, record.alpha, record.beta, record.xDesc, record.xData, record.zDesc, record.zData, record.yDesc, record.yData, record.bnScaleBiasMeanVarDesc, record.bnScaleData, record.bnBiasData, record.exponentialAverageFactor, record.resultRunningMeanData, record.resultRunningVarianceData, record.epsilon, record.saveMean, record.saveInvVariance, record.activationDesc, record.workspace, record.workSpaceSizeInBytes, record.reserveSpace, record.reserveSpaceSizeInBytes);
+						cudnnSetStream(record.handle, 0); // TODO: I want to set the default stream here
+					}
+
+					else if (frecord.type == CUDNN_BNORM_INF_RECORD) {
+						DEBUG_PRINT("found a new bnorm inf record!\n"); 
+						cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
+						cudnnSetStream(record.handle, 0);
+						(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
+						cudnnSetStream(record.handle, 0);
+
+					}	
+
 					buffers[i]->pop();
 
 					// run
@@ -64,7 +113,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 		it += 1;
 		for (int i=0; i<num_clients; i++)
 			seen[i] = 0;
-		printf("restart! %d\n", it);
+		DEBUG_PRINT("restart! %d\n", it);
 	}
 
 	return NULL;
@@ -81,17 +130,28 @@ extern "C" {
 
 	void setup(Scheduler* scheduler, int tid0, int tid1) {
 
-		klib = dlopen("/home/fot/gpu_share/cpp_backend/cuda_capture/libinttemp.so", RTLD_NOW | RTLD_GLOBAL);
+		struct passwd *pw = getpwuid(getuid());
+		char *homedir = pw->pw_dir;
+		char* lib_path = "/gpu_share/cpp_backend/cuda_capture/libinttemp.so";
+
+		klib = dlopen(strcat(homedir, lib_path), RTLD_NOW | RTLD_GLOBAL);
 		if (!klib) {
 			fprintf(stderr, "Error: %s\n", dlerror());
 			return;
 		}
 		
-		pthread_t* thread_ids_all = (pthread_t*)dlsym(klib, "thread_ids");
+#ifdef SYS_gettid
+		pid_t mytid = syscall(SYS_gettid);
+#else
+#error "SYS_gettid unavailable on this system"
+#endif
+
+		pid_t* thread_ids_all = (pid_t*)dlsym(klib, "thread_ids");
 		thread_ids_all[0] = tid0;
 		thread_ids_all[1] = tid1;
+		thread_ids_all[2] = mytid;
 		
-		printf("here!\n");
+		DEBUG_PRINT("Scheduler setup the thread ids to be %d, %d, %d\n", thread_ids_all[0], thread_ids_all[1], thread_ids_all[2]);
 
 	}
 
@@ -101,13 +161,13 @@ extern "C" {
 		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues"); 
 	
-		printf("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
+		DEBUG_PRINT("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
 		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes"); 
 		int num_clients = 1;
 
-		printf("entered sched func!\n");
+		DEBUG_PRINT("entered sched func!\n");
 		scheduler->busy_wait(buffers, mutexes, num_clients);
-		printf("exited sched func!\n");  
+		DEBUG_PRINT("exited sched func!\n");  
 		return NULL;
 	}
 }
