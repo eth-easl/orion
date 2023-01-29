@@ -7,4 +7,4 @@ all:
 	make libinttemp.so
 
 clean:
-	rm -rf libint.so
+	rm -rf libinttemp.so

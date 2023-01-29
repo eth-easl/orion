@@ -20,5 +20,5 @@ class PyScheduler:
         barrier.wait()
         self._sched_lib.sched_func(self._scheduler)
 
-
+        torch.cuda.synchronize()
 

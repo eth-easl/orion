@@ -21,6 +21,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	for (int i=0; i<num_clients; i++)
 		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
+
 	// for kernel
 	cudaError_t (*kernel_function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&kernel_function) = dlsym(RTLD_DEFAULT, "cudaLaunchKernel");
@@ -30,11 +31,17 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	*(void **)(&cudnn_conv_function) = dlsym(RTLD_DEFAULT, "cudnnConvolutionForward");
 	assert(cudnn_conv_function != NULL);
 
-	// for bnorm
+	// for bnorm train
 	cudnnStatus_t (*cudnn_bnorm_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
 
 	*(void **)(&cudnn_bnorm_function) = dlsym(RTLD_DEFAULT, "cudnnBatchNormalizationForwardTrainingEx");
 	assert(cudnn_bnorm_function != NULL);
+
+	// for bnorm infer
+	cudnnStatus_t (*cudnn_bnorm_infer_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
+
+	*(void **)(&cudnn_bnorm_infer_function) = dlsym(RTLD_DEFAULT, "cudnnBatchNormalizationForwardInference");
+	assert(cudnn_bnorm_infer_function != NULL);
 
 
 	cudaStream_t sched_stream;
@@ -66,7 +73,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 					else if (frecord.type == CUDNN_CONV_RECORD) {					
 						DEBUG_PRINT("found a new cudnn conv record!\n");
 						cudnnConvolutionForward_record record = frecord.data.cudnnConvRecord;
-						cudnnSetStream(record.handle, sched_stream);
+						cudnnSetStream(record.handle, 0);
 						(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
 						cudnnSetStream(record.handle, 0); // TODO: I want to set the default stream here
 					}
@@ -74,10 +81,19 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 					else if (frecord.type == CUDNN_BNORM_RECORD) {
 						DEBUG_PRINT("found a new bnorm record!\n");
 						cudnnBatchNormalizationForwardTrainingEx_record record = frecord.data.cudnnBNormRecord;
-						cudnnSetStream(record.handle, sched_stream);
+						cudnnSetStream(record.handle, 0);
 						(*cudnn_bnorm_function)(record.handle, record.mode, record.bnOps, record.alpha, record.beta, record.xDesc, record.xData, record.zDesc, record.zData, record.yDesc, record.yData, record.bnScaleBiasMeanVarDesc, record.bnScaleData, record.bnBiasData, record.exponentialAverageFactor, record.resultRunningMeanData, record.resultRunningVarianceData, record.epsilon, record.saveMean, record.saveInvVariance, record.activationDesc, record.workspace, record.workSpaceSizeInBytes, record.reserveSpace, record.reserveSpaceSizeInBytes);
 						cudnnSetStream(record.handle, 0); // TODO: I want to set the default stream here
 					}
+
+					else if (frecord.type == CUDNN_BNORM_INF_RECORD) {
+						DEBUG_PRINT("found a new bnorm inf record!\n"); 
+						cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
+						cudnnSetStream(record.handle, 0);
+						(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
+						cudnnSetStream(record.handle, 0);
+
+					}	
 
 					buffers[i]->pop();
 

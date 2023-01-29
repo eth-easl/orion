@@ -8,3 +8,7 @@ This repo contains the implementation of our scheduler for fine-grained GPU shar
 * multiple kernels when printing - why?
 
 Until memory problem is solved, we keep the scheduler as a 'referee' which blocks kernel execution accordingly.
+
+### For CUDNN debugging:
+* export CUDNN_LOGDEST_DBG=stdout
+* export CUDNN_LOGINFO_DBG=1 

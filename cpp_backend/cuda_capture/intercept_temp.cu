@@ -60,13 +60,13 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	//DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
+	DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
 	
 	cudaError_t err = (*function)(devPtr, size);
-	//DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
+	DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
 }
@@ -74,13 +74,13 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 cudaError_t cudaMallocManaged(void** devPtr, size_t size, unsigned int flags) {
 
-	//DEBUG_PRINT("Caught cudaMallocMANAGED! allocate region of %ld bytes\n", size);
+	DEBUG_PRINT("Caught cudaMallocMANAGED! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size, unsigned int flags);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMallocManaged");
 
 	cudaError_t err = (*function)(devPtr, size, flags);
-	//DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
+	DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
 }
@@ -88,7 +88,7 @@ cudaError_t cudaMallocManaged(void** devPtr, size_t size, unsigned int flags) {
 
 cudaError_t cudaFree(void* devPtr) {
 
-	//DEBUG_PRINT("Caught cudaFree! Free pointer that holds address %p\n", devPtr);
+	DEBUG_PRINT("Caught cudaFree! Free pointer that holds address %p\n", devPtr);
 
 	cudaError_t (*function)(void* devPtr);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaFree");
@@ -133,7 +133,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	//DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -148,16 +148,16 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 
 
-	if (idx < 2) {
+	if (0) { //idx < 2) {
 	
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 	}
 	else {
-		DEBUG_PRINT("------------------------ before submitting\n");
+		//DEBUG_PRINT("------------------------ before submitting\n");
 		err = (*function)(func, gridDim, blockDim, args, sharedMem, stream);
-		DEBUG_PRINT("------------------------ after submitting\n");
+		//DEBUG_PRINT("------------------------ after submitting\n");
 	}
 
 	// wait and run
@@ -234,6 +234,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	
 	DEBUG_PRINT("Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p, index is %d\n", handle, idx);
 
+	printf("%p, %d, %d, %f, %f, %p, %p, %p, %ld, %ld \n", handle, mode, bnOps, *((float*)alpha), *(float*)beta, xData, yData, zData, workSpaceSizeInBytes, reserveSpaceSizeInBytes);
+
 	// create record
 	cudnnBatchNormalizationForwardTrainingEx_record new_bn_record = {
 		handle,
@@ -294,18 +296,66 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 
 {
 
-	DEBUG_PRINT("Caught cudnnBatchNormalizationForwardInference");
-
 	int idx = get_idx();
 	assert (idx >= 0);
+	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
+	DEBUG_PRINT("Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", handle, idx);
 
-	*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
-	assert(function != NULL);
+	printf("%d, %f, %f, %p, %p, %lf, %p, %p, %p, %p, %p, %p, %p\n", mode, *((float*)alpha), *((float*)beta), x, y, epsilon, estimatedMean, estimatedVariance, xDesc, yDesc, bnScaleBiasMeanVarDesc, bnScale, bnBias);
+
+	// create record
+	cudnnBatchNormalizationForwardInference_record bn_record = {
+		handle,
+		mode,
+		alpha,
+		beta,
+		xDesc,
+		x,
+		yDesc,
+		y,
+		bnScaleBiasMeanVarDesc,
+		bnScale,
+		bnBias,
+		estimatedMean,
+		estimatedVariance,
+		epsilon
+	};
+
+	union func_data new_func_data;
+	new_func_data.cudnnBNormInfRecord = bn_record;
+	func_record new_record = {CUDNN_BNORM_INF_RECORD, new_func_data};
+
+	if (idx < 2) {
+		
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+	}
+	else {
+
+		DEBUG_PRINT("Run BNorm Inference!!\n");
+
+		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
+
+		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
+		assert(function != NULL);
+
+		printf("%d, %f, %f, %p, %p, %lf, %p, %p, %p, %p, %p, %p, %p\n", mode, *((float*)alpha), *((float*)beta), x, y, epsilon, estimatedMean, estimatedVariance, xDesc, yDesc, bnScaleBiasMeanVarDesc, bnScale, bnBias);
 
 
-	cudnnStatus_t status = (*function)(handle, mode, alpha, beta, xDesc, x, yDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
+		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
+
+		DEBUG_PRINT("return!\n");
+	}
+		
 	return status;
 }
 
+
+cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
+
+	// mock cudnn destroy TensorDescriptor
+	DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
+	return CUDNN_STATUS_SUCCESS;
+}

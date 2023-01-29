@@ -25,7 +25,7 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
 
     data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
 
-    #model.eval()
+    model.eval()
     barrier.wait()
 
     
@@ -58,4 +58,5 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
             #barrier.wait()
         
         print("Epoch took: ", time.time()-start)
-
+        while(True):
+            pass

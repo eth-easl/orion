@@ -126,13 +126,54 @@ typedef struct cudnnBatchNormalizationForwardTrainingEx_record {
 } cudnnBatchNormalizationForwardTrainingEx_record;
 
 
-enum func_type {KERNEL_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD};
+typedef struct  cudnnBatchNormalizationForwardInference_record {
+
+	cudnnHandle_t handle;
+	cudnnBatchNormMode_t mode;
+	const void *alpha;
+	const void *beta;
+	cudnnTensorDescriptor_t xDesc;
+	const void *x;
+	cudnnTensorDescriptor_t yDesc;
+	void *y;
+	cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc;
+	const void *bnScale;
+	const void *bnBias;
+	const void *estimatedMean;
+	const void *estimatedVariance;
+	double epsilon;
+
+	cudnnBatchNormalizationForwardInference_record(cudnnHandle_t handle_arg, cudnnBatchNormMode_t mode_arg, const void *alpha_arg, const void *beta_arg, cudnnTensorDescriptor_t xDesc_arg, const void *x_arg, cudnnTensorDescriptor_t yDesc_arg, void *y_arg, cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc_arg, const void *bnScale_arg, const void *bnBias_arg, const void *estimatedMean_arg, const void *estimatedVariance_arg, double epsilon_arg) {
+
+		handle = handle_arg;
+		mode = mode_arg;
+		alpha = alpha_arg;
+		beta = beta_arg;
+		xDesc = xDesc_arg;
+		x = x_arg;
+		yDesc = yDesc_arg;
+		y = y_arg;
+		bnScaleBiasMeanVarDesc = bnScaleBiasMeanVarDesc_arg;
+		bnScale = bnScale_arg;
+		bnBias = bnBias_arg;
+		estimatedMean = estimatedMean_arg;
+		estimatedVariance = estimatedVariance_arg;
+		epsilon = epsilon_arg;
+
+	}
+
+	~cudnnBatchNormalizationForwardInference_record() {}
+
+} cudnnBatchNormalizationForwardInference_record;
+
+enum func_type {KERNEL_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD};
 
 union func_data {
 
 	kernel_record krecord;
 	cudnnConvolutionForward_record cudnnConvRecord;
 	cudnnBatchNormalizationForwardTrainingEx_record cudnnBNormRecord;
+	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
 
 	 func_data() {}
 	 ~func_data() {};
