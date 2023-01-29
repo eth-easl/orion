@@ -21,7 +21,6 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	for (int i=0; i<num_clients; i++)
 		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-
 	// for kernel
 	cudaError_t (*kernel_function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&kernel_function) = dlsym(RTLD_DEFAULT, "cudaLaunchKernel");

@@ -74,13 +74,13 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 cudaError_t cudaMallocManaged(void** devPtr, size_t size, unsigned int flags) {
 
-	DEBUG_PRINT("Caught cudaMallocMANAGED! allocate region of %ld bytes\n", size);
+	//DEBUG_PRINT("Caught cudaMallocMANAGED! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size, unsigned int flags);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMallocManaged");
 
 	cudaError_t err = (*function)(devPtr, size, flags);
-	DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
+	//DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
 }
@@ -133,7 +133,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	//DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -146,9 +146,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	new_func_data.krecord = new_kernel_record;
 	func_record new_record = {KERNEL_RECORD, new_func_data};
 
-
-
-	if (0) { //idx < 2) {
+	if (idx==0) { //idx < 2) {
 	
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
@@ -359,3 +357,6 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
 	DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
+
+
+
