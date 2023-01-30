@@ -12,7 +12,7 @@ queue<func_record> kqueue0;
 queue<func_record> kqueue1;
 pthread_mutex_t mutex0;
 pthread_mutex_t mutex1;
-pid_t thread_ids[3]; // N threads + scheduler
+volatile pid_t thread_ids[3]; // N threads + scheduler
 
 queue<func_record>* kqueues[2] = {&kqueue0, &kqueue1};
 pthread_mutex_t* mutexes[2] = {&mutex0, &mutex1};
@@ -25,7 +25,9 @@ int get_idx() {
 #else
 #error "SYS_gettid unavailable on this system"
 #endif
-	DEBUG_PRINT("------------------- tid is %d, %d, %d\n", tid, thread_ids[0], thread_ids[1]);
+
+		
+	//DEBUG_PRINT("------------------- tid is %d, %d, %d, %d\n", tid, thread_ids[0], thread_ids[1], thread_ids[2]);
 	if (tid == thread_ids[0])
 		return 0;
 	else if (tid == thread_ids[1])
@@ -55,6 +57,7 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 	} else {
 		DEBUG_PRINT("--blockDim=[%d,%d,%d] ", blockDim.x, blockDim.y, blockDim.z);
 	}
+	DEBUG_PRINT("\n");
 }
 
 
@@ -134,7 +137,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	assert (idx >= 0);
 
 	DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
-
+	print_kernel_invocation(0, gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
@@ -146,16 +149,18 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	new_func_data.krecord = new_kernel_record;
 	func_record new_record = {KERNEL_RECORD, new_func_data};
 
-	if (idx==0) { //idx < 2) {
+	if (idx < 2) {
 	
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 	}
 	else {
-		//DEBUG_PRINT("------------------------ before submitting\n");
+		DEBUG_PRINT("------------------------ before submitting\n");
 		err = (*function)(func, gridDim, blockDim, args, sharedMem, stream);
-		//DEBUG_PRINT("------------------------ after submitting\n");
+		DEBUG_PRINT("------------------------ after submitting\n");
+		DEBUG_PRINT("CUDA error status is %d, %s\n", err, cudaGetErrorString(err));
+		assert (err==cudaSuccess);
 	}
 
 	// wait and run
@@ -218,6 +223,8 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 		assert(function != NULL);
 
 		status = (*function)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
+		DEBUG_PRINT("status is %d\n", status);
+		assert (status == CUDNN_STATUS_SUCCESS);
 	}
 	
 	return status;
@@ -343,7 +350,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 
 
 		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
-
+		DEBUG_PRINT("status is %d\n", status);
+		assert (status == CUDNN_STATUS_SUCCESS);
 		DEBUG_PRINT("return!\n");
 	}
 		
