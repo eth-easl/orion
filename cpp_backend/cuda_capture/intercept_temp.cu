@@ -6,6 +6,21 @@
 
 #include "intercept_temp.h"
 
+#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
+template <typename T>
+void check(T err, const char* const func, const char* const file,
+		           const int line)
+{
+
+	if (err != cudaSuccess)
+	{
+		printf("CUDA Runtime Error at: %s:%d\n", file, line);
+		printf("Error string is %s\n", cudaGetErrorString(err));
+	}
+	assert (err == cudaSuccess);
+}
+
+
 using namespace std;
 
 queue<func_record> kqueue0;
@@ -61,6 +76,7 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 }
 
 
+
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 	DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
@@ -69,6 +85,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
 	
 	cudaError_t err = (*function)(devPtr, size);
+	CHECK_CUDA_ERROR(err);
 	DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
@@ -83,6 +100,7 @@ cudaError_t cudaMallocManaged(void** devPtr, size_t size, unsigned int flags) {
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMallocManaged");
 
 	cudaError_t err = (*function)(devPtr, size, flags);
+	CHECK_CUDA_ERROR(err);
 	//DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
@@ -96,7 +114,8 @@ cudaError_t cudaFree(void* devPtr) {
 	cudaError_t (*function)(void* devPtr);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaFree");
 
-	cudaError_t err; //= (*function)(devPtr);
+	cudaError_t err = cudaSuccess; //= (*function)(devPtr);
+	CHECK_CUDA_ERROR(err);
 	return err;
 
 }
@@ -111,6 +130,7 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpy");
 
 	cudaError_t err = (*function)(dst, src, count, kind);
+	CHECK_CUDA_ERROR(err);
 	return err;
 
 }	
@@ -124,6 +144,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpyAsync");
 
 	cudaError_t err = (*function)(dst, src, count, kind, stream);
+	CHECK_CUDA_ERROR(err);
 	return err;
 
 }       
@@ -154,13 +175,29 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
-	}
+	}	
 	else {
 		DEBUG_PRINT("------------------------ before submitting\n");
-		err = (*function)(func, gridDim, blockDim, args, sharedMem, stream);
+
+		printf("sharedMem: %ld\n", sharedMem);
+
+		dim3 newgridDim(1);
+		dim3 newblockDim(1);
+		
+		// temporary - vectorized_elementwise_kernel
+		// TODO: fix vectorized_elementwise_kernel launching
+		void** new_args = (void**)malloc(3*sizeof(void*)); 
+		
+		// first arg: int
+		void* first_arg = malloc(sizeof(int64_t));
+		new_args[0] = first_arg;
+		*((int64_t*)first_arg) = (int64_t)10;
+		printf("%ld\n", *((int64_t*)(new_args[0])));
+		
+
+		err = (*function)(func, newgridDim, newblockDim, new_args, 0, 0);
 		DEBUG_PRINT("------------------------ after submitting\n");
-		DEBUG_PRINT("CUDA error status is %d, %s\n", err, cudaGetErrorString(err));
-		assert (err==cudaSuccess);
+		CHECK_CUDA_ERROR(err);
 	}
 
 	// wait and run
@@ -290,6 +327,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 		assert(function != NULL);
 
 		status = (*function)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+		assert (status == CUDNN_STATUS_SUCCESS);
 
 	}
 
