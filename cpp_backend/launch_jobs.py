@@ -6,6 +6,7 @@ from ctypes import *
 import os
 
 from train_imagenet import imagenet_loop
+from debug_script import test_func
 from scheduler_frontend import PyScheduler
 from torchvision import models
 import torch
@@ -18,7 +19,7 @@ def launch_jobs():
     # init
     barrier = threading.Barrier(2)
     home_directory = os.path.expanduser( '~' )
-    sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share/cpp_backend/scheduler.so")
+    sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler.so")
     py_scheduler = PyScheduler(sched_lib)
 
     model = models.__dict__['resnet50'](num_classes=1000)
@@ -30,7 +31,9 @@ def launch_jobs():
     torch.cuda.synchronize()
 
     # start threads
-    train_thread_0 = threading.Thread(target=imagenet_loop, args=(model, 32, None, 0, barrier, 0))
+    #train_thread_0 = threading.Thread(target=imagenet_loop, args=(model, 32, None, 0, barrier, 0))
+    
+    train_thread_0 = threading.Thread(target=test_func, args=(0, barrier))
     train_thread_0.start()
 
     #train_thread_1 = threading.Thread(target=imagenet_loop, args=(model, 32, None, 0, barrier, 1))
