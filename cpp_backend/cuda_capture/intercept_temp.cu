@@ -164,38 +164,44 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
 	cudaError_t err = cudaSuccess;
 
-	kernel_record new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
-
-	union func_data new_func_data;
-	new_func_data.krecord = new_kernel_record;
-	func_record new_record = {KERNEL_RECORD, new_func_data};
+	char** ar = (char**)(args[1]);
+	//printf("ar is %p\n", ar);
+	printf("[IDX: %d], N: %d, data[0] is %p\n", idx, *((int*)(args[0])), *ar);
 
 	if (idx < 2) {
 	
 		pthread_mutex_lock(mutexes[idx]);
+
+
+		// temporary - THIS WORKS ONLY FOR vectorized_elementwise_kernel
+		void** new_args = (void**)malloc(3*sizeof(void*));
+
+		// first arg: int
+ 		int* first_arg = (int*)malloc(sizeof(int));
+		new_args[0] = first_arg;
+		*first_arg = *((int*)(args[0]));
+		
+		new_args[1] = args[1];
+		new_args[2] = args[2];
+
+		kernel_record new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+
+		union func_data new_func_data;
+		new_func_data.krecord = new_kernel_record;
+		func_record new_record = {KERNEL_RECORD, new_func_data};
+
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 	}	
 	else {
-		DEBUG_PRINT("------------------------ before submitting\n");
+		DEBUG_PRINT("------------------------ before	 submitting\n");
 
 		printf("sharedMem: %ld\n", sharedMem);
 
 		dim3 newgridDim(1);
 		dim3 newblockDim(1);
-		
-		// temporary - vectorized_elementwise_kernel
-		// TODO: fix vectorized_elementwise_kernel launching
-		void** new_args = (void**)malloc(3*sizeof(void*)); 
-		
-		// first arg: int
-		void* first_arg = malloc(sizeof(int64_t));
-		new_args[0] = first_arg;
-		*((int64_t*)first_arg) = (int64_t)10;
-		printf("%ld\n", *((int64_t*)(new_args[0])));
-		
 
-		err = (*function)(func, newgridDim, newblockDim, new_args, 0, 0);
+		err = (*function)(func, gridDim, blockDim, args, sharedMem, 0);
 		DEBUG_PRINT("------------------------ after submitting\n");
 		CHECK_CUDA_ERROR(err);
 	}
