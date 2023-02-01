@@ -14,6 +14,10 @@
 #include <vector>
 
 #define VECTORIZED_ELEMENTWISE_KERNEL "void at::native::vectorized_elementwise_kernel"
+#define CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL "void at_cuda_detail::cub::DeviceReduceSingleTileKernel"
+#define CUB_DEVICE_COMPACT_INIT_KERNEL "void at_cuda_detail::cub::DeviceCompactInitKernel"
+#define CUB_DEVICE_SELECT_SWEEP_KERNEL "void at_cuda_detail::cub::DeviceSelectSweepKernel"
+#define INDEX_ELEMENTWISE_KERNEL "void at::native::index_elementwise_kernel"
 
 typedef struct kernel_record {
 
@@ -26,6 +30,17 @@ typedef struct kernel_record {
 	volatile bool run;
 	volatile cudaStream_t sched_stream;
 } kernel_record;
+
+
+typedef struct memcpy_record {
+
+	void* dst;
+	const void* src;
+	size_t count;
+	enum cudaMemcpyKind kind;
+	cudaStream_t stream;
+	bool async;
+} memcpy_record;
 
 // CUDNN
 
@@ -170,7 +185,7 @@ typedef struct  cudnnBatchNormalizationForwardInference_record {
 
 } cudnnBatchNormalizationForwardInference_record;
 
-enum func_type {KERNEL_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD};
+enum func_type {KERNEL_RECORD, MEMCPY_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD};
 
 union func_data {
 
@@ -178,6 +193,7 @@ union func_data {
 	cudnnConvolutionForward_record cudnnConvRecord;
 	cudnnBatchNormalizationForwardTrainingEx_record cudnnBNormRecord;
 	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
+	memcpy_record mrecord;
 
 	 func_data() {}
 	 ~func_data() {};
@@ -189,5 +205,4 @@ typedef struct func_record {
 	union func_data data;
 
 } func_record;
-
 

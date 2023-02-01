@@ -15,7 +15,7 @@ void check(T err, const char* const func, const char* const file,
 	if (err != cudaSuccess)
 	{
 		printf("CUDA Runtime Error at: %s:%d\n", file, line);
-		printf("Error string is %s\n", cudaGetErrorString(err));
+		printf("Error %d, %s\n", err, cudaGetErrorString(err));
 	}
 	assert (err == cudaSuccess);
 }
@@ -81,8 +81,8 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	DEBUG_PRINT("func_names is %p, fnames0 addr is %p, %p, fnames is %p, %p\n", func_names, func_names[0], &fnames0, *(func_names[0]), fnames0);
-	//DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
+	//DEBUG_PRINT("func_names is %p, fnames0 addr is %p, %p, fnames is %p, %p\n", func_names, func_names[0], &fnames0, *(func_names[0]), fnames0);
+	DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
@@ -127,13 +127,34 @@ cudaError_t cudaFree(void* devPtr) {
 
 cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind) {
 	
-	//DEBUG_PRINT("Caught cudaMemcpy!\n");
+	int idx = get_idx();
+	assert (idx >= 0);
+	DEBUG_PRINT("[IDX: %d], Caught cudaMemcpy!\n", idx);
 	
 	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpy");
+	cudaError_t err = cudaSuccess;
 
-	cudaError_t err = (*function)(dst, src, count, kind);
-	CHECK_CUDA_ERROR(err);
+	if (idx < 2) {
+
+		memcpy_record new_memcpy_record = {dst, src, count, kind, 0, false};
+
+		union func_data new_func_data;
+		new_func_data.mrecord = new_memcpy_record;
+		func_record new_record = {MEMCPY_RECORD, new_func_data};
+
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+	}
+
+	else {
+
+		err = (*function)(dst, src, count, kind);
+		CHECK_CUDA_ERROR(err);
+
+	}
+
 	return err;
 
 }	
@@ -141,13 +162,36 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 
 cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream) {    
 
-	//DEBUG_PRINT("Caught cudaMemcpyAsync! src is %p, dst is %p, size is %d\n", src, dst, count);
+	int idx = get_idx();
+	assert (idx >= 0);
+
+	DEBUG_PRINT("[IDX: %d] Caught cudaMemcpyAsync! src is %p, dst is %p, size is %d, stream is %d\n", idx, src, dst, count, stream);
 
 	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpyAsync");
+	cudaError_t err = cudaSuccess;
 
-	cudaError_t err = (*function)(dst, src, count, kind, stream);
-	CHECK_CUDA_ERROR(err);
+	if (idx < 2) {
+
+		while (kqueues[idx]->size() > 0); // wait. TODO: is this needed?
+		memcpy_record new_memcpy_record = {dst, src, count, kind, stream, true};
+
+		union func_data new_func_data;
+		new_func_data.mrecord = new_memcpy_record;
+		func_record new_record = {MEMCPY_RECORD, new_func_data};
+
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+	}
+
+	else {
+		
+		err = (*function)(dst, src, count, kind, 0); // TODO: not sure about which stream to use here
+		CHECK_CUDA_ERROR(err);
+		
+	}
+
 	return err;
 
 }       
@@ -160,7 +204,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	//DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	DEBUG_PRINT("[INTERCEPTER] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	print_kernel_invocation(0, gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -171,22 +215,77 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	if (idx < 2) {
 	
 		pthread_mutex_lock(mutexes[idx]);
-		// temporary - THIS WORKS ONLY FOR vectorized_elementwise_kernel
-		void** new_args = (void**)malloc(3*sizeof(void*));
 
 		// TODO: get kernel name correctly here
 		char* kernel_name = func_names[idx]->at(func_indexes[idx]);
-		printf("[INTERCEPTER] found a new kernel with name %s\n", kernel_name);
+		DEBUG_PRINT("[INTERCEPTER] found a new kernel with name %s, func pointer is %p\n", kernel_name, func);
 
 		if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
 		
 			void** new_args = (void**)malloc(3*sizeof(void*));
 			// first arg: int
+
  			int* first_arg = (int*)malloc(sizeof(int));
 			new_args[0] = first_arg;
 			*first_arg = *((int*)(args[0]));
 			new_args[1] = args[1];
 	                new_args[2] = args[2];		
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+
+		}
+		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL, 54)) {
+			
+			void** new_args = (void**)malloc(5*sizeof(void*));
+			new_args[0] = args[0];
+			new_args[1] = args[1];
+
+			new_args[2] = (int*)malloc(sizeof(int));
+			*((int*)new_args[2]) = *((int*)(args[2]));
+
+			new_args[3] = args[3];
+
+			new_args[4] = (int*)malloc(sizeof(int));
+			*((int*)new_args[4]) = *((int*)(args[4]));
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			
+		}
+		else if (!strncmp(kernel_name, CUB_DEVICE_COMPACT_INIT_KERNEL, 49)) {
+			
+			void** new_args = (void**)malloc(3*sizeof(void*));
+			
+			new_args[0] = args[0];
+			
+			new_args[1] = (int*)malloc(sizeof(int));
+			*((int*)new_args[1]) = *((int*)(args[1]));
+
+			new_args[2] = args[2];
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		}
+		else if (!strncmp(kernel_name, CUB_DEVICE_SELECT_SWEEP_KERNEL, 49)) {
+			
+			void** new_args = (void**)malloc(9*sizeof(void*));
+			for (int i=0; i<7; i++)
+				new_args[i] = args[i];
+
+			new_args[7] = (int*)malloc(sizeof(int));
+			*((int*)new_args[7]) = *((int*)(args[7]));
+
+			new_args[8] = (int*)malloc(sizeof(int));
+			*((int*)new_args[8]) = *((int*)(args[8]));
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		}
+		else if (!strncmp(kernel_name, INDEX_ELEMENTWISE_KERNEL, 41)) {
+
+			void** new_args = (void**)malloc(2*sizeof(void*));
+			
+			new_args[0] = (int*)malloc(sizeof(int));
+			*((int*)new_args[0]) = *((int*)(args[0]));
+
+			new_args[1] = args[1];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 
@@ -206,16 +305,15 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		func_indexes[idx] += 1;
 	}	
 	else {
-		DEBUG_PRINT("------------------------ before	 submitting\n");
-
-		printf("func is: %p\n", func);
+		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
 
 		dim3 newgridDim(1);
 		dim3 newblockDim(1);
 
 		err = (*function)(func, gridDim, blockDim, args, sharedMem, 0);
-		DEBUG_PRINT("------------------------ after submitting\n");
+		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err);
+		cudaDeviceSynchronize(); // for debugging
 	}
 
 	// wait and run
@@ -231,6 +329,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		}
 		pthread_mutex_unlock(mutexes[0]);
 	} */
+
+	return err;
 }
 
 

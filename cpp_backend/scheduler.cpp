@@ -25,6 +25,15 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	cudaError_t (*kernel_function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&kernel_function) = dlsym(RTLD_DEFAULT, "cudaLaunchKernel");
 
+	// for memcpy
+	cudaError_t (*memcpy_function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
+	*(void **)(&memcpy_function) = dlsym (RTLD_DEFAULT, "cudaMemcpy");
+	
+	// for memcpy_async
+	cudaError_t (*memcpy_async_function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
+	*(void **)(&memcpy_async_function) = dlsym (RTLD_DEFAULT, "cudaMemcpyAsync");
+
+
 	// for cudnn conv
 	cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 	*(void **)(&cudnn_conv_function) = dlsym(RTLD_DEFAULT, "cudnnConvolutionForward");
@@ -67,6 +76,17 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 						DEBUG_PRINT("found a new kernel record!\n");
 						kernel_record record = frecord.data.krecord;
 						(*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
+					}
+
+					else if (frecord.type == MEMCPY_RECORD) {
+						DEBUG_PRINT("found a new memcpy record!\n");
+						memcpy_record record = frecord.data.mrecord;
+						if (not record.async) {
+							(*memcpy_function)(record.dst, record.src, record.count, record.kind);
+						} else {
+							(*memcpy_async_function)(record.dst, record.src, record.count, record.kind, sched_stream);
+						}
+
 					}
 
 					else if (frecord.type == CUDNN_CONV_RECORD) {					
