@@ -128,6 +128,21 @@ extern "C" {
 		return sched;
 	}
 
+
+	void populate_kernel_names(vector<string>& kernel_vector) {
+
+		// TODO: make this more generic, e.g. pass files/models w.r.t input
+		string line;
+		std::ifstream infile("kernel_file");
+		while (std::getline(infile, line))
+		{
+			std::cout << line << std::endl;
+			kernel_vector.push_back(line);
+		}
+
+	}
+
+
 	void setup(Scheduler* scheduler, int tid0, int tid1) {
 
 		struct passwd *pw = getpwuid(getuid());
@@ -152,6 +167,14 @@ extern "C" {
 		thread_ids_all[2] = mytid;
 		
 		DEBUG_PRINT("Scheduler setup the thread ids to be %d, %d, %d\n", thread_ids_all[0], thread_ids_all[1], thread_ids_all[2]);
+
+
+		int num_kernels = 1;
+		vector<string>** func_names_all = (vector<string>**)dlsym(klib, "func_names");
+		printf("func_names_all is %p\n", func_names_all);
+		vector<string>* fn = *func_names_all;
+		populate_kernel_names(fn[0]);
+		populate_kernel_names(fn[1]);
 
 	}
 

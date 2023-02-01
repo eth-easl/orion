@@ -31,6 +31,8 @@ volatile pid_t thread_ids[3]; // N threads + scheduler
 
 queue<func_record>* kqueues[2] = {&kqueue0, &kqueue1};
 pthread_mutex_t* mutexes[2] = {&mutex0, &mutex1};
+vector<string> func_names[2] = {{}, {}};
+int func_indexes[2] = {0, 0};
 int i=0;
 
 int get_idx() {
@@ -40,8 +42,7 @@ int get_idx() {
 #else
 #error "SYS_gettid unavailable on this system"
 #endif
-
-		
+	return 0;
 	//DEBUG_PRINT("------------------- tid is %d, %d, %d, %d\n", tid, thread_ids[0], thread_ids[1], thread_ids[2]);
 	if (tid == thread_ids[0])
 		return 0;
@@ -79,6 +80,7 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
+	DEBUG_PRINT("func_names addr is %p\n", &func_names);
 	DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
@@ -163,28 +165,38 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
 	cudaError_t err = cudaSuccess;
-
-	char** ar = (char**)(args[1]);
+	return err;
+	//char** ar = (char**)(args[1]);
 	//printf("ar is %p\n", ar);
-	printf("[IDX: %d], N: %d, data[0] is %p\n", idx, *((int*)(args[0])), *ar);
+	printf("[IDX: %d], N: %d\n", idx, *((int*)(args[0])));
+	kernel_record new_kernel_record;
 
 	if (idx < 2) {
 	
 		pthread_mutex_lock(mutexes[idx]);
-
-
 		// temporary - THIS WORKS ONLY FOR vectorized_elementwise_kernel
 		void** new_args = (void**)malloc(3*sizeof(void*));
 
-		// first arg: int
- 		int* first_arg = (int*)malloc(sizeof(int));
-		new_args[0] = first_arg;
-		*first_arg = *((int*)(args[0]));
-		
-		new_args[1] = args[1];
-		new_args[2] = args[2];
+		// TODO: get kernel name correctly here
+		string kernel_name = func_names[idx][func_indexes[idx]];
 
-		kernel_record new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		if (kernel_name.compare(0, 41, (string)VECTORIZED_ELEMENTWISE_KERNEL)) {
+		
+			void** new_args = (void**)malloc(3*sizeof(void*));
+			// first arg: int
+ 			int* first_arg = (int*)malloc(sizeof(int));
+			new_args[0] = first_arg;
+			*first_arg = *((int*)(args[0]));
+			new_args[1] = args[1];
+	                new_args[2] = args[2];		
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+
+		}
+		else {
+
+			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
+		}
 
 		union func_data new_func_data;
 		new_func_data.krecord = new_kernel_record;
@@ -192,11 +204,13 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
 	}	
 	else {
 		DEBUG_PRINT("------------------------ before	 submitting\n");
 
-		printf("sharedMem: %ld\n", sharedMem);
+		printf("func is: %p\n", func);
 
 		dim3 newgridDim(1);
 		dim3 newblockDim(1);

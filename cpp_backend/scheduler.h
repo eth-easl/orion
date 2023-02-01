@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
-#include "kernel_launch.h"
 #include <dlfcn.h>
 #include <queue>
 #include <pthread.h>
 #include <syscall.h>
 #include <pwd.h>
+#include <iostream>
 #include <string.h>
+#include <fstream>
 #include "cuda_capture/intercept_temp.h"
+#include "kernel_launch.h"
 
 struct sched_args {
 	

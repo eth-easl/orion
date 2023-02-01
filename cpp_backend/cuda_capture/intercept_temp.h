@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <queue>
+#include <string>
 #include <pthread.h>
 #include <cuda.h>
 #include <cudnn.h>
@@ -10,6 +11,8 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <assert.h>
+
+#define VECTORIZED_ELEMENTWISE_KERNEL "void at::native::vectorized_elementwise_kernel"
 
 typedef struct kernel_record {
 
