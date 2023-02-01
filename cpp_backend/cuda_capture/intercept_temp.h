@@ -18,6 +18,8 @@
 #define CUB_DEVICE_COMPACT_INIT_KERNEL "void at_cuda_detail::cub::DeviceCompactInitKernel"
 #define CUB_DEVICE_SELECT_SWEEP_KERNEL "void at_cuda_detail::cub::DeviceSelectSweepKernel"
 #define INDEX_ELEMENTWISE_KERNEL "void at::native::index_elementwise_kernel"
+#define UNROLLED_ELEMENTWISE_KERNEL "void at::native::unrolled_elementwise_kernel"
+#define REDUCE_KERNEL "void at::native::reduce_kernel"
 
 typedef struct kernel_record {
 

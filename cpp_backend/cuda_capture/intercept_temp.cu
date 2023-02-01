@@ -137,6 +137,7 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 
 	if (idx < 2) {
 
+		while (kqueues[idx]->size() > 0); // wait. TODO: is this needed?
 		memcpy_record new_memcpy_record = {dst, src, count, kind, 0, false};
 
 		union func_data new_func_data;
@@ -152,7 +153,6 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 
 		err = (*function)(dst, src, count, kind);
 		CHECK_CUDA_ERROR(err);
-
 	}
 
 	return err;
@@ -189,7 +189,6 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 		
 		err = (*function)(dst, src, count, kind, 0); // TODO: not sure about which stream to use here
 		CHECK_CUDA_ERROR(err);
-		
 	}
 
 	return err;
@@ -213,7 +212,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	kernel_record new_kernel_record;
 
 	if (idx < 2) {
-	
 		pthread_mutex_lock(mutexes[idx]);
 
 		// TODO: get kernel name correctly here
@@ -289,6 +287,17 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 
+		}
+		else if (!strncmp(kernel_name, UNROLLED_ELEMENTWISE_KERNEL, 44)) {
+
+			void** new_args = (void**)malloc(7*sizeof(void*));
+			new_args[0] = (int*)malloc(sizeof(int));
+			*((int*)new_args[0]) = *((int*)(args[0]));
+
+			for (int i=1; i<7; i++)
+				new_args[i] = args[i];
+			
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 		}
 		else {
 
