@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <dlfcn.h>
 #include <queue>
+#include <vector>
 #include <pthread.h>
 #include <syscall.h>
 #include <pwd.h>

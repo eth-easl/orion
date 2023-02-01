@@ -129,16 +129,23 @@ extern "C" {
 	}
 
 
-	void populate_kernel_names(vector<string>& kernel_vector) {
+	void populate_kernel_names(vector<char*>* kernel_vector) {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		string line;
-		std::ifstream infile("kernel_file");
+		std::ifstream infile("file");
+		assert (infile.is_open());
 		while (std::getline(infile, line))
 		{
-			std::cout << line << std::endl;
-			kernel_vector.push_back(line);
+			char* kernel_name = (char*)malloc(line.length());
+			strcpy(kernel_name, line.c_str());
+			kernel_vector->push_back(kernel_name);
 		}
+
+		for (auto s: *kernel_vector)
+			printf("kernel: %s\n", s);
+
+		printf("--------------------------------\n");
 
 	}
 
@@ -150,6 +157,7 @@ extern "C" {
 		char* lib_path = "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so";
 
 		klib = dlopen(strcat(homedir, lib_path), RTLD_NOW | RTLD_GLOBAL);
+
 		if (!klib) {
 			fprintf(stderr, "Error: %s\n", dlerror());
 			return;
@@ -170,11 +178,11 @@ extern "C" {
 
 
 		int num_kernels = 1;
-		vector<string>** func_names_all = (vector<string>**)dlsym(klib, "func_names");
+		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
 		printf("func_names_all is %p\n", func_names_all);
-		vector<string>* fn = *func_names_all;
-		populate_kernel_names(fn[0]);
-		populate_kernel_names(fn[1]);
+		printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[0], func_names_all[1]);
+		populate_kernel_names(func_names_all[0]);
+		populate_kernel_names(func_names_all[1]);
 
 	}
 

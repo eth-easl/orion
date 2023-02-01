@@ -27,11 +27,13 @@ queue<func_record> kqueue0;
 queue<func_record> kqueue1;
 pthread_mutex_t mutex0;
 pthread_mutex_t mutex1;
+vector<char*> fnames0;
+vector<char*> fnames1;
 volatile pid_t thread_ids[3]; // N threads + scheduler
 
 queue<func_record>* kqueues[2] = {&kqueue0, &kqueue1};
 pthread_mutex_t* mutexes[2] = {&mutex0, &mutex1};
-vector<string> func_names[2] = {{}, {}};
+vector<char*>* func_names[2] = {&fnames0, &fnames1}; 
 int func_indexes[2] = {0, 0};
 int i=0;
 
@@ -80,15 +82,15 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	DEBUG_PRINT("func_names addr is %p\n", &func_names);
-	DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
+	DEBUG_PRINT("func_names is %p, fnames0 addr is %p, %p, fnames is %p, %p\n", func_names, func_names[0], &fnames0, *(func_names[0]), fnames0);
+	//DEBUG_PRINT("Caught cudaMalloc! allocate region of %ld bytes\n", size);
 
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
 	
 	cudaError_t err = (*function)(devPtr, size);
 	CHECK_CUDA_ERROR(err);
-	DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
+	//DEBUG_PRINT("Memory allocated at address %p, size is %ld\n", *devPtr, size);
 	return err;
 
 }
@@ -159,7 +161,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	//DEBUG_PRINT("Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	print_kernel_invocation(0, gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -178,7 +180,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		void** new_args = (void**)malloc(3*sizeof(void*));
 
 		// TODO: get kernel name correctly here
-		string kernel_name = func_names[idx][func_indexes[idx]];
+		string kernel_name = ""; //func_names[idx][func_indexes[idx]];
 
 		if (kernel_name.compare(0, 41, (string)VECTORIZED_ELEMENTWISE_KERNEL)) {
 		
