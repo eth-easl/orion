@@ -44,7 +44,6 @@ int get_idx() {
 #else
 #error "SYS_gettid unavailable on this system"
 #endif
-	return 0;
 	//DEBUG_PRINT("------------------- tid is %d, %d, %d, %d\n", tid, thread_ids[0], thread_ids[1], thread_ids[2]);
 	if (tid == thread_ids[0])
 		return 0;
@@ -167,10 +166,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
 	cudaError_t err = cudaSuccess;
-	return err;
-	//char** ar = (char**)(args[1]);
-	//printf("ar is %p\n", ar);
-	printf("[IDX: %d], N: %d\n", idx, *((int*)(args[0])));
 	kernel_record new_kernel_record;
 
 	if (idx < 2) {
@@ -180,9 +175,10 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		void** new_args = (void**)malloc(3*sizeof(void*));
 
 		// TODO: get kernel name correctly here
-		string kernel_name = ""; //func_names[idx][func_indexes[idx]];
+		char* kernel_name = func_names[idx]->at(func_indexes[idx]);
+		printf("[INTERCEPTER] found a new kernel with name %s\n", kernel_name);
 
-		if (kernel_name.compare(0, 41, (string)VECTORIZED_ELEMENTWISE_KERNEL)) {
+		if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
 		
 			void** new_args = (void**)malloc(3*sizeof(void*));
 			// first arg: int

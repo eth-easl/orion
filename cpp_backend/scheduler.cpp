@@ -133,7 +133,7 @@ extern "C" {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		string line;
-		std::ifstream infile("file");
+		std::ifstream infile("kernel_file");
 		assert (infile.is_open());
 		while (std::getline(infile, line))
 		{

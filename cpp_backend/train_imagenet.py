@@ -23,7 +23,7 @@ def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
 
     print("-------------- thread id:  ", threading.get_native_id())
 
-    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
+    data = torch.rand([batchsize, 64, 224, 224]).to(local_rank)
 
     model.eval()
     barrier.wait()
