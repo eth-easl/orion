@@ -44,6 +44,20 @@ typedef struct memcpy_record {
 	bool async;
 } memcpy_record;
 
+
+typedef struct malloc_record {
+
+	void** devPtr;
+       	size_t size;
+
+} malloc_record;
+
+typedef struct free_record {
+	void* devPtr;
+	
+} free_record;
+
+
 // CUDNN
 
 typedef struct cudnnConvolutionForward_record {
@@ -187,7 +201,7 @@ typedef struct  cudnnBatchNormalizationForwardInference_record {
 
 } cudnnBatchNormalizationForwardInference_record;
 
-enum func_type {KERNEL_RECORD, MEMCPY_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD};
+enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD};
 
 union func_data {
 
@@ -196,6 +210,8 @@ union func_data {
 	cudnnBatchNormalizationForwardTrainingEx_record cudnnBNormRecord;
 	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
 	memcpy_record mrecord;
+	malloc_record malrecord;
+	free_record frecord;
 
 	 func_data() {}
 	 ~func_data() {};

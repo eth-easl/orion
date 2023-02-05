@@ -381,6 +381,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		func_indexes[idx] += 1;
 		
+		// for debugging - block until kernel has ran
+		block(idx);
 
 	}	
 	else {

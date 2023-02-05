@@ -34,6 +34,10 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	*(void **)(&memcpy_async_function) = dlsym (RTLD_DEFAULT, "cudaMemcpyAsync");
 
 
+	// for malloc
+	cudaError_t (*malloc_function)(void** devPtr, size_t size);
+	*(void **)(&malloc_function) = dlsym (RTLD_DEFAULT, "cudaMalloc");
+
 	// for cudnn conv
 	cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 	*(void **)(&cudnn_conv_function) = dlsym(RTLD_DEFAULT, "cudnnConvolutionForward");
@@ -89,6 +93,13 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 					}
 
+					else if (frecord.type == MALLOC_RECORD) {
+						DEBUG_PRINT("found a new malloc record!\n");
+						malloc_record record = frecord.data.malrecord;
+						(*malloc_function)(record.devPtr, record.size);
+
+					}
+
 					else if (frecord.type == CUDNN_CONV_RECORD) {					
 						DEBUG_PRINT("found a new cudnn conv record!\n");
 						cudnnConvolutionForward_record record = frecord.data.cudnnConvRecord;
@@ -114,7 +125,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 					}	
 
-					buffers[i]->pop();
+					//buffers[i]->pop();
 
 					// run
 					// case 2
@@ -174,7 +185,7 @@ extern "C" {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
-		char* lib_path = "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so";
+		char* lib_path = "/gpu_share_repo/cpp_backend/cuda_capture/libintsync.so";
 
 		klib = dlopen(strcat(homedir, lib_path), RTLD_NOW | RTLD_GLOBAL);
 
