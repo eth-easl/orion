@@ -11,7 +11,6 @@ template <typename T>
 void check(T err, const char* const func, const char* const file,
 		           const int line)
 {
-
 	if (err != cudaSuccess)
 	{
 		printf("CUDA Runtime Error at: %s:%d\n", file, line);
@@ -259,6 +258,31 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 }       
 
 
+cudaError_t cudaMemset(void* devPtr, int  value, size_t count ) {
+
+	printf("----------- Caught CUDA_MEMSET!!!!!!!!!!!!!\n");
+	cudaError_t (*function)(void* devPtr, int value, size_t count);
+	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemset");
+	
+	cudaError_t err = (*function)(devPtr, value, count);
+	CHECK_CUDA_ERROR(err);
+	return err;
+}
+
+
+cudaError_t cudaMemsetAsync ( void* devPtr, int  value, size_t count, cudaStream_t stream) {
+
+	printf("----------- Caught CUDA_MEMSET_ASYNC!!!!!!!!!!!!!\n");
+	cudaError_t (*function)(void* devPtr, int value, size_t count, cudaStream_t stream);
+	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemsetAsync");
+
+	cudaError_t err = (*function)(devPtr, value, count, stream);
+	CHECK_CUDA_ERROR(err);
+	return err;
+
+
+}
+
 
 cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream ) {
 
@@ -288,17 +312,33 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
 		
-			void** new_args = (void**)malloc(3*sizeof(void*));
+			// NOTE: WE EXPECT AN ADDITIONAL ARGUMENT WITH THE NUMBER OF INPUT/OUTPUT TENSORS
+			// TODO: How to get this during runtime?
+			void** new_args = (void**)malloc(4*sizeof(void*));
 			// first arg: int
 
  			int* first_arg = (int*)malloc(sizeof(int));
 			new_args[0] = first_arg;
 			*first_arg = *((int*)(args[0]));
+			
 			new_args[1] = args[1];
-	                new_args[2] = args[2];		
+			
+			int data_size = *((int*)args[2]);
+			int* data_size_ptr = (int*)malloc(sizeof(int));
+			*data_size_ptr = data_size;
+			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
+			Array<char*, 10>* data_ptr = (Array<char*, 10>*)malloc(sizeof(Array<char*, 10>));
+			for (int i=0; i<data_size; i++) {
+				data_ptr->data[i] = ((Array<char*, 1>*)args[3])->data[i];
+				printf("POINTER AT INDEX %d IS %p\n", i, data_ptr->data[i]);
+			}
 
+			new_args[2] = data_size_ptr;
+			new_args[3] = data_ptr; 
+			
+			
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-
+			
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL, 54)) {
 			
@@ -392,10 +432,12 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		err = (*function)(func, gridDim, blockDim, args, sharedMem, 0);
 		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
-
+		
 		cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
 		CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
 
+		cudaError_t err2 = cudaGetLastError();
+		CHECK_CUDA_ERROR(err2);
 		//pthread_mutex_lock(mutexes[0]);
 		kqueues[0]->pop();
 		pthread_mutex_unlock(mutexes[0]);
