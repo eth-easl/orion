@@ -301,6 +301,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
 	cudaError_t err = cudaSuccess;
 	kernel_record new_kernel_record;
+	bool wait = false;
 
 	if (idx < 2) {
 
@@ -329,7 +330,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
 			Array<char*, 10>* data_ptr = (Array<char*, 10>*)malloc(sizeof(Array<char*, 10>));
 			for (int i=0; i<data_size; i++) {
-				data_ptr->data[i] = ((Array<char*, 1>*)args[3])->data[i];
+				data_ptr->data[i] = ((Array<char*, 10>*)args[3])->data[i];
 				printf("POINTER AT INDEX %d IS %p\n", i, data_ptr->data[i]);
 			}
 
@@ -338,7 +339,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			
 			
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL, 54)) {
 			
@@ -356,6 +356,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			
+
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_COMPACT_INIT_KERNEL, 49)) {
 			
@@ -369,6 +370,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[2] = args[2];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_SELECT_SWEEP_KERNEL, 49)) {
 			
@@ -383,6 +385,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*((int*)new_args[8]) = *((int*)(args[8]));
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			wait = true;		
+
 		}
 		else if (!strncmp(kernel_name, INDEX_ELEMENTWISE_KERNEL, 41)) {
 
@@ -398,19 +402,49 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		}
 		else if (!strncmp(kernel_name, UNROLLED_ELEMENTWISE_KERNEL, 44)) {
 
-			void** new_args = (void**)malloc(7*sizeof(void*));
+			// NOTE: WE EXPECT AN ADDITIONAL ARGUMENT WITH THE NUMBER OF INPUT/OUTPUT TENSORS
+			// TODO: How to get this during runtime?
+
+
+			void** new_args = (void**)malloc(8*sizeof(void*));
 			new_args[0] = (int*)malloc(sizeof(int));
 			*((int*)new_args[0]) = *((int*)(args[0]));
 
-			for (int i=1; i<7; i++)
-				new_args[i] = args[i];
+			new_args[1] = args[1];
+			new_args[4] = args[4];
+			new_args[5] = args[5];
+			new_args[6] = args[6];
+			new_args[7] = args[7];
+
+			int data_size = *((int*)args[2]);
+			int* data_size_ptr = (int*)malloc(sizeof(int));
+			*data_size_ptr = data_size;
+			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
+			Array<char*, 10>* data_ptr = (Array<char*, 10>*)malloc(sizeof(Array<char*, 10>));
+			for (int i=0; i<data_size; i++) {
+				data_ptr->data[i] = ((Array<char*, 10>*)args[3])->data[i];
+				printf("POINTER AT INDEX %d IS %p\n", i, data_ptr->data[i]);
+			}
 			
+			new_args[2] = data_size_ptr;
+			new_args[3] = data_ptr;
+
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		}
+		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
+			
+			// TODO: Fix this to work without waiting
+
+			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
+			wait = true;
+
 		}
 		else {
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
 		}
+
+
 
 		union func_data new_func_data;
 		new_func_data.krecord = new_kernel_record;
@@ -421,6 +455,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		func_indexes[idx] += 1;
 		
+		if (wait)
+			block(idx);
 
 	}	
 	else {
