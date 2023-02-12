@@ -137,7 +137,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 					//}
 				}
-				pthread_mutex_unlock(mutexes[i]);
+				//pthread_mutex_unlock(mutexes[i]);
 			}
 
 		}

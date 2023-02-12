@@ -543,8 +543,12 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 		assert(function != NULL);
 
 		status = (*function)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
-		DEBUG_PRINT("status is %d\n", status);
+		DEBUG_PRINT("Conv, status is %d\n", status);
 		assert (status == CUDNN_STATUS_SUCCESS);
+
+		kqueues[0]->pop();
+		pthread_mutex_unlock(mutexes[0]);
+
 	}
 	
 	return status;
@@ -612,6 +616,10 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 		status = (*function)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 		assert (status == CUDNN_STATUS_SUCCESS);
 
+		kqueues[0]->pop();
+		pthread_mutex_unlock(mutexes[0]);
+
+
 	}
 
 	return status;
@@ -657,6 +665,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
+
+		//block(idx);
 	}
 	else {
 
@@ -671,9 +681,15 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 
 
 		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
-		DEBUG_PRINT("status is %d\n", status);
+		DEBUG_PRINT("BNORM, status is %d\n", status);
 		assert (status == CUDNN_STATUS_SUCCESS);
 		DEBUG_PRINT("return!\n");
+
+		kqueues[0]->pop();
+		pthread_mutex_unlock(mutexes[0]);
+
+
+
 	}
 		
 	return status;
@@ -688,4 +704,16 @@ cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
 }
 
 
+cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
 
+	DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
+	return CUDNN_STATUS_SUCCESS;
+
+}
+
+
+cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t convDesc) {
+
+	DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
+	return CUDNN_STATUS_SUCCESS;
+}

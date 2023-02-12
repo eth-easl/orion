@@ -17,16 +17,18 @@ import os
 import argparse
 import threading
 
-def imagenet_loop(model, batchsize, train_loader, local_rank, barrier, tid):
+def imagenet_loop(parent_model, batchsize, train_loader, local_rank, barrier, tid):
 
     # do only forward for now, experimental
+    barrier.wait()
 
     print("-------------- thread id:  ", threading.get_native_id())
 
-    data = torch.rand([batchsize, 64, 224, 224]).to(local_rank)
+    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
+    model = models.__dict__['resnet50'](num_classes=1000)
+    model = model.to(0)
 
     model.eval()
-    barrier.wait()
 
     
     for i in range(1):

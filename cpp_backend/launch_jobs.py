@@ -22,22 +22,21 @@ def launch_jobs():
     sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler.so")
     py_scheduler = PyScheduler(sched_lib)
 
-    model = models.__dict__['resnet50'](num_classes=1000)
-
-    model = model.to(0) # to GPU
+    #model = models.__dict__['resnet50'](num_classes=1000)
+    #model = model.to(0) # to GPU
 
     print(torch.__version__)
 
-    torch.cuda.synchronize()
+    #torch.cuda.synchronize()
 
     # start threads
     #train_thread_0 = threading.Thread(target=imagenet_loop, args=(model, 32, None, 0, barrier, 0))
     
-    train_thread_0 = threading.Thread(target=test_func, args=(0, barrier))
-    train_thread_0.start()
+    #train_thread_0 = threading.Thread(target=test_func, args=(0, barrier))
+    #train_thread_0.start()
 
-    #train_thread_1 = threading.Thread(target=imagenet_loop, args=(model, 32, None, 0, barrier, 1))
-    #train_thread_1.start()
+    train_thread_0 = threading.Thread(target=imagenet_loop, args=(None, 32, None, 0, barrier, 0))
+    train_thread_0.start()
 
     tids = [train_thread_0.native_id, 0]#train_thread_1.native_id]
     sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids))
