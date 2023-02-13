@@ -1,12 +1,12 @@
 # gpu_share
 
 This repo contains the implementation of our scheduler for fine-grained GPU sharing across ML workloads.
+The two basic instances are the intercepter (CUDA and CUDNN calls) and the Scheduler.
 
-### The current branch contains the implementation of CUDA/CPP backend. There are 3 main bugs that are currently being solved:
-* inconsistent results of cuda capturing mechanism - differences with the Nsight Nsys trace
-* seg fault at multi-threaded execution
+### How to run?
 
-Until memory problem is solved, we keep the scheduler as a 'referee' which blocks kernel execution accordingly.
+Currently, the scheduler requires torch being installed from source, and the source code being located at $HOME/pytorch.
+The file 'launch_jobs.py' is responsible for spawning the scheduler and the application thread(s).
 
 ### For CUDNN debugging:
 * export CUDNN_LOGDEST_DBG=stdout

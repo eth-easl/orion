@@ -409,13 +409,12 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[1] = args[1];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			wait = true; // leave this for now
 		}
 		else if (!strncmp(kernel_name, UNROLLED_ELEMENTWISE_KERNEL, 44)) {
 
 			// NOTE: WE EXPECT AN ADDITIONAL ARGUMENT WITH THE NUMBER OF INPUT/OUTPUT TENSORS
 			// TODO: How to get this during runtime?
-
 
 			void** new_args = (void**)malloc(8*sizeof(void*));
 			new_args[0] = (int*)malloc(sizeof(int));
@@ -444,10 +443,12 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		}
 		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
 			
-			// TODO: Fix this to work without waiting
 			void** new_args = (void**)malloc(sizeof(void*));
 
+			// TODO: make this more generic
 			using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MaxNanFunctor<double>>,unsigned int, double, 4>;
+			
+			
 			arg_type* reduce_arg = (arg_type*)(args[0]);
 			arg_type* new_reduce_arg = (arg_type*)malloc(sizeof(arg_type));
 			char* dst0 = (char*)(reduce_arg->dst[0]);
@@ -750,4 +751,5 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t con
 	DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
+
 
