@@ -6,6 +6,10 @@
 
 #include "intercept_temp.h"
 
+using namespace std;
+using at::native::ReduceOp;
+using at::_isnan;
+
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 template <typename T>
 void check(T err, const char* const func, const char* const file,
@@ -20,7 +24,14 @@ void check(T err, const char* const func, const char* const file,
 }
 
 
-using namespace std;
+template <typename acc_t>
+struct MaxNanFunctor {
+       	__device__ __forceinline__ acc_t operator()(acc_t a, acc_t b) const {
+		return (at::_isnan(a) || a > b) ? a : b;
+	}
+};
+
+
 
 queue<func_record> kqueue0;
 queue<func_record> kqueue1;
@@ -398,7 +409,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[1] = args[1];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-
+			wait = true;
 		}
 		else if (!strncmp(kernel_name, UNROLLED_ELEMENTWISE_KERNEL, 44)) {
 
@@ -434,10 +445,32 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
 			
 			// TODO: Fix this to work without waiting
+			void** new_args = (void**)malloc(sizeof(void*));
 
-			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
-			wait = true;
+			using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MaxNanFunctor<double>>,unsigned int, double, 4>;
+			arg_type* reduce_arg = (arg_type*)(args[0]);
+			arg_type* new_reduce_arg = (arg_type*)malloc(sizeof(arg_type));
+			char* dst0 = (char*)(reduce_arg->dst[0]);
+			char* dst1 = (char*)(reduce_arg->dst[1]); 	
 
+			*new_reduce_arg = arg_type(
+				reduce_arg->ops,
+				reduce_arg->config,
+				reduce_arg->input_calc,
+				reduce_arg->output_calc,
+				reduce_arg->src,
+				dst0,
+				dst1, //check this
+				reduce_arg->acc_buf,
+				reduce_arg->cta_buf,
+				reduce_arg->semaphores,
+				reduce_arg->ident,
+				reduce_arg->noutputs,
+				reduce_arg->base_idx
+			);
+			new_args[0] = new_reduce_arg;
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 		}
 		else {
 
@@ -717,3 +750,4 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t con
 	DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
+

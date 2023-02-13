@@ -13,6 +13,8 @@
 #include <assert.h>
 #include <vector>
 #include "Torch_Array.h"
+#include "Reduce.cuh"
+#include "ATen/NumericUtils.h"
 
 #define VECTORIZED_ELEMENTWISE_KERNEL "void at::native::vectorized_elementwise_kernel"
 #define CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL "void at_cuda_detail::cub::DeviceReduceSingleTileKernel"
