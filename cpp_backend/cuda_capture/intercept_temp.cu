@@ -31,6 +31,40 @@ struct MaxNanFunctor {
 	}
 };
 
+template <typename acc_t>
+struct MinNanFunctor {
+	  __device__ __forceinline__ acc_t operator()(acc_t a, acc_t b) const {
+		return (at::_isnan(a) || a < b) ? a : b;
+	  }
+};
+
+template <typename T>
+T* create_new_reduce_arg(void* args0) {
+
+	T* reduce_arg = (T*)args0;
+	T* new_reduce_arg = (T*)malloc(sizeof(T));
+	char* dst0 = (char*)(reduce_arg->dst[0]);
+	char* dst1 = (char*)(reduce_arg->dst[1]);
+
+	*new_reduce_arg = T(
+		reduce_arg->ops,
+		reduce_arg->config,
+		reduce_arg->input_calc,
+		reduce_arg->output_calc,
+		reduce_arg->src,
+		dst0,
+		dst1, //check this
+		reduce_arg->acc_buf,
+		reduce_arg->cta_buf,
+		reduce_arg->semaphores,
+		reduce_arg->ident,
+		reduce_arg->noutputs,
+		reduce_arg->base_idx
+	);
+
+	return new_reduce_arg;
+
+}
 
 
 queue<func_record> kqueue0;
@@ -113,6 +147,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 	if (idx < 2) {
 
+		// wait for all kernels or memory operations to finish
 		block(idx);
 
 		malloc_record new_malloc_record = {devPtr, size};
@@ -189,7 +224,9 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 
 	if (idx < 2) {
 
+		// wait for all kernels or memory operations to finish
 		block(idx);
+
 		memcpy_record new_memcpy_record = {dst, src, count, kind, 0, false};
 
 		union func_data new_func_data;
@@ -236,6 +273,8 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 
 	if (idx < 2) {
 
+		// wait for all kernels or memory operations to finish
+		block(idx);
 
 		memcpy_record new_memcpy_record = {dst, src, count, kind, stream, true};
 
@@ -301,9 +340,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	if (idx < 2) {
+	if (idx < 2)
 		block(idx);
-	}
+
 
 	DEBUG_PRINT("[INTERCEPTER] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	print_kernel_invocation(0, gridDim, blockDim);
@@ -446,30 +485,16 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			void** new_args = (void**)malloc(sizeof(void*));
 
 			// TODO: make this more generic
-			using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MaxNanFunctor<double>>,unsigned int, double, 4>;
-			
-			
-			arg_type* reduce_arg = (arg_type*)(args[0]);
-			arg_type* new_reduce_arg = (arg_type*)malloc(sizeof(arg_type));
-			char* dst0 = (char*)(reduce_arg->dst[0]);
-			char* dst1 = (char*)(reduce_arg->dst[1]); 	
-
-			*new_reduce_arg = arg_type(
-				reduce_arg->ops,
-				reduce_arg->config,
-				reduce_arg->input_calc,
-				reduce_arg->output_calc,
-				reduce_arg->src,
-				dst0,
-				dst1, //check this
-				reduce_arg->acc_buf,
-				reduce_arg->cta_buf,
-				reduce_arg->semaphores,
-				reduce_arg->ident,
-				reduce_arg->noutputs,
-				reduce_arg->base_idx
-			);
-			new_args[0] = new_reduce_arg;
+			if (func_indexes[idx] == 14) { 
+				using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MaxNanFunctor<double>>,unsigned int, double, 4>;
+				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
+				new_args[0] = new_reduce_arg;
+			}
+			else {
+				using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MinNanFunctor<double>>,unsigned int, double, 4>;
+				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
+				new_args[0] = new_reduce_arg;
+			}
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 		}
@@ -700,7 +725,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 
-		//block(idx);
 	}
 	else {
 
