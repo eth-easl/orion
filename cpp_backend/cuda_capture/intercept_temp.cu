@@ -524,6 +524,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		else {
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
+			wait = true;
 		}
 
 
@@ -791,4 +792,64 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t con
 	return CUDNN_STATUS_SUCCESS;
 }
 
+// CUBLAS ....
 
+cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc) {
+
+	int idx = get_idx();
+	assert (idx >= 0);
+	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, index %d\n", func_indexes[idx], idx);
+	
+	cublasSgemm_record blassgemm_record = {
+		handle,
+		transa,
+		transb,
+		m,
+		n,
+		k,
+		alpha,
+		A,
+		lda,
+		B,
+		ldb,
+		beta,
+		C,
+		ldc
+	};
+
+	union func_data new_func_data;
+	new_func_data.cublasSgemmRecord = blassgemm_record;
+	func_record new_record = {CUBLAS_SGEMM_RECORD, new_func_data};
+
+
+	if (idx < 2) {
+
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+
+	}
+
+	else {
+
+		cublasStatus_t (*function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
+
+		*(void **)(&function) = dlsym(RTLD_NEXT, "cublasSgemm");
+		assert(function != NULL);
+
+
+		status = (*function)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
+		assert (status == CUBLAS_STATUS_SUCCESS);
+		
+		kqueues[0]->pop();
+		pthread_mutex_unlock(mutexes[0]);
+
+	}
+	
+	return status;
+
+}

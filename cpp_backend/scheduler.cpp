@@ -56,6 +56,13 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	assert(cudnn_bnorm_infer_function != NULL);
 
 
+	// CUBLAS sgemm
+	cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
+
+	*(void **)(&cublas_sgemm_function) = dlsym(RTLD_DEFAULT, "cublasSgemm");
+	assert(cublas_sgemm_function != NULL);
+
+
 	cudaStream_t sched_stream;
 	cudaStreamCreate(&sched_stream);
 
@@ -123,7 +130,15 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 						(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
 						cudnnSetStream(record.handle, 0);
 
-					}	
+					}
+
+					else if (frecord.type == CUBLAS_SGEMM_RECORD) {
+						DEBUG_PRINT("found a new sgemm record!\n");
+					
+						// TODO: what to do about streams?
+						cublasSgemm_record record = frecord.data.cublasSgemmRecord;
+						(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
+					}
 
 					//buffers[i]->pop();
 

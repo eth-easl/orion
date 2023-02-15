@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <cuda.h>
 #include <cudnn.h>
+#include <cublas.h>
 #include <sys/types.h>
 #include <syscall.h>
 #include <unistd.h>
@@ -13,6 +14,7 @@
 #include <assert.h>
 #include <vector>
 #include "Torch_Array.h"
+
 #include "Reduce.cuh"
 #include "ATen/native/SharedReduceOps.h"
 #include "ATen/NumericUtils.h"
@@ -206,7 +208,51 @@ typedef struct  cudnnBatchNormalizationForwardInference_record {
 
 } cudnnBatchNormalizationForwardInference_record;
 
-enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD};
+// CUBLAS
+
+typedef struct cublasSgemm_record {
+
+	cublasHandle_t handle;
+	cublasOperation_t transa;
+	cublasOperation_t transb;
+	int m;
+	int n;
+	int k;
+	const float *alpha;
+	const float  *A;
+       	int lda;
+	const float *B;
+	int ldb;
+	const float *beta;
+	float *C;
+	int ldc;
+
+	cublasSgemm_record(cublasHandle_t handle_arg, cublasOperation_t transa_arg, cublasOperation_t transb_arg, int m_arg, int n_arg, int k_arg, const float *alpha_arg, const float *A_arg, int lda_arg, const float *B_arg, int ldb_arg, const float *beta_arg, float *C_arg, int ldc_arg) {
+
+		handle = handle_arg;
+		transa = transa_arg;
+		transb = transb_arg;
+		m = m_arg;
+		n = n_arg;
+		k = k_arg;
+		alpha = alpha_arg;
+		A = A_arg;
+		lda = lda_arg;
+		B = B_arg;
+		ldb = ldb_arg;
+		beta = beta_arg;
+		C = C_arg;
+		ldc = ldc_arg;
+	}
+
+	~cublasSgemm_record() {}
+
+} cublasSgemm_record;
+
+//////////////////////////////////////////////////
+
+
+enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD, CUBLAS_SGEMM_RECORD};
 
 union func_data {
 
@@ -214,6 +260,7 @@ union func_data {
 	cudnnConvolutionForward_record cudnnConvRecord;
 	cudnnBatchNormalizationForwardTrainingEx_record cudnnBNormRecord;
 	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
+	cublasSgemm_record cublasSgemmRecord;
 	memcpy_record mrecord;
 	malloc_record malrecord;
 	free_record frecord;
