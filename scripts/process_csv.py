@@ -18,7 +18,7 @@ for i, row in df.iterrows():
     if 'cudnn' in x:
         if 'bn_fw' in x:
             processed_kernel_names.append(['BatchNorm', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
-        elif 'scudnn' in x:
+        elif ('scudnn' in x) or ('implicit_convolve_sgemm' in x):
             processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
         elif ('cudnn::winograd' in x) or ('cudnn::gemm' in x):
             pass
@@ -34,3 +34,8 @@ for i, row in df.iterrows():
 
 for i,x in enumerate(processed_kernel_names):
     print(i,x)
+
+
+with open('resnet50_nofc', 'w') as f:
+    for x in processed_kernel_names:
+        f.write(x[0] + '\n')

@@ -102,7 +102,7 @@ int get_idx() {
 
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 	
-	DEBUG_PRINT("%d, ", i);
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d], ", i);
 	if (gridDim.y == 1 && gridDim.z == 1) {
   		DEBUG_PRINT("--gridDim=%d ", gridDim.x);
 	} else if (gridDim.z == 1) {
@@ -343,9 +343,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	if (idx < 2)
 		block(idx);
 
-
-	DEBUG_PRINT("[INTERCEPTER] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
-	print_kernel_invocation(0, gridDim, blockDim);
+	//DEBUG_PRINT("[INTERCEPTER-CATCH] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
@@ -485,7 +484,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			void** new_args = (void**)malloc(sizeof(void*));
 
 			// TODO: make this more generic
-			if (func_indexes[idx] == 14) { 
+			/*if (func_indexes[idx] == 14) { 
 				using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MaxNanFunctor<double>>,unsigned int, double, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
 				new_args[0] = new_reduce_arg;
@@ -494,9 +493,31 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MinNanFunctor<double>>,unsigned int, double, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
 				new_args[0] = new_reduce_arg;
+			}*/
+
+			if (func_indexes[idx] == 172) {
+				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
+				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
+				new_args[0] = new_reduce_arg;
 			}
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		}
+		else if (!strncmp(kernel_name, MAX_POOL_FORWARD_NCHW, 61)) {
+
+			void** new_args = (void**)malloc(17*sizeof(void*));
+			
+			new_args[0]  = (int*)malloc(sizeof(int));
+			*((int*)new_args[0]) = *((int*)(args[0]));
+			for (int i=2; i<15; i++) {
+				new_args[i] = (int*)malloc(sizeof(int));
+				*((int*)new_args[i]) = *((int*)(args[i]));
+			}
+			new_args[1] = args[1];
+			new_args[15] = args[15];
+			new_args[16] = args[16];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+
 		}
 		else {
 
@@ -520,9 +541,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	}	
 	else {
 		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
-
-		dim3 newgridDim(1);
-		dim3 newblockDim(1);
 
 		err = (*function)(func, gridDim, blockDim, args, sharedMem, 0);
 		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
@@ -567,7 +585,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("Caught cudnnConvolutionForward, CUDNN handle is %p, index is %d\n", handle, idx);
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
 	// create record
 	cudnnConvolutionForward_record new_conv_record = {
@@ -588,21 +606,23 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	union func_data new_func_data;
 	new_func_data.cudnnConvRecord = new_conv_record;
 	func_record new_record = {CUDNN_CONV_RECORD, new_func_data};
+	
+	
 
 	// push or run
 	if (idx < 2) {
 		 pthread_mutex_lock(mutexes[idx]);
 		 kqueues[idx]->push(new_record);
 		 pthread_mutex_unlock(mutexes[idx]);
+
+		 func_indexes[idx] += 1;
 	}
 	else {
-		DEBUG_PRINT("Run Conv!!\n");
 		cudnnStatus_t (*function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
 		assert(function != NULL);
 
 		status = (*function)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
-		DEBUG_PRINT("Conv, status is %d\n", status);
 		assert (status == CUDNN_STATUS_SUCCESS);
 
 		kqueues[0]->pop();
@@ -620,9 +640,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 	
-	DEBUG_PRINT("Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p, index is %d\n", handle, idx);
+	DEBUG_PRINT("[INTERCEPTER] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p, index is %d\n", handle, idx);
 
-	printf("%p, %d, %d, %f, %f, %p, %p, %p, %ld, %ld \n", handle, mode, bnOps, *((float*)alpha), *(float*)beta, xData, yData, zData, workSpaceSizeInBytes, reserveSpaceSizeInBytes);
 
 	// create record
 	cudnnBatchNormalizationForwardTrainingEx_record new_bn_record = {
@@ -666,7 +685,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 
 	}
 	else {
-		DEBUG_PRINT("Run BNorm!!\n");
 		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
 
 		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
@@ -693,9 +711,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", handle, idx);
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
-	printf("%d, %f, %f, %p, %p, %lf, %p, %p, %p, %p, %p, %p, %p\n", mode, *((float*)alpha), *((float*)beta), x, y, epsilon, estimatedMean, estimatedVariance, xDesc, yDesc, bnScaleBiasMeanVarDesc, bnScale, bnBias);
 
 	// create record
 	cudnnBatchNormalizationForwardInference_record bn_record = {
@@ -719,29 +736,25 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	new_func_data.cudnnBNormInfRecord = bn_record;
 	func_record new_record = {CUDNN_BNORM_INF_RECORD, new_func_data};
 
+
 	if (idx < 2) {
 		
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
+		
+		func_indexes[idx] += 1;
 
 	}
 	else {
-
-		DEBUG_PRINT("Run BNorm Inference!!\n");
 
 		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
 
 		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
 		assert(function != NULL);
 
-		printf("%d, %f, %f, %p, %p, %lf, %p, %p, %p, %p, %p, %p, %p\n", mode, *((float*)alpha), *((float*)beta), x, y, epsilon, estimatedMean, estimatedVariance, xDesc, yDesc, bnScaleBiasMeanVarDesc, bnScale, bnBias);
-
-
 		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
-		DEBUG_PRINT("BNORM, status is %d\n", status);
 		assert (status == CUDNN_STATUS_SUCCESS);
-		DEBUG_PRINT("return!\n");
 
 		kqueues[0]->pop();
 		pthread_mutex_unlock(mutexes[0]);
@@ -757,14 +770,14 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
 
 	// mock cudnn destroy TensorDescriptor
-	DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
+	//DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
 
 
 cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
 
-	DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
+	//DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 
 }
@@ -772,7 +785,7 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
 
 cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t convDesc) {
 
-	DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
+	//DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
 

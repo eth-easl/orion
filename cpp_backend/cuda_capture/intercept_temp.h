@@ -14,6 +14,7 @@
 #include <vector>
 #include "Torch_Array.h"
 #include "Reduce.cuh"
+#include "ATen/native/SharedReduceOps.h"
 #include "ATen/NumericUtils.h"
 
 #define VECTORIZED_ELEMENTWISE_KERNEL "void at::native::vectorized_elementwise_kernel"
@@ -23,6 +24,7 @@
 #define INDEX_ELEMENTWISE_KERNEL "void at::native::index_elementwise_kernel"
 #define UNROLLED_ELEMENTWISE_KERNEL "void at::native::unrolled_elementwise_kernel"
 #define REDUCE_KERNEL "void at::native::reduce_kernel"
+#define MAX_POOL_FORWARD_NCHW "void at::native::(anonymous namespace)::max_pool_forward_nchw"
 
 typedef struct kernel_record {
 
