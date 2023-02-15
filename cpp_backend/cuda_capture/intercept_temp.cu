@@ -517,7 +517,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[16] = args[16];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-
+			
+			// TODO: check why invalid memory accesses here (for both reads and writes)
+			wait = true;
 		}
 		else {
 
