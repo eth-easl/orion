@@ -89,9 +89,7 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
                 sync_info.event_cudab1.record(my_stream)
                 sync_info.eventb1.set()
 
-
-
-        barrier.wait()
+        sync_info.barrier.wait()
         end = time.time()
         print(f"TID: {tid}, training took {end-start} sec.")
 
