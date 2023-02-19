@@ -2,6 +2,7 @@ import torch
 import threading
 import time
 import argparse
+from sync_controller import *
 
 from train_info import TrainInfo
 from sync_info import SyncInfo
@@ -10,8 +11,8 @@ from models.train_imagenet import setup
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training using torchvision models')
 parser.add_argument('--policy', default='temporal', type=str, help='policy used')
 
-def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
+def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
     print(f"thread {tid} starts!!")
 
     model, optimizer, train_loader, metric_fn = setup(train_info, device)
@@ -25,65 +26,33 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
         print("train size is: ", train_size)
 
         train_iter = enumerate(train_loader)
-
-        sync_info.barrier.wait()
         start = time.time()
 
         batch_idx, batch = next(train_iter)
 
-        while batch_idx < 1000: #train_size:
-            
-            #print(f"Thread {tid} started iteration {batch_idx}")
+        while batch_idx < 1000:  # train_size:
 
-            # wait for the forward pass of the other thread to finish before starting yours
-            if tid == 0:
-                sync_info.eventf1.wait()
-                sync_info.eventf1.clear()
-            else:
-                sync_info.eventf0.wait()
-                sync_info.eventf0.clear()
+            # print(f"Thread {tid} started iteration {batch_idx}")
 
-            with torch.cuda.stream(my_stream):
-                #print(f"time: {time.time()}, thread {tid} starts FORWARD {batch_idx} on stream {my_stream}")
-                data, target = batch[0].to(device), batch[1].to(device)
-                output = model(data)
-                loss = metric_fn(output, target)
-                #print(f"------------------------ time: {time.time()}, thread {tid} ends FORWARD {batch_idx}")
+            with ForwardController(thread_id=tid, sync_info=sync_info):
+                with torch.cuda.stream(my_stream):
+                    # print(f"time: {time.time()}, thread {tid} starts FORWARD {batch_idx} on stream {my_stream}")
+                    data, target = batch[0].to(device), batch[1].to(device)
+                    output = model(data)
+                    loss = metric_fn(output, target)
+                    # print(f"------------------------ time: {time.time()}, thread {tid} ends FORWARD {batch_idx}")
 
-            # notify that forward is finished
-            if tid == 0:
-                sync_info.eventf0.set()
-            else:
-                sync_info.eventf1.set()
+            with BackwardController(thread_id=tid, sync_info=sync_info):
+                with torch.cuda.stream(my_stream):
+                    # print(f"time: {time.time()}, thread {tid} starts BACKWARD {batch_idx} on stream {my_stream}")
+                    loss.backward()
+                    optimizer.step()
+                    optimizer.zero_grad()
+                    # print(f"------------------------ time: {time.time()}, thread {tid} ends BACKWARD {batch_idx}")
+                    batch_idx, batch = next(train_iter)
 
-
-            # wait for the backward pass of the other thread to finish before starting yours
-            if tid == 0:
-                sync_info.eventb1.wait()
-                sync_info.eventb1.clear()
-            else:
-                sync_info.eventb0.wait()
-                sync_info.eventb0.clear()
-
-
-            with torch.cuda.stream(my_stream):
-                #print(f"time: {time.time()}, thread {tid} starts BACKWARD {batch_idx} on stream {my_stream}") 
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
-                #print(f"------------------------ time: {time.time()}, thread {tid} ends BACKWARD {batch_idx}")
-                batch_idx, batch = next(train_iter)
-
-
-            # notify that backward pass is finished
-            if tid == 0:
-                sync_info.eventb0.set()
-            else:
-                sync_info.eventb1.set()
-
-        sync_info.barrier.wait()
         end = time.time()
-        print(f"TID: {tid}, training took {end-start} sec.")
+        print(f"TID: {tid}, training took {end - start} sec.")
 
 
 def train_wrapper_simple(train_info, num_epochs, device):
@@ -101,8 +70,8 @@ def train_wrapper_simple(train_info, num_epochs, device):
 
         batch_idx, batch = next(train_iter)
 
-        while batch_idx < 1000: #train_size:
-            #print(f"entered iteration {batch_idx}")
+        while batch_idx < 1000:  # train_size:
+            # print(f"entered iteration {batch_idx}")
             optimizer.zero_grad()
             data, target = batch[0].to(device), batch[1].to(device)
             output = model(data)
@@ -111,23 +80,20 @@ def train_wrapper_simple(train_info, num_epochs, device):
             optimizer.step()
             batch_idx, batch = next(train_iter)
         end = time.time()
-        print(f"Training took: {end-start} sec.")
+        print(f"Training took: {end - start} sec.")
 
 
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    
+
     train_dir = '/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train'
     train_info = TrainInfo(arch='mobilenet_v2', batchsize=32, num_workers=8, optimizer='SGD', train_dir=train_dir)
 
     if args.policy == "tick-tock":
-    
-        barrier = threading.Barrier(2)
 
         stream0 = torch.cuda.Stream(device=0)
         stream1 = torch.cuda.Stream(device=0)
-
 
         eventf0 = threading.Event()
         eventb0 = threading.Event()
@@ -135,10 +101,10 @@ if __name__ == "__main__":
         eventf1 = threading.Event()
         eventb1 = threading.Event()
 
-        eventf1.set() # t0 starts
+        eventf1.set()  # t0 starts
         eventb1.set()
 
-        sync_info = SyncInfo(barrier, eventf0, eventb0, eventf1, eventb1)
+        sync_info = SyncInfo(eventf0, eventb0, eventf1, eventb1)
 
         thread0 = threading.Thread(target=train_wrapper, args=(stream0, sync_info, 0, 5, 0, train_info))
         thread0.start()

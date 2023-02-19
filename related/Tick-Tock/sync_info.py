@@ -4,15 +4,8 @@ from threading import Event
 class SyncInfo:
 
     def __init__(
-            self,
-            barrier,
-            eventf0: Event,
-            eventb0: Event,
-            eventf1: Event,
-            eventb1: Event,
+            self, eventf0: Event, eventb0: Event, eventf1: Event, eventb1: Event,
     ) -> None:
-        self.barrier = barrier
-
         # thread events - for thread synchronization
         # as cpu submits the kernel and synchronously waits for the response
         # cuda event is not needed
