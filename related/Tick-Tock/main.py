@@ -38,11 +38,9 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
             # wait for the forward pass of the other thread to finish before starting yours
             if tid == 0:
                 sync_info.eventf1.wait()
-                sync_info.event_cudaf1.wait(my_stream)
                 sync_info.eventf1.clear()
             else:
                 sync_info.eventf0.wait()
-                sync_info.event_cudaf0.wait(my_stream)
                 sync_info.eventf0.clear()
 
             with torch.cuda.stream(my_stream):
@@ -54,21 +52,17 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
             # notify that forward is finished
             if tid == 0:
-                sync_info.event_cudaf0.record(my_stream)
                 sync_info.eventf0.set()
             else:
-                sync_info.event_cudaf1.record(my_stream)
                 sync_info.eventf1.set()
 
 
             # wait for the backward pass of the other thread to finish before starting yours
             if tid == 0:
                 sync_info.eventb1.wait()
-                sync_info.event_cudab1.wait(my_stream)
                 sync_info.eventb1.clear()
             else:
                 sync_info.eventb0.wait()
-                sync_info.event_cudab0.wait(my_stream)
                 sync_info.eventb0.clear()
 
 
@@ -83,10 +77,8 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
             # notify that backward pass is finished
             if tid == 0:
-                sync_info.event_cudab0.record(my_stream)
                 sync_info.eventb0.set()
             else:
-                sync_info.event_cudab1.record(my_stream)
                 sync_info.eventb1.set()
 
         sync_info.barrier.wait()
@@ -127,7 +119,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     train_dir = '/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train'
-    train_info = TrainInfo('mobilenet_v2', 32, 8, 'SGD', train_dir)
+    train_info = TrainInfo(arch='mobilenet_v2', batchsize=32, num_workers=8, optimizer='SGD', train_dir=train_dir)
 
     if args.policy == "tick-tock":
     
@@ -136,20 +128,17 @@ if __name__ == "__main__":
         stream0 = torch.cuda.Stream(device=0)
         stream1 = torch.cuda.Stream(device=0)
 
-        event_cudaf0 = torch.cuda.Event()
-        event_cudab0 = torch.cuda.Event()
+
         eventf0 = threading.Event()
         eventb0 = threading.Event()
 
-        event_cudaf1 = torch.cuda.Event()
-        event_cudab1 = torch.cuda.Event()
         eventf1 = threading.Event()
         eventb1 = threading.Event()
 
         eventf1.set() # t0 starts
         eventb1.set()
 
-        sync_info = SyncInfo(barrier, event_cudaf0, event_cudab0, eventf0, eventb0, event_cudaf1, event_cudab1, eventf1, eventb1)
+        sync_info = SyncInfo(barrier, eventf0, eventb0, eventf1, eventb1)
 
         thread0 = threading.Thread(target=train_wrapper, args=(stream0, sync_info, 0, 5, 0, train_info))
         thread0.start()
