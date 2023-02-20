@@ -12,6 +12,10 @@ The file 'launch_jobs.py' is responsible for spawning the scheduler and the appl
 * export CUDNN_LOGDEST_DBG=stdout
 * export CUDNN_LOGINFO_DBG=1 
 
+### For CUBLAS debugging:
+* export CUBLAS_LOGDEST_DBG=stdout
+* export CUBLAS_LOGINFO_DBG=1
+
 ### Why do we see kernels being launched when printing tensors?
 
 In PyTorch, the functions needed for printing tensors are defined in [this file](https://github.com/pytorch/pytorch/blob/master/torch/_tensor_str.py).

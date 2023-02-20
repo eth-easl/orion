@@ -15,9 +15,11 @@
 #include <vector>
 #include "Torch_Array.h"
 
+#ifdef INCLUDE_TORCH_CUDA
 #include "Reduce.cuh"
 #include "ATen/native/SharedReduceOps.h"
 #include "ATen/NumericUtils.h"
+#endif
 
 #define VECTORIZED_ELEMENTWISE_KERNEL "void at::native::vectorized_elementwise_kernel"
 #define CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL "void at_cuda_detail::cub::DeviceReduceSingleTileKernel"

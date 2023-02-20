@@ -495,7 +495,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				new_args[0] = new_reduce_arg;
 			}*/
 
-			if (func_indexes[idx] == 172) {
+			if (func_indexes[idx] == 342) {
 				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
 				new_args[0] = new_reduce_arg;
@@ -761,9 +761,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 
 		kqueues[0]->pop();
 		pthread_mutex_unlock(mutexes[0]);
-
-
-
 	}
 		
 	return status;
@@ -799,8 +796,6 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
-
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, index %d\n", func_indexes[idx], idx);
 	
 	cublasSgemm_record blassgemm_record = {
 		handle,
@@ -823,28 +818,29 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	new_func_data.cublasSgemmRecord = blassgemm_record;
 	func_record new_record = {CUBLAS_SGEMM_RECORD, new_func_data};
 
+	printf("Intercepter func is %p\n", cublasSgemm);
 
 	if (idx < 2) {
+
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
 
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 
 		func_indexes[idx] += 1;
-
 	}
 
 	else {
 
 		cublasStatus_t (*function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cublasSgemm");
+		*(void **)(&function) = dlsym(RTLD_NEXT, "cublasSgemm_v2");
 		assert(function != NULL);
-
-
+		
 		status = (*function)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 		assert (status == CUBLAS_STATUS_SUCCESS);
-		
+		DEBUG_PRINT("CUBLAS status is %d\n", status);
 		kqueues[0]->pop();
 		pthread_mutex_unlock(mutexes[0]);
 
@@ -852,4 +848,10 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	
 	return status;
 
+}
+
+cublasStatus_t cublasDestroy(cublasHandle_t handle) {
+
+	DEBUG_PRINT("Caught a cublasDestroy! Do nothing!\n");
+	return CUBLAS_STATUS_SUCCESS;
 }

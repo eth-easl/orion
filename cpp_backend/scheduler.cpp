@@ -59,7 +59,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	// CUBLAS sgemm
 	cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 
-	*(void **)(&cublas_sgemm_function) = dlsym(RTLD_DEFAULT, "cublasSgemm");
+	*(void **)(&cublas_sgemm_function) = dlsym(RTLD_DEFAULT, "cublasSgemm_v2");
 	assert(cublas_sgemm_function != NULL);
 
 
@@ -84,7 +84,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 					
 					// case 1
 					if (frecord.type == KERNEL_RECORD) {
-						DEBUG_PRINT("found a new kernel record!\n");
+						DEBUG_PRINT("found a new kernel record! kernel func is %p\n", kernel_function);
 						kernel_record record = frecord.data.krecord;
 						(*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
 					}
@@ -139,9 +139,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 						cublasSgemm_record record = frecord.data.cublasSgemmRecord;
 						printf("func is %p\n", cublas_sgemm_function); 
 						DEBUG_PRINT("handle is %p\n", record.handle);
-						cublasStatus_t status = (*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
-						//assert (status == CUBLAS_STATUS_SUCCESS);
-						//DEBUG_PRINT("status is %d\n", status);
+						(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
 					}
 
 					//buffers[i]->pop();
@@ -184,12 +182,12 @@ extern "C" {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		string line;
-		std::ifstream infile("kernel_file_resnet101");
+		std::ifstream infile("resnet101");
 		assert (infile.is_open());
 		while (std::getline(infile, line))
 		{
-			char* kernel_name = new char[line.length()+1]; //(char*)malloc(line.length());
-			strcpy(kernel_name, line.c_str()); //line.length());
+			char* kernel_name = new char[line.length()+1];
+			strcpy(kernel_name, line.c_str());
 			kernel_vector->push_back(kernel_name);
 			printf("%s\n", kernel_name);
 		}
