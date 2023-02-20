@@ -68,7 +68,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 	int seen[num_clients] = {0};
 	
-	int num_kernels = 289;
+	int num_kernels = 1000;
 	int num_iters = 1;
 	int it = 0;
 
@@ -137,7 +137,11 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 					
 						// TODO: what to do about streams?
 						cublasSgemm_record record = frecord.data.cublasSgemmRecord;
-						(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
+						printf("func is %p\n", cublas_sgemm_function); 
+						DEBUG_PRINT("handle is %p\n", record.handle);
+						cublasStatus_t status = (*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
+						//assert (status == CUBLAS_STATUS_SUCCESS);
+						//DEBUG_PRINT("status is %d\n", status);
 					}
 
 					//buffers[i]->pop();
@@ -152,7 +156,8 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 					//}
 				}
-				//pthread_mutex_unlock(mutexes[i]);
+				else 
+					pthread_mutex_unlock(mutexes[i]);
 			}
 
 		}
@@ -179,19 +184,17 @@ extern "C" {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		string line;
-		std::ifstream infile("kernel_file");
+		std::ifstream infile("kernel_file_resnet101");
 		assert (infile.is_open());
 		while (std::getline(infile, line))
 		{
-			char* kernel_name = (char*)malloc(line.length());
-			strcpy(kernel_name, line.c_str());
+			char* kernel_name = new char[line.length()+1]; //(char*)malloc(line.length());
+			strcpy(kernel_name, line.c_str()); //line.length());
 			kernel_vector->push_back(kernel_name);
+			printf("%s\n", kernel_name);
 		}
 
-		for (auto s: *kernel_vector)
-			printf("kernel: %s\n", s);
-
-		printf("--------------------------------\n");
+		infile.close();
 
 	}
 
