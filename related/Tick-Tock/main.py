@@ -119,5 +119,5 @@ if __name__ == "__main__":
 
     elif args.policy == "temporal":
 
-        train_wrapper_simple(train_info, 5, 0)
-        train_wrapper_simple(train_info, 5, 0)
+        train_wrapper_simple(train_info, num_epochs=5, device=0)
+        train_wrapper_simple(train_info, num_epochs=5, device=0)

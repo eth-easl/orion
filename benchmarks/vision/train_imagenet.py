@@ -25,63 +25,60 @@ parser = argparse.ArgumentParser(description='PyTorch ImageNet Training or infer
 parser.add_argument('--arch', default='resnet18', type=str, help='torchvision model')
 parser.add_argument('--batchsize', default=128, type=int, help='batch size for training')
 parser.add_argument('--optimizer', default='sgd', type=str, help='Optimizer (sgd, adadelta, or adam for now)')
-parser.add_argument('--train_dir', default='/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train', type=str, help='path to ImageNet dataset')
+parser.add_argument('--train_dir', default='/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/train', type=str,
+                    help='path to ImageNet dataset')
 parser.add_argument('--train', action='store_true', help='use model for training')
 
 args = parser.parse_args()
 
-def train():
 
+def train():
     print(f"Process with pid {os.getpid()}, args is {args}")
 
     local_rank = 0
     torch.cuda.set_device(local_rank)
     model = models.__dict__[args.arch](num_classes=1000)
-    model = model.to(local_rank) # to GPU
+    model = model.to(local_rank)  # to GPU
 
     if args.train:
 
-        if args.optimizer=='sgd':
-            optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
-        elif args.optimizer=='adam':
-            optimizer =  torch.optim.Adam(model.parameters(), lr=0.1)
-        elif args.optimizer=='adadelta':
-            optimizer =  torch.optim.Adadelta(model.parameters(), lr=0.1)
+        if args.optimizer == 'sgd':
+            optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+        elif args.optimizer == 'adam':
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+        elif args.optimizer == 'adadelta':
+            optimizer = torch.optim.Adadelta(model.parameters(), lr=0.1)
         else:
             print("Optimizer is not supported!")
             return
 
         metric_fn = torch.nn.CrossEntropyLoss().to(0)
 
-
     print("Configure dataset")
 
     train_dir = args.train_dir
 
-
-    if args.arch=='inception_v3':
+    if args.arch == 'inception_v3':
         train_transform = transforms.Compose([
-                                transforms.Resize(299),
-                                transforms.CenterCrop(299),
-                                transforms.ToTensor(),
-                                transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))])
+            transforms.Resize(299),
+            transforms.CenterCrop(299),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
 
     else:
-        train_transform =  transforms.Compose([
-                                transforms.RandomResizedCrop(224),
-                                transforms.RandomHorizontalFlip(),
-                                transforms.ToTensor(),
-                                transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))])
+        train_transform = transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
 
     train_dataset = \
-            datasets.ImageFolder(train_dir,transform=train_transform)
+        datasets.ImageFolder(train_dir, transform=train_transform)
 
     train_sampler = torch.utils.data.RandomSampler(
-                    train_dataset)
+        train_dataset)
     train_loader = torch.utils.data.DataLoader(
-                    train_dataset, batch_size=args.batchsize, sampler=train_sampler, num_workers=8)
-
-
+        train_dataset, batch_size=args.batchsize, sampler=train_sampler, num_workers=8)
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -107,32 +104,30 @@ def train():
                 optimizer.zero_grad()
             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
 
-        
             if args.train:
-                if args.arch=='inception_v3':
+                if args.arch == 'inception_v3':
                     output, _ = model(data)
                 else:
                     output = model(data)
 
             else:
                 with torch.no_grad():
-                    if args.arch=='inception_v3':
+                    if args.arch == 'inception_v3':
                         output, _ = model(data)
                     else:
                         output = model(data)
-
-
 
             if args.train:
                 loss = metric_fn(output, target)
                 loss.backward()
                 optimizer.step()
-            
-            print("Iter ", batch_idx, " took ", time.time()-start_iter)
+
+            print("Iter ", batch_idx, " took ", time.time() - start_iter)
             batch_idx, batch = next(train_iter)
 
             start_iter = time.time()
 
-        print("Epoch took: ", time.time()-start)
+        print("Epoch took: ", time.time() - start)
+
 
 train()
