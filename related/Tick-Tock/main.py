@@ -2,14 +2,12 @@ import torch
 import threading
 import time
 import argparse
-import logging
 from sync_controller import *
 
 from train_info import TrainInfo
 from sync_info import SyncInfo
 from models.train_imagenet import setup
-from datetime import datetime
-logging.basicConfig(filename='/cluster/scratch/xianma/log/' + datetime.now().strftime('%Y-%m-%d-%H-%M-%S') + '.log', level=logging.DEBUG)
+
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training using torchvision models')
 parser.add_argument('--policy', default='temporal', type=str, help='policy used')
 
@@ -57,32 +55,27 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
 
 def train_wrapper_simple(train_info, num_epochs, device):
-    logging.info('enter simple wrapper')
-    print('enter simple wrapper')
     model, optimizer, train_loader, metric_fn = setup(train_info, device)
     model = model.to(device)
     model.train()
-    logging.info('model is moved to gpu')
     loss_sum = 0
+    print_every = 50
+    start = time.time()
     for epoch in range(num_epochs):
-        train_size = len(train_loader)
-        logging.info(f'train size is {train_size}')
-
-        start = time.time()
         for batch_idx, batch in enumerate(train_loader):
             optimizer.zero_grad()
             data, target = batch[0].to(device), batch[1].to(device)
             output = model(data)
             loss = metric_fn(output, target)
             loss_sum += loss.item()
-            if batch_idx % 100 == 0:
-                logging.info(f"loss at {batch_idx} iteration is {loss_sum / 100}")
+            if batch_idx % print_every == 0:
+                print(f"loss at {batch_idx} iteration is {loss_sum / print_every}")
                 loss_sum = 0
             loss.backward()
             optimizer.step()
 
-        end = time.time()
-        logging.info(f"Training took: {end - start} sec.")
+    end = time.time()
+    print(f"Training took: {end - start} sec.")
 
 
 if __name__ == "__main__":
