@@ -15,6 +15,9 @@ class ForwardController:
         self.thread_id = thread_id
 
     def __enter__(self) -> None:
+        if self.sync_info.no_sync_control:
+            return
+
         if self.thread_id == 0:
             self.sync_info.eventf1.wait()
             self.sync_info.eventf1.clear()
@@ -23,6 +26,9 @@ class ForwardController:
             self.sync_info.eventf0.clear()
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        if self.sync_info.no_sync_control:
+            return
+
         # TODO: properly handle the exception if any
         if self.thread_id == 0:
             self.sync_info.eventf0.set()
@@ -41,6 +47,9 @@ class BackwardController:
         self.thread_id = thread_id
 
     def __enter__(self) -> None:
+        if self.sync_info.no_sync_control:
+            return
+
         if self.thread_id == 0:
             self.sync_info.eventb1.wait()
             self.sync_info.eventb1.clear()
@@ -49,6 +58,9 @@ class BackwardController:
             self.sync_info.eventb0.clear()
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        if self.sync_info.no_sync_control:
+            return
+
         # TODO: properly handle the exception if any
         if self.thread_id == 0:
             self.sync_info.eventb0.set()
