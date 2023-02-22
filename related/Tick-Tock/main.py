@@ -35,26 +35,26 @@ def train_wrapper(my_stream, sync_info, tid, num_epochs, device, train_info):
 
         for batch_idx, batch in enumerate(train_loader):
             with ForwardController(thread_id=tid, sync_info=sync_info):
-                # print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
+                print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
                 with torch.cuda.stream(my_stream):
                     data, target = batch[0].to(device), batch[1].to(device)
                     output = model(data)
                     loss = metric_fn(output, target)
                     loss_sum += loss.item()
-                # print(f"time: {pretty_time()}, thread {tid} ends FORWARD {batch_idx}")
+                print(f"time: {pretty_time()}, thread {tid} ends FORWARD {batch_idx}")
 
             if batch_idx % print_every == 0:
-                print(f"loss: {loss_sum / print_every}")
+                print(f"loss for thread {tid}: {loss_sum / print_every}")
                 loss_sum = 0
 
             with BackwardController(thread_id=tid, sync_info=sync_info):
-                # print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
+                print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
                 with torch.cuda.stream(my_stream):
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
-                # print(f"time: {pretty_time()}, thread {tid} ends BACKWARD {batch_idx}")
-
+                print(f"time: {pretty_time()}, thread {tid} ends BACKWARD {batch_idx}")
+    sync_info.no_sync_control = True
     end = time.time()
     print(f"TID: {tid}, training took {end - start} sec.")
 
