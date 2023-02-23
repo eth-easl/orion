@@ -1,7 +1,54 @@
 import torch
 from torchvision import models, datasets, transforms
 import torch.nn.functional as F
-from train_info import TrainInfo
+from datetime import datetime
+
+from src.train_info import TrainInfo
+from src.sync_info import SyncInfo
+from src.sync_controller import *
+import time
+
+def pretty_time():
+    return datetime.now().strftime('%H:%M:%S')
+
+
+def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs : int, device, train_info: TrainInfo):
+    model, optimizer, train_loader, metric_fn = setup(train_info, device)
+    model.train()
+    print(f"training {tid} starts!!")
+
+    start = time.time()
+    loss_sum = 0
+    print_every = 50
+    for epoch in range(num_epochs):
+
+        train_size = len(train_loader)
+        print("train size is: ", train_size)
+
+        for batch_idx, batch in enumerate(train_loader):
+            with ForwardController(thread_id=tid, sync_info=sync_info):
+                print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
+                with torch.cuda.stream(my_stream):
+                    data, target = batch[0].to(device), batch[1].to(device)
+                    output = model(data)
+                    loss = metric_fn(output, target)
+                    loss_sum += loss.item()
+                print(f"time: {pretty_time()}, thread {tid} ends FORWARD {batch_idx}")
+
+            if batch_idx % print_every == 0:
+                print(f"loss for thread {tid}: {loss_sum / print_every}")
+                loss_sum = 0
+
+            with BackwardController(thread_id=tid, sync_info=sync_info):
+                print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
+                with torch.cuda.stream(my_stream):
+                    loss.backward()
+                    optimizer.step()
+                    optimizer.zero_grad()
+                print(f"time: {pretty_time()}, thread {tid} ends BACKWARD {batch_idx}")
+    sync_info.no_sync_control = True
+    end = time.time()
+    print(f"TID: {tid}, training took {end - start} sec.")
 
 
 def setup(train_info: TrainInfo, device):

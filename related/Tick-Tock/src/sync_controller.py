@@ -1,4 +1,4 @@
-from sync_info import SyncInfo
+from src.sync_info import SyncInfo
 
 
 # These two handlers make use of the `with` pattern in Python
