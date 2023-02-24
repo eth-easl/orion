@@ -8,7 +8,7 @@ import argparse
 
 from src.train_info import TrainInfo
 from src.sync_info import SyncInfo
-import models.train_imagenet as train_imagenet
+import vision.train_imagenet as train_imagenet
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training using torchvision models')
 parser.add_argument('--policy', default='temporal', type=str, help='policy used')
