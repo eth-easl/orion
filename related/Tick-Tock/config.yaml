@@ -1,11 +1,12 @@
 ---
 policy: temporal # either "temporal" or "tick-tock"
-model0: dcgan # should strictly correspond to the directory name
+model0: nasnet # should strictly correspond to the directory name
 model1: vision # should strictly correspond to the directory name
 
 nasnet:
   optimizer: SGD
-  batch_size: 8
+  batch_size: 32
+  arc: mobile # either large or mobile
 vision:
   arc: mobilenet_v2
   optimizer: SGD

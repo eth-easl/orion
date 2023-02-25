@@ -3,23 +3,26 @@ from torchvision import models, datasets, transforms
 import torch
 import torch.nn.functional as F
 from nasnet.nasnet import NASNetALarge
+from nasnet.nasnet_mobile import NASNetAMobile
 from utils.sync_info import SyncInfo
 from utils.sync_controller import *
-from utils import *
+from utils.constants import *
+
 
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
-    model = NASNetALarge(num_classes=1000)
+    arc = model_config['arc']
+    model = NASNetALarge(num_classes=1000) if arc == 'large' else NASNetAMobile(num_classes=1000)
     model = model.to(device)
     model.train()
 
     train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(331),
+        transforms.RandomResizedCrop(331 if arc == 'large' else 224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
 
     train_dataset = \
-        datasets.ImageFolder('/cluster/scratch/xianma/vision/train', transform=train_transform)
+        datasets.ImageFolder(imagenet_root, transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=model_config['batch_size'], shuffle=True, num_workers=2)
