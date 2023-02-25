@@ -1,14 +1,24 @@
 ---
-policy: tick-tock # either "temporal" or "tick-tock"
-model0:
-  name: nasnet # should strictly correspond to the directory name
+policy: temporal # either "temporal" or "tick-tock"
+model0: dcgan # should strictly correspond to the directory name
+model1: vision # should strictly correspond to the directory name
+
+nasnet:
   optimizer: SGD
-  batch_size: 32
-model1:
-  name: vision # should strictly correspond to the directory name
+  batch_size: 8
+vision:
   arc: mobilenet_v2
   optimizer: SGD
   batch_size: 32
+dcgan:
+  num_gen_filters: 64
+  num_dis_filters: 64
+  latent_z_vec_size: 100
+  batch_size: 32
+  optimizer: Adam
+  input_image_size: 64 # the image size the model finally accepts as input
+  dataset: imagenet # can be imagenet, cifar10, or mnist
+
 
 
 
