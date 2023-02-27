@@ -39,6 +39,7 @@ class BranchSeparablesStem(nn.Sequential):
 
 
 def ReductionCellBranchCombine(cell, x_left, x_right):
+
     x_comb_iter_0_left = cell.comb_iter_0_left(x_left)
     x_comb_iter_0_right = cell.comb_iter_0_right(x_right)
     x_comb_iter_0 = x_comb_iter_0_left + x_comb_iter_0_right
@@ -103,11 +104,10 @@ class CellStem1(nn.Module):
         self.relu = nn.ReLU()
         self.path_1 = nn.Sequential()
         self.path_1.add_module('avgpool', nn.AvgPool2d(1, stride=2, count_include_pad=False))
-        self.path_1.add_module('conv', nn.Conv2d(in_channels_h, out_channels // 2, 1, stride=1, bias=False))
+        self.path_1.add_module('conv', nn.Conv2d(in_channels_h, out_channels//2, 1, stride=1, bias=False))
         self.path_2 = nn.Sequential()
-        self.path_2.add_module('avgpool', nn.AvgPool2d(1, stride=2, ceil_mode=True,
-                                                       count_include_pad=False))  # ceil mode for padding
-        self.path_2.add_module('conv', nn.Conv2d(in_channels_h, out_channels // 2, 1, stride=1, bias=False))
+        self.path_2.add_module('avgpool', nn.AvgPool2d(1, stride=2, ceil_mode=True, count_include_pad=False)) # ceil mode for padding
+        self.path_2.add_module('conv', nn.Conv2d(in_channels_h, out_channels//2, 1, stride=1, bias=False))
 
         self.final_path_bn = nn.BatchNorm2d(out_channels, eps=0.001, momentum=0.1, affine=True)
 

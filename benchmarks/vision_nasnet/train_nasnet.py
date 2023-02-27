@@ -35,16 +35,17 @@ parser.add_argument('--train', action='store_true', help='use model for training
 
 args = parser.parse_args()
 
-
 def train():
+
     print(f"Process with pid {os.getpid()}, args is {args}", args)
 
     local_rank = 0
     torch.cuda.set_device(local_rank)
     model = NASNetALarge(1001) if args.nas_type == 'large' else NASNetAMobile(1001)
-    model = model.to(local_rank)  # to GPU
+    model = model.to(local_rank) # to GPU
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+
+    optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
     metric_fn = F.cross_entropy
 
     print("Configure dataset")
@@ -52,21 +53,22 @@ def train():
     train_dir = args.train_dir
 
     train_transform = transforms.Compose([
-        # transforms.RandomCrop(32, padding=4),
-        # transforms.RandomHorizontalFlip(),
-        transforms.RandomResizedCrop(331),
-        transforms.RandomHorizontalFlip(),
-        # transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
+                                #transforms.RandomCrop(32, padding=4),
+                                #transforms.RandomHorizontalFlip(),
+                                transforms.RandomResizedCrop(331),
+                                transforms.RandomHorizontalFlip(),
+                                #transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
+                                transforms.ToTensor(),
+                                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
 
     train_dataset = \
-        datasets.ImageFolder(train_dir, transform=train_transform)
+            datasets.ImageFolder(train_dir,transform=train_transform)
 
     train_sampler = torch.utils.data.RandomSampler(
-        train_dataset)
+                    train_dataset)
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batchsize, sampler=train_sampler, num_workers=8)
+                    train_dataset, batch_size=args.batchsize, sampler=train_sampler, num_workers=8)
+
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -86,12 +88,13 @@ def train():
 
         batch_idx, batch = next(train_iter)
 
-        while batch_idx < 200:  # train_size:
+        while batch_idx < 200: #train_size:
 
             if args.train:
                 optimizer.zero_grad()
 
             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+
 
             if args.train:
                 output = model(data)
@@ -99,17 +102,17 @@ def train():
                 with torch.no_grad():
                     output = model(data)
 
+
             if args.train:
                 loss = metric_fn(output, target)
                 loss.backward()
                 optimizer.step()
 
-            print("Iter ", batch_idx, " took ", time.time() - start_iter)
+            print("Iter ", batch_idx, " took ", time.time()-start_iter)
             batch_idx, batch = next(train_iter)
 
             start_iter = time.time()
 
-        print("Epoch took: ", time.time() - start)
-
+        print("Epoch took: ", time.time()-start)
 
 train()
