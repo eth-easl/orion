@@ -1,10 +1,10 @@
 from utils.sync_info import SyncInfo
 
 
-# These two handlers make use of the `with` pattern in Python
+# These two classes make use of the `with` pattern in Python
 # to centralize tick-tock synchronization logic
 
-class ForwardController:
+class ForwardControl:
 
     def __init__(self, thread_id: int, sync_info: SyncInfo) -> None:
         # we assume thread 0 starts first
@@ -33,7 +33,7 @@ class ForwardController:
             self.sync_info.eventf1.set()
 
 
-class BackwardController:
+class BackwardControl:
 
     def __init__(self, thread_id: int, sync_info: SyncInfo) -> None:
         # we assume thread 0 starts first

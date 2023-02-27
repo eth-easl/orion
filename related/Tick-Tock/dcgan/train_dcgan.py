@@ -6,8 +6,9 @@ from dcgan.dcgan import *
 
 import utils.constants as constants
 from utils.sync_info import SyncInfo
-from utils.sync_controller import *
+from utils.sync_control import *
 
+# code from https://github.com/pytorch/examples/blob/main/dcgan/main.py
 
 def setup_dataloader(model_config):
     dataset_name = model_config['dataset']
@@ -86,28 +87,28 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
             ############################
             # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
             ###########################
-            with ForwardController(thread_id=tid, sync_info=sync_info):
+            with ForwardControl(thread_id=tid, sync_info=sync_info):
                 with torch.cuda.stream(my_stream):
                     netD.zero_grad()
                     real_images = batch[0].to(device)
                     label = torch.full((batch_size,), real_label, dtype=real_images.dtype, device=device)
                     output = netD(real_images)
 
-            with BackwardController(thread_id=tid, sync_info=sync_info):
+            with BackwardControl(thread_id=tid, sync_info=sync_info):
                 with torch.cuda.stream(my_stream):
                     errD_real = criterion(output, label)
                     errD_real.backward()
                     D_x = output.mean().item()
 
             # train discriminator with fake data
-            with ForwardController(thread_id=tid, sync_info=sync_info):
+            with ForwardControl(thread_id=tid, sync_info=sync_info):
                 with torch.cuda.stream(my_stream):
                     noise = torch.randn(batch_size, latent_z_vec_size, 1, 1, device=device)
                     fake = netG(noise)
                     label.fill_(fake_label)
                     output = netD(fake.detach())
 
-            with BackwardController(thread_id=tid, sync_info=sync_info):
+            with BackwardControl(thread_id=tid, sync_info=sync_info):
                 with torch.cuda.stream(my_stream):
                     errD_fake = criterion(output, label)
                     errD_fake.backward()
@@ -118,13 +119,13 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
             ############################
             # (2) Update G network: maximize log(D(G(z)))
             ###########################
-            with ForwardController(thread_id=tid, sync_info=sync_info):
+            with ForwardControl(thread_id=tid, sync_info=sync_info):
                 with torch.cuda.stream(my_stream):
                     netG.zero_grad()
                     label.fill_(real_label)  # fake labels are real for generator cost
                     output = netD(fake)
 
-            with BackwardController(thread_id=tid, sync_info=sync_info):
+            with BackwardControl(thread_id=tid, sync_info=sync_info):
                 with torch.cuda.stream(my_stream):
                     errG = criterion(output, label)
                     errG.backward()

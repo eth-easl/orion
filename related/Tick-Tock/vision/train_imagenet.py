@@ -3,8 +3,9 @@ from torchvision import models, datasets, transforms
 import torch.nn.functional as F
 
 from utils.sync_info import SyncInfo
-from utils.sync_controller import *
+from utils.sync_control import *
 from utils import *
+from utils.constants import *
 import time
 
 
@@ -21,7 +22,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     for _ in range(num_epochs):
         for batch_idx, batch in enumerate(train_loader):
-            with ForwardController(thread_id=tid, sync_info=sync_info):
+            with ForwardControl(thread_id=tid, sync_info=sync_info):
                 # print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
                 with torch.cuda.stream(my_stream):
                     optimizer.zero_grad()
@@ -35,7 +36,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 print(f"loss for thread {tid}: {loss_sum / print_every}")
                 loss_sum = 0
 
-            with BackwardController(thread_id=tid, sync_info=sync_info):
+            with BackwardControl(thread_id=tid, sync_info=sync_info):
                 # print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
                 with torch.cuda.stream(my_stream):
                     loss.backward()
@@ -72,7 +73,7 @@ def setup(model_config, device):
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
 
     train_dataset = \
-        datasets.ImageFolder('/cluster/scratch/xianma/vision/train', transform=train_transform)
+        datasets.ImageFolder(imagenet_root, transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=model_config['batch_size'], shuffle=True, num_workers=2)
