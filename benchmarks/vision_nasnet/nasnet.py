@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from collections import OrderedDict
-from .layers import CellStem0, CellStem1, FirstCell, NormalCell, ReductionCell
+from layers import CellStem0, CellStem1, FirstCell, NormalCell, ReductionCell
 
 
 class NASNet(nn.Module):

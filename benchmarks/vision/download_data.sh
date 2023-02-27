@@ -1,4 +1,5 @@
 #!/bin/sh
+# a script to download the image net dataset
 cd /cluster/scratch/xianma
 rm -rf vision
 aria2c -c -x 10 -s 10 -d vision --download-result=full https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar

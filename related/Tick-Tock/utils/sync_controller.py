@@ -2,7 +2,7 @@ from utils.sync_info import SyncInfo
 
 
 # These two handlers make use of the `with` pattern in Python
-# to encapsulate synchronization handling
+# to centralize tick-tock synchronization logic
 
 class ForwardController:
 

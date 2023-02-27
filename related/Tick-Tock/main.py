@@ -35,6 +35,7 @@ if __name__ == "__main__":
     eventf1.set()  # t0 starts
     eventb1.set()
 
+    num_epochs = config['num_epochs']
     sync_info = SyncInfo(eventf0, eventb0, eventf1, eventb1)
     model0_name = config['model0']
     model1_name = config['model1']
@@ -45,7 +46,7 @@ if __name__ == "__main__":
         'my_stream': stream0,
         'sync_info': sync_info,
         'tid': 0,
-        'num_epochs': 5,
+        'num_epochs': num_epochs,
         'device': device,
         'model_config': config[model0_name]
     }
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         'my_stream': stream1,
         'sync_info': sync_info,
         'tid': 1,
-        'num_epochs': 5,
+        'num_epochs': num_epochs,
         'device': device,
         'model_config': config[model1_name]
     }

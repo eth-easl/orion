@@ -134,7 +134,8 @@ class CellStem1(nn.Module):
         # path 2
         x_path2 = self.path_2(x_relu[:, :, 1:, 1:])
         # final path
-        x_right = self.final_path_bn(torch.cat([x_path1, x_path2], 1))
+        print(x_path1.shape, x_path2.shape)
+        x_right = self.final_path_bn(torch.cat([x_path1, x_path1], 1))
 
         return ReductionCellBranchCombine(self, x_left, x_right)
 
@@ -235,7 +236,7 @@ class FirstCell(nn.Module):
         # path 2
         x_path2 = self.path_2(x_relu[:, :, 1:, 1:])
         # final path
-        x_left = self.final_path_bn(torch.cat([x_path1, x_path2], 1))
+        x_left = self.final_path_bn(torch.cat([x_path1, x_path1], 1))
 
         x_right = self.conv_1x1(x)
 
@@ -274,4 +275,5 @@ class NormalCell(nn.Module):
         x_right = self.conv_1x1(x)
 
         return NormalCellBranchCombine(self, x_left, x_right)
+
 
