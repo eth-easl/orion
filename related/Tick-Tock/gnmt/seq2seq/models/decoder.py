@@ -24,9 +24,9 @@ import itertools
 import torch
 import torch.nn as nn
 
-import seq2seq.data.config as config
-from seq2seq.models.attention import BahdanauAttention
-from seq2seq.utils import init_lstm_
+import gnmt.seq2seq.data.config as config
+from gnmt.seq2seq.models.attention import BahdanauAttention
+from gnmt.seq2seq.utils import init_lstm_
 
 
 class RecurrentAttention(nn.Module):

@@ -21,8 +21,8 @@
 
 import torch
 
-from seq2seq.data.config import BOS
-from seq2seq.data.config import EOS
+from gnmt.seq2seq.data.config import BOS
+from gnmt.seq2seq.data.config import EOS
 
 
 class SequenceGenerator:

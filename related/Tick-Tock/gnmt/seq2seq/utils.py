@@ -26,7 +26,6 @@ import sys
 import time
 from contextlib import contextmanager
 
-import dllogger
 import numpy as np
 import torch
 import torch.distributed as dist

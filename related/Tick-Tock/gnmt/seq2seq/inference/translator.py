@@ -26,9 +26,9 @@ import time
 import torch
 import torch.distributed as dist
 
-import seq2seq.data.config as config
-import seq2seq.utils as utils
-from seq2seq.inference.beam_search import SequenceGenerator
+import gnmt.seq2seq.data.config as config
+import gnmt.seq2seq.utils as utils
+from gnmt.seq2seq.inference.beam_search import SequenceGenerator
 
 
 def gather_predictions(preds):

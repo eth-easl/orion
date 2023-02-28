@@ -23,8 +23,8 @@ import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence
 from torch.nn.utils.rnn import pad_packed_sequence
 
-import seq2seq.data.config as config
-from seq2seq.utils import init_lstm_
+import gnmt.seq2seq.data.config as config
+from gnmt.seq2seq.utils import init_lstm_
 
 
 class ResidualRecurrentEncoder(nn.Module):

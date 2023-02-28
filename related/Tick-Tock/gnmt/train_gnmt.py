@@ -1,7 +1,6 @@
 import os
 import torch.nn as nn
 import torch.optim
-import utils.constants as constants
 from utils.sync_info import SyncInfo
 import gnmt.seq2seq.utils as seq2seq_utils
 
@@ -64,23 +63,22 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     # build GNMT model
     vocab_size = tokenizer.vocab_size
     batch_first = False
-    model_config = {'hidden_size': 1024,
+    nn_model_config = {'hidden_size': 1024,
                     'vocab_size': vocab_size,
                     'num_layers': 4,
                     'dropout': 0.2,
                     'batch_first': batch_first,
                     'share_embedding': True,
                     }
-    model = GNMT(**model_config).to(device)
+    model = GNMT(**nn_model_config).to(device)
 
     # define loss function (criterion) and optimizer
-    criterion = build_criterion(vocab_size, config.PAD,
-                                0.1).to(device)
+    criterion = build_criterion(vocab_size, config.PAD, 0.1).to(device)
     opt_config = {'optimizer': 'Adam', 'lr': 2.00e-3}
     worker_seeds, shuffling_seeds = utils.setup_seeds(None, num_epochs, device)
     # get data loaders
     batching_opt = {'shard_size': 80, 'num_buckets': 5}
-    train_loader = train_data.get_loader(batch_size=model_config['128'],
+    train_loader = train_data.get_loader(batch_size=model_config['batch_size'],
                                          seeds=shuffling_seeds,
                                          batch_first=batch_first,
                                          shuffle=True,
@@ -88,8 +86,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                                          batching_opt=batching_opt,
                                          num_workers=2)
     train_iter_size = set_iter_size(train_iter_size=1, train_global_batch_size=None, train_batch_size=128)
-    # TODO: check this value
-    print(f'real train iter size is {train_iter_size}')
     total_train_iters = len(train_loader) // train_iter_size * num_epochs
 
     trainer_options = dict(
@@ -107,7 +103,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                           'decay_steps': 4,
                           'decay_factor': 0.5},
         train_iterations=total_train_iters,
-        keep_checkpoints=None,
+        keep_checkpoints=5, # however not used
         math=model_config['math'],
         loss_scaling={
             'init_scale': 8192,
@@ -123,9 +119,17 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     trainer = trainers.Seq2SeqTrainer(**trainer_options)
     torch.set_grad_enabled(True)
     trainer.model.train()
+    print_every = 50
+    loss_sum = 0
     for epoch in range(num_epochs):
         train_loader.sampler.set_epoch(epoch)
         for batch_idx, (src, tgt) in enumerate(train_loader):
             trainer.model.zero_grad()
-            trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream)
+            loss_per_token, loss_per_sentence = trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream)
+            loss_sum += loss_per_token
+            if batch_idx % print_every == 0:
+                print(f'loss: {loss_sum / print_every}')
+                loss_sum = 0
+
+    sync_info.no_sync_control = True
 

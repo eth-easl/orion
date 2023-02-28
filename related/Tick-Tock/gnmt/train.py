@@ -37,18 +37,18 @@ import torch.nn.parallel
 import torch.optim
 import torch.utils.data.distributed
 
-import seq2seq.data.config as config
-import seq2seq.gpu_affinity as gpu_affinity
-import seq2seq.train.trainer as trainers
-import seq2seq.utils as utils
-from seq2seq.data.dataset import LazyParallelDataset
-from seq2seq.data.dataset import ParallelDataset
-from seq2seq.data.dataset import TextDataset
-from seq2seq.data.tokenizer import Tokenizer
-from seq2seq.inference.translator import Translator
-from seq2seq.models.gnmt import GNMT
-from seq2seq.train.smoothing import LabelSmoothing
-from seq2seq.train.table import TrainingTable
+import gnmt.seq2seq.data.config as config
+import gnmt.seq2seq.gpu_affinity as gpu_affinity
+import gnmt.seq2seq.train.trainer as trainers
+import gnmt.seq2seq.utils as utils
+from gnmt.seq2seq.data.dataset import LazyParallelDataset
+from gnmt.seq2seq.data.dataset import ParallelDataset
+from gnmt.seq2seq.data.dataset import TextDataset
+from gnmt.seq2seq.data.tokenizer import Tokenizer
+from gnmt.seq2seq.inference.translator import Translator
+from gnmt.seq2seq.models.gnmt import GNMT
+from gnmt.seq2seq.train.smoothing import LabelSmoothing
+from gnmt.seq2seq.train.table import TrainingTable
 
 
 def parse_args():
