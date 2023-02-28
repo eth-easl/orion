@@ -10,6 +10,7 @@ using namespace std;
 using at::native::ReduceOp;
 using at::_isnan;
 
+
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 template <typename T>
 void check(T err, const char* const func, const char* const file,
@@ -71,6 +72,7 @@ queue<func_record> kqueue0;
 queue<func_record> kqueue1;
 pthread_mutex_t mutex0;
 pthread_mutex_t mutex1;
+
 vector<char*> fnames0;
 vector<char*> fnames1;
 volatile pid_t thread_ids[3]; // N threads + scheduler
@@ -80,6 +82,8 @@ pthread_mutex_t* mutexes[2] = {&mutex0, &mutex1};
 vector<char*>* func_names[2] = {&fnames0, &fnames1}; 
 int func_indexes[2] = {0, 0};
 int i=0;
+
+char* model_name = "mobilenet"; // TODO: get this from scheduler
 
 int get_idx() {
 
@@ -343,7 +347,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	if (idx < 2)
 		block(idx);
 
-	//DEBUG_PRINT("[INTERCEPTER-CATCH] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	DEBUG_PRINT("[INTERCEPTER-CATCH] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -388,6 +392,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			
 			
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL, 54)) {
 			
@@ -495,7 +500,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				new_args[0] = new_reduce_arg;
 			}*/
 
-			if (func_indexes[idx] == 342) {
+			if (!strcmp(model_name, MOBILENET) && func_indexes[idx] == 149) {
+				
 				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
 				new_args[0] = new_reduce_arg;

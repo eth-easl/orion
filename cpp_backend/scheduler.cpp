@@ -182,7 +182,7 @@ extern "C" {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		string line;
-		std::ifstream infile("resnet101");
+		std::ifstream infile("mobilenet");
 		assert (infile.is_open());
 		while (std::getline(infile, line))
 		{

@@ -30,6 +30,11 @@
 #define REDUCE_KERNEL "void at::native::reduce_kernel"
 #define MAX_POOL_FORWARD_NCHW "void at::native::(anonymous namespace)::max_pool_forward_nchw"
 
+#define MOBILENET "mobilenet"
+#define VGG16 "vgg16"
+#define RESNET50 "resnet50"
+#define RESNET101 "resnet101"
+
 typedef struct kernel_record {
 
 	const void* func;
