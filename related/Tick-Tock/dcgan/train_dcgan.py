@@ -81,6 +81,8 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     optimizerG = optimizer_func(netG.parameters())
     batch_size = model_config['batch_size']
     print_every = 50
+    if not sync_info.no_sync_control:
+        sync_info.barrier.wait()
     start = time.time()
     for epoch in range(num_epochs):
         for batch_idx, batch in enumerate(dataloader):

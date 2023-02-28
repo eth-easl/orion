@@ -38,7 +38,7 @@ if __name__ == "__main__":
     eventb1.set()
 
     num_epochs = config['num_epochs']
-    sync_info = SyncInfo(eventf0, eventb0, eventf1, eventb1)
+    sync_info = SyncInfo(eventf0, eventb0, eventf1, eventb1, barrier=threading.Barrier(2))
     model0_name = config['model0']
     model1_name = config['model1']
     model0_train_wrapper = model_to_train_wrapper[model0_name]
