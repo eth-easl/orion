@@ -139,7 +139,8 @@ void block(int idx) {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	//DEBUG_PRINT("func_names is %p, fnames0 addr is %p, %p, fnames is %p, %p\n", func_names, func_names[0], &fnames0, *(func_names[0]), fnames0);
+	printf("hello!\n");
+
 	int idx = get_idx();
 	assert (idx >= 0);
 	DEBUG_PRINT("[IDX %d] Caught cudaMalloc! allocate region of %ld bytes\n", idx, size);
@@ -147,7 +148,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	cudaError_t err = cudaSuccess;
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
-
+	
 
 	if (idx < 2) {
 
@@ -159,12 +160,18 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		new_func_data.malrecord = new_malloc_record;
 		func_record new_record = {MALLOC_RECORD, new_func_data};
 
+
+		DEBUG_PRINT("IDX [%d], ready to push\n", idx);
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
+		DEBUG_PRINT("IDX [%d], pushed!\n", idx);
 		pthread_mutex_unlock(mutexes[idx]);
 
 		// wait for mem to be allocated
+		DEBUG_PRINT("IDX [%d], block\n", idx);
 		block(idx);
+		DEBUG_PRINT("IDX [%d], exit block\n", idx);
+
 
 	}
 
@@ -174,10 +181,6 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
 		CHECK_CUDA_ERROR(err_all);
-
-		//pthread_mutex_lock(mutexes[0]);
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
 
 	}
 
@@ -252,11 +255,6 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 		cudaError_t err_all = cudaDeviceSynchronize();
 		CHECK_CUDA_ERROR(err_all);
 
-		//pthread_mutex_lock(mutexes[0]);
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
-
-
 	}
 
 	return err;
@@ -300,11 +298,6 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
 		CHECK_CUDA_ERROR(err_all);
-
-		//pthread_mutex_lock(mutexes[0]);
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
-
 	}
 
 	return err;
@@ -562,10 +555,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		cudaError_t err2 = cudaGetLastError();
 		CHECK_CUDA_ERROR(err2);
-		//pthread_mutex_lock(mutexes[0]);
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
-
 
 	}
 
@@ -636,9 +625,6 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 		status = (*function)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
 		assert (status == CUDNN_STATUS_SUCCESS);
 
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
-
 	}
 	
 	return status;
@@ -704,10 +690,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 		status = (*function)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 		assert (status == CUDNN_STATUS_SUCCESS);
 
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
-
-
 	}
 
 	return status;
@@ -767,8 +749,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
 		assert (status == CUDNN_STATUS_SUCCESS);
 
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
 	}
 		
 	return status;
@@ -849,8 +829,6 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 		status = (*function)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
-		kqueues[0]->pop();
-		pthread_mutex_unlock(mutexes[0]);
 
 	}
 	

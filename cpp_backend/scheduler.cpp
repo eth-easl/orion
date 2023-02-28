@@ -74,9 +74,17 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
 
+	DEBUG_PRINT("for ID 1: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[1], buffers[1], buffers);
+
+
 	while (it < num_iters) {
-		for (int i=0; i<num_clients; i++) {
-			while (seen[i] < num_kernels) {
+		while(1) {
+			if (seen[0]==num_kernels and seen[1]==num_kernels)
+				break;
+
+			for (int i=0; i<num_clients; i++) {
+				if (seen[i] == num_kernels)
+					continue;
 				pthread_mutex_lock(mutexes[i]);
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
@@ -141,21 +149,11 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 						DEBUG_PRINT("handle is %p\n", record.handle);
 						(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
 					}
+					
+					buffers[i]->pop();
 
-					//buffers[i]->pop();
-
-					// run
-					// case 2
-					/*if (!record.run) {
-					/	buffers[i]->front().sched_stream = sched_stream;
-						buffers[i]->front().run = true;   
-						seen[i] += 1;*/
-						//printf("%d, kernel record func ptr is %p, args is %p, run is %d, stream is %d\n", seen[i], record.func, record.args, record.run, sched_stream);
-
-					//}
 				}
-				else 
-					pthread_mutex_unlock(mutexes[i]);
+				pthread_mutex_unlock(mutexes[i]);
 			}
 
 		}
@@ -188,10 +186,8 @@ extern "C" {
 		while (std::getline(infile, line))
 		{
 			char* kernel_name = new char[line.length()+1];
-			printf("%s\n", kernel_name);
 			strcpy(kernel_name, line.c_str());
 			kernel_vector->push_back(kernel_name);
-			printf("%s\n", kernel_name);
 		}
 
 		infile.close();
@@ -240,14 +236,13 @@ extern "C" {
 
 	}
 
-	void* sched_func(Scheduler* scheduler) { 
+	void* sched_func(Scheduler* scheduler, int num_clients) { 
 		
 		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues"); 
 	
 		DEBUG_PRINT("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
 		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes"); 
-		int num_clients = 1;
 
 		DEBUG_PRINT("entered sched func!\n");
 		scheduler->busy_wait(buffers, mutexes, num_clients);

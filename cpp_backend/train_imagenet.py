@@ -17,7 +17,7 @@ import os
 import argparse
 import threading
 
-def imagenet_loop(parent_model, batchsize, train_loader, local_rank, barrier, tid):
+def imagenet_loop(model_name, batchsize, train_loader, local_rank, barrier, tid):
 
     # do only forward for now, experimental
     barrier.wait()
@@ -26,7 +26,7 @@ def imagenet_loop(parent_model, batchsize, train_loader, local_rank, barrier, ti
 
     data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
     #data = torch.rand([batchsize, 2048]).to(local_rank)
-    model = models.__dict__['vgg16_bn'](num_classes=1000)
+    model = models.__dict__[model_name](num_classes=1000)
     model = model.to(0)
 
     model.eval()

@@ -17,7 +17,7 @@ class PyScheduler:
         self._model_lib = {
                 "resnet50": model_lib_dir + "resnet50",
                 "resnet101": model_lib_dir + "resnet101",
-                "vgg16": model_lib_dir + "vgg16_bn",
+                "vgg16_bn": model_lib_dir + "vgg16_bn",
                 "mobilenet": model_lib_dir + "mobilenet"
         }
     
@@ -33,7 +33,9 @@ class PyScheduler:
         self._sched_lib.setup(self._scheduler, tids[0], tids[1], model_names_ctypes[0], lib_names[0], model_names_ctypes[1], lib_names[1])
 
         barrier.wait()
-        self._sched_lib.sched_func(self._scheduler)
+
+        num_clients = 1 if tids[1]==0 else 2
+        self._sched_lib.sched_func(self._scheduler, num_clients)
 
         torch.cuda.synchronize()
 
