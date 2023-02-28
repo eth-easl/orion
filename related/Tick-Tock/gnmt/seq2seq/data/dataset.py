@@ -26,11 +26,11 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
-import seq2seq.data.config as config
-from seq2seq.data.sampler import BucketingSampler
-from seq2seq.data.sampler import DistributedSampler
-from seq2seq.data.sampler import ShardingSampler
-from seq2seq.data.sampler import StaticDistributedSampler
+import gnmt.seq2seq.data.config as config
+from gnmt.seq2seq.data.sampler import BucketingSampler
+from gnmt.seq2seq.data.sampler import DistributedSampler
+from gnmt.seq2seq.data.sampler import ShardingSampler
+from gnmt.seq2seq.data.sampler import StaticDistributedSampler
 
 
 def build_collate_fn(batch_first=False, parallel=True, sort=False):

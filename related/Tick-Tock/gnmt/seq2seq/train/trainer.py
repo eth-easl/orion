@@ -31,18 +31,21 @@ import torch.utils.data
 from apex.parallel import DistributedDataParallel
 from apex import amp
 
-from seq2seq.train.fp_optimizers import FP16Optimizer
-from seq2seq.train.fp_optimizers import FP32Optimizer
-from seq2seq.train.fp_optimizers import AMPOptimizer
-from seq2seq.train.lr_scheduler import WarmupMultiStepLR
-from seq2seq.utils import AverageMeter
-from seq2seq.utils import sync_workers
+from gnmt.seq2seq.train.fp_optimizers import FP16Optimizer
+from gnmt.seq2seq.train.fp_optimizers import FP32Optimizer
+from gnmt.seq2seq.train.fp_optimizers import AMPOptimizer
+from gnmt.seq2seq.train.lr_scheduler import WarmupMultiStepLR
+from gnmt.seq2seq.utils import AverageMeter
+from gnmt.seq2seq.utils import sync_workers
+
+from utils.sync_control import *
 
 
 class Seq2SeqTrainer:
     """
     Seq2SeqTrainer
     """
+
     def __init__(self,
                  model,
                  criterion,
@@ -123,7 +126,7 @@ class Seq2SeqTrainer:
                 self.model, grad_clip,
                 loss_scale=loss_scaling['init_scale'],
                 dls_upscale_interval=loss_scaling['upscale_interval']
-                )
+            )
             params = self.fp_optimizer.fp32_params
         elif math == 'fp32' or math == 'tf32':
             self.fp_optimizer = FP32Optimizer(self.model, grad_clip)
@@ -148,53 +151,41 @@ class Seq2SeqTrainer:
                 grad_clip,
                 loss_scale=loss_scaling['init_scale'],
                 dls_upscale_interval=loss_scaling['upscale_interval']
-                )
+            )
 
         if self.distributed:
             self.model = DistributedDataParallel(self.model)
 
-    def iterate(self, src, tgt, update=True, training=True):
-        """
-        Performs one iteration of the training/validation.
+    def iterate(self, src, tgt, thread_id: int, sync_info, my_stream):
+        with ForwardControl(thread_id=thread_id, sync_info=sync_info):
+            with torch.cuda.stream(my_stream):
+                src, src_length = src
+                tgt, tgt_length = tgt
+                src = src.to(self.device)
+                tgt = tgt.to(self.device)
+                src_length = src_length.to(self.device)
+                if self.batch_first:
+                    output = self.model(src, src_length, tgt[:, :-1])
+                    tgt_labels = tgt[:, 1:]
+                    T, B = output.size(1), output.size(0)
+                else:
+                    output = self.model(src, src_length, tgt[:-1])
+                    tgt_labels = tgt[1:]
+                    T, B = output.size(0), output.size(1)
 
-        :param src: batch of examples from the source language
-        :param tgt: batch of examples from the target language
-        :param update: if True: optimizer does update of the weights
-        :param training: if True: executes optimizer
-        """
-        src, src_length = src
-        tgt, tgt_length = tgt
-        src = src.to(self.device)
-        tgt = tgt.to(self.device)
-        src_length = src_length.to(self.device)
+        with BackwardControl(thread_id=thread_id, sync_info=sync_info):
+            with torch.cuda.stream(my_stream):
+                loss = self.criterion(output.view(T * B, -1),
+                                      tgt_labels.contiguous().view(-1))
+                loss_per_batch = loss.item()
+                loss /= (B * self.iter_size)
 
-        num_toks = {}
-        num_toks['tgt'] = int(sum(tgt_length - 1))
-        num_toks['src'] = int(sum(src_length))
+                self.fp_optimizer.step(loss, self.optimizer, self.scheduler, update=True)
 
-        if self.batch_first:
-            output = self.model(src, src_length, tgt[:, :-1])
-            tgt_labels = tgt[:, 1:]
-            T, B = output.size(1), output.size(0)
-        else:
-            output = self.model(src, src_length, tgt[:-1])
-            tgt_labels = tgt[1:]
-            T, B = output.size(0), output.size(1)
-
-        loss = self.criterion(output.view(T * B, -1),
-                              tgt_labels.contiguous().view(-1))
-
-        loss_per_batch = loss.item()
-        loss /= (B * self.iter_size)
-
-        if training:
-            self.fp_optimizer.step(loss, self.optimizer, self.scheduler,
-                                   update)
-
-        loss_per_token = loss_per_batch / num_toks['tgt']
+        loss_per_token = loss_per_batch / int(sum(tgt_length - 1))
         loss_per_sentence = loss_per_batch / B
 
-        return loss_per_token, loss_per_sentence, num_toks
+        return loss_per_token, loss_per_sentence
 
     def feed_data(self, data_loader, training=True):
         """

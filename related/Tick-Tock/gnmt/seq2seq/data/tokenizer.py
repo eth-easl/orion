@@ -26,7 +26,7 @@ from functools import partial
 import torch
 import subword_nmt.apply_bpe
 import sacremoses
-import seq2seq.data.config as config
+import gnmt.seq2seq.data.config as config
 
 
 class Tokenizer:

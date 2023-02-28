@@ -21,7 +21,9 @@ dcgan:
   optimizer: Adam
   input_image_size: 64 # the image size the model finally accepts as input
   dataset: imagenet # can be imagenet, cifar10, or mnist
-
+gnmt:
+  math: fp16 # precision
+  batch_size: 128
 
 
 
