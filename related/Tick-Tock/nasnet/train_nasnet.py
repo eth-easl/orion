@@ -34,8 +34,10 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     loss_sum = 0
     print_every = 50
 
-    start = time.time()
 
+    if not sync_info.no_sync_control:
+        sync_info.barrier.wait()
+    start = time.time()
     for _ in range(num_epochs):
         for batch_idx, batch in enumerate(train_loader):
             with ForwardControl(thread_id=tid, sync_info=sync_info):
