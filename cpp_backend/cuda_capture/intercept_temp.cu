@@ -80,10 +80,10 @@ volatile pid_t thread_ids[3]; // N threads + scheduler
 queue<func_record>* kqueues[2] = {&kqueue0, &kqueue1};
 pthread_mutex_t* mutexes[2] = {&mutex0, &mutex1};
 vector<char*>* func_names[2] = {&fnames0, &fnames1}; 
+char* model_names[2];
+
 int func_indexes[2] = {0, 0};
 int i=0;
-
-char* model_name = "mobilenet"; // TODO: get this from scheduler
 
 int get_idx() {
 
@@ -344,10 +344,13 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	if (idx < 2)
-		block(idx);
+	//if (idx < 2)
+	//	block(idx);
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	if (idx < 2) 
+		DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
+
+	//DEBUG_PRINT("[INTERCEPTER-CATCH] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -488,7 +491,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			
 			void** new_args = (void**)malloc(sizeof(void*));
 
-			// TODO: make this more generic
 			/*if (func_indexes[idx] == 14) { 
 				using arg_type = at::native::ReduceOp<double, at::native::func_wrapper_t<double, MaxNanFunctor<double>>,unsigned int, double, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
@@ -500,7 +502,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				new_args[0] = new_reduce_arg;
 			}*/
 
-			if (!strcmp(model_name, MOBILENET) && func_indexes[idx] == 149) {
+			if (!strcmp(model_names[idx], MOBILENET) && func_indexes[idx] == 149) {
 				
 				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);

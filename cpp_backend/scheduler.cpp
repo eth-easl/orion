@@ -178,15 +178,17 @@ extern "C" {
 	}
 
 
-	void populate_kernel_names(vector<char*>* kernel_vector) {
+	void populate_kernel_names(vector<char*>* kernel_vector, char* kernel_info_file) {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
+		printf("KERNEL_INFO_FILE IS %s\n", kernel_info_file);
 		string line;
-		std::ifstream infile("mobilenet");
+		std::ifstream infile(kernel_info_file);
 		assert (infile.is_open());
 		while (std::getline(infile, line))
 		{
 			char* kernel_name = new char[line.length()+1];
+			printf("%s\n", kernel_name);
 			strcpy(kernel_name, line.c_str());
 			kernel_vector->push_back(kernel_name);
 			printf("%s\n", kernel_name);
@@ -197,7 +199,7 @@ extern "C" {
 	}
 
 
-	void setup(Scheduler* scheduler, int tid0, int tid1) {
+	void setup(Scheduler* scheduler, int tid0, int tid1, char* model0, char* file0, char* model1, char* file1) {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
@@ -226,15 +228,19 @@ extern "C" {
 
 		int num_kernels = 1;
 		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
+
+		char** model_names_all = (char**)dlsym(klib, "model_names");
+		model_names_all[0] = model0;
+		model_names_all[1] = model1;
+
 		printf("func_names_all is %p\n", func_names_all);
 		printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[0], func_names_all[1]);
-		populate_kernel_names(func_names_all[0]);
-		populate_kernel_names(func_names_all[1]);
+		populate_kernel_names(func_names_all[0], file0);
+		populate_kernel_names(func_names_all[1], file1);
 
 	}
 
-	void* sched_func(Scheduler* scheduler) { //void* buffer, pthread_mutex_t* mutex) {
-
+	void* sched_func(Scheduler* scheduler) { 
 		
 		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues"); 

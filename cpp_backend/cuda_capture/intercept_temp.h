@@ -35,6 +35,7 @@
 #define RESNET50 "resnet50"
 #define RESNET101 "resnet101"
 
+
 typedef struct kernel_record {
 
 	const void* func;

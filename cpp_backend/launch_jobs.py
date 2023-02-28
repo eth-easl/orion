@@ -6,7 +6,6 @@ from ctypes import *
 import os
 
 from train_imagenet import imagenet_loop
-from debug_script import test_func
 from scheduler_frontend import PyScheduler
 from torchvision import models
 import torch
@@ -39,7 +38,8 @@ def launch_jobs():
     train_thread_0.start()
 
     tids = [train_thread_0.native_id, 0]#train_thread_1.native_id]
-    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids))
+    model_names = ["vgg16", "vgg16"]
+    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names))
 
     sched_thread.start()
 

@@ -25,7 +25,8 @@ def imagenet_loop(parent_model, batchsize, train_loader, local_rank, barrier, ti
     print("-------------- thread id:  ", threading.get_native_id())
 
     data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
-    model = models.__dict__['resnet50'](num_classes=1000)
+    #data = torch.rand([batchsize, 2048]).to(local_rank)
+    model = models.__dict__['vgg16_bn'](num_classes=1000)
     model = model.to(0)
 
     model.eval()
@@ -44,10 +45,14 @@ def imagenet_loop(parent_model, batchsize, train_loader, local_rank, barrier, ti
         while batch_idx < 1:
  
             print(f"submit!, batch_idx is {batch_idx}")
+            torch.cuda.profiler.cudart().cudaProfilerStart()
+
             with torch.no_grad():
                 output = model(data)
             
-            #print(output)
+            torch.cuda.profiler.cudart().cudaProfilerStop()
+
+            print(output.shape)
             batch_idx += 1
 
             start_iter = time.time()
