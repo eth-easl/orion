@@ -1,4 +1,6 @@
 import os
+import time
+
 import torch.nn as nn
 import torch.optim
 from utils.sync_info import SyncInfo
@@ -121,6 +123,8 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     trainer.model.train()
     print_every = 50
     loss_sum = 0
+    if not sync_info.no_sync_control:
+        sync_info.barrier.wait()
     for epoch in range(num_epochs):
         train_loader.sampler.set_epoch(epoch)
         for batch_idx, (src, tgt) in enumerate(train_loader):
