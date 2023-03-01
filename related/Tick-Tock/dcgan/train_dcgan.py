@@ -88,25 +88,25 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 ############################
                 # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
                 ###########################
-                with ForwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     netD.zero_grad()
                     real_images = batch[0].to(device)
                     label = torch.full((batch_size,), real_label, dtype=real_images.dtype, device=device)
                     output = netD(real_images)
 
-                with BackwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     errD_real = criterion(output, label)
                     errD_real.backward()
                     D_x = output.mean().item()
 
                 # train discriminator with fake data
-                with ForwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     noise = torch.randn(batch_size, latent_z_vec_size, 1, 1, device=device)
                     fake = netG(noise)
                     label.fill_(fake_label)
                     output = netD(fake.detach())
 
-                with BackwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     errD_fake = criterion(output, label)
                     errD_fake.backward()
                     D_G_z1 = output.mean().item()
@@ -116,12 +116,12 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 ############################
                 # (2) Update G network: maximize log(D(G(z)))
                 ###########################
-                with ForwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     netG.zero_grad()
                     label.fill_(real_label)  # fake labels are real for generator cost
                     output = netD(fake)
 
-                with BackwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     errG = criterion(output, label)
                     errG.backward()
                     D_G_z2 = output.mean().item()
