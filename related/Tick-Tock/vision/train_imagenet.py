@@ -18,34 +18,28 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     loss_sum = 0
     print_every = 50
-    if not sync_info.no_sync_control:
-        sync_info.barrier.wait()
-    start = time.time()
-    for _ in range(num_epochs):
-        for batch_idx, batch in enumerate(train_loader):
-            with ForwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
-                # print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
-                with torch.cuda.stream(my_stream):
+    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
+        start = time.time()
+        for _ in range(num_epochs):
+            for batch_idx, batch in enumerate(train_loader):
+                with ForwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                    # print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
                     optimizer.zero_grad()
                     data, target = batch[0].to(device), batch[1].to(device)
                     output = model(data)
                     loss = metric_fn(output, target)
                     loss_sum += loss.item()
-                # print(f"time: {pretty_time()}, thread {tid} ends FORWARD {batch_idx}")
+                    # print(f"time: {pretty_time()}, thread {tid} ends FORWARD {batch_idx}")
 
-            if batch_idx % print_every == 0:
-                print(f"loss for thread {tid}: {loss_sum / print_every}")
-                loss_sum = 0
+                if batch_idx % print_every == 0:
+                    print(f"loss for thread {tid}: {loss_sum / print_every}")
+                    loss_sum = 0
 
-            with BackwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
-                # print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
-                with torch.cuda.stream(my_stream):
+                with BackwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
+                    # print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
                     loss.backward()
                     optimizer.step()
-                # print(f"time: {pretty_time()}, thread {tid} ends BACKWARD {batch_idx}")
-
-
-    sync_info.no_sync_control = True
+                    # print(f"time: {pretty_time()}, thread {tid} ends BACKWARD {batch_idx}")
     end = time.time()
     print(f"TID: {tid}, training took {end - start} sec.")
 

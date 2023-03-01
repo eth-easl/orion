@@ -1,7 +1,7 @@
 from utils.sync_info import SyncInfo
 import torch
 
-# These two classes make use of the `with` pattern in Python
+# These classes make use of the `with` pattern in Python
 # to centralize tick-tock synchronization logic
 
 class ForwardControl:
@@ -69,3 +69,23 @@ class BackwardControl:
 
         # raise the exception as is if there is any
         return exc_type is None
+
+
+class TrainingControl:
+    def __init__(self, sync_info: SyncInfo, device):
+        self.sync_info = sync_info
+        self.device = device
+
+    def __enter__(self):
+        # wait for any preprocessing steps (e.g. moving the model, tensors to gpu) to complete
+        torch.cuda.synchronize(self.device)
+        if not self.sync_info.no_sync_control:
+            self.sync_info.barrier.wait()
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        # lift sync control as one thread has finished training
+        self.sync_info.no_sync_control = True
+        return exc_type is None
+
+
+
