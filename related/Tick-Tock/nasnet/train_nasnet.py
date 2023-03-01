@@ -40,7 +40,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     start = time.time()
     for _ in range(num_epochs):
         for batch_idx, batch in enumerate(train_loader):
-            with ForwardControl(thread_id=tid, sync_info=sync_info):
+            with ForwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
                 # print(f"time: {pretty_time()}, thread {tid} starts FORWARD {batch_idx}")
                 with torch.cuda.stream(my_stream):
                     optimizer.zero_grad()
@@ -54,7 +54,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 print(f"loss for thread {tid}: {loss_sum / print_every}")
                 loss_sum = 0
 
-            with BackwardControl(thread_id=tid, sync_info=sync_info):
+            with BackwardControl(thread_id=tid, sync_info=sync_info, stream=my_stream):
                 # print(f"time: {pretty_time()}, thread {tid} starts BACKWARD {batch_idx}")
                 with torch.cuda.stream(my_stream):
                     loss.backward()
