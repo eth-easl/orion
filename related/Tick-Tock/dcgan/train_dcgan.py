@@ -50,7 +50,7 @@ def setup_dataloader(model_config):
         raise ValueError(f'unsupported dataset {dataset_name}')
     batch_size = model_config['batch_size']
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                             shuffle=True, num_workers=2)
+                                             shuffle=True, num_workers=model_config['num_workers'])
     return dataloader, num_channels
 
 

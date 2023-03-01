@@ -66,6 +66,6 @@ def setup(model_config, device):
         datasets.ImageFolder(imagenet_root, transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=model_config['batch_size'], shuffle=True, num_workers=2)
+        train_dataset, batch_size=model_config['batch_size'], shuffle=True, num_workers=model_config['num_workers'])
 
     return model, optimizer, train_loader, metric_fn

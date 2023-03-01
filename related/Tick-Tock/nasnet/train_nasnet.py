@@ -25,7 +25,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         datasets.ImageFolder(imagenet_root, transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=model_config['batch_size'], shuffle=True, num_workers=2)
+        train_dataset, batch_size=model_config['batch_size'], shuffle=True, num_workers=model_config['num_workers'])
     metric_fn = F.cross_entropy
     optimizer_func = getattr(torch.optim, model_config['optimizer'])
     optimizer = optimizer_func(model.parameters(), lr=0.1)
