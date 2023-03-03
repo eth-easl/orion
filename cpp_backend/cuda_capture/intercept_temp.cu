@@ -353,9 +353,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		// TODO: get kernel name correctly here
 		char* kernel_name = func_names[idx]->at(func_indexes[idx]);
-		DEBUG_PRINT("[INTERCEPTER] found a new kernel id %d, func pointer is %p\n", func_indexes[idx], func);
+		DEBUG_PRINT("[INTERCEPTER] found a new kernel id %d, name is %s, func pointer is %p\n", func_indexes[idx], kernel_name, func);
 
-		/*if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
+		if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
 		
 			// NOTE: WE EXPECT AN ADDITIONAL ARGUMENT WITH THE NUMBER OF INPUT/OUTPUT TENSORS
 			// TODO: How to get this during runtime?
@@ -475,7 +475,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 		}
-		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
+		/*else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
 			
 			void** new_args = (void**)malloc(sizeof(void*));
 			if (!strcmp(model_names[idx], MOBILENET) && func_indexes[idx] == 149) {
@@ -485,7 +485,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				new_args[0] = new_reduce_arg;
 			}
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-		}
+		}*/
 		else if (!strncmp(kernel_name, MAX_POOL_FORWARD_NCHW, 61)) {
 
 			void** new_args = (void**)malloc(17*sizeof(void*));
@@ -515,18 +515,18 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		union func_data new_func_data;
 		new_func_data.krecord = new_kernel_record;
-		func_record new_record = {KERNEL_RECORD, new_func_data};*/
+		func_record new_record = {KERNEL_RECORD, new_func_data};
 
-		//kqueues[idx]->push(new_record);
+		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 
 		func_indexes[idx] += 1;
 		
 		//if (wait)
-		//	block(idx);
+		block(idx);
 
-	//}	
-	//else {
+	}	
+	else {
 		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
 
 		err = (*function)(func, gridDim, blockDim, args, sharedMem, 0);
@@ -581,13 +581,13 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 
 	// push or run
 	if (idx < 2) {
-		 //pthread_mutex_lock(mutexes[idx]);
-		 //kqueues[idx]->push(new_record);
-		 //pthread_mutex_unlock(mutexes[idx]);
+		 pthread_mutex_lock(mutexes[idx]);
+		 kqueues[idx]->push(new_record);
+		 pthread_mutex_unlock(mutexes[idx]);
 
 		 func_indexes[idx] += 1;
-	//}
-	//else {
+	}
+	else {
 		cudnnStatus_t (*function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
 		assert(function != NULL);
@@ -677,6 +677,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
 
+
 	// create record
 	cudnnBatchNormalizationForwardInference_record bn_record = {
 		handle,
@@ -698,7 +699,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	union func_data new_func_data;
 	new_func_data.cudnnBNormInfRecord = bn_record;
 	func_record new_record = {CUDNN_BNORM_INF_RECORD, new_func_data};
-
 
 	if (idx < 2) {
 		
@@ -731,35 +731,94 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
+	if (idx<2)
+		block(idx);
+
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
+	printf("------------------------------------------------- IDX [%d], CX IS %p, CY IS %p\n", idx, cx, cy);
+	
+	if (idx < 2) {
 
-	func_indexes[idx] += 1;
+		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
+	        *xDesc_new = *xDesc;
+
+		cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
+		*yDesc_new = *yDesc;
 
 
-	cudnnStatus_t (*function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes);
+		cudnnRNNForwardInference_record rnn_record = {
+			handle,
+			rnnDesc,
+			seqLength,
+			xDesc_new,
+			x,
+			hxDesc,
+			hx,
+			cxDesc,
+			cx,
+			wDesc,
+			w,
+			yDesc_new,
+			y,
+			hyDesc,
+			hy,
+			cyDesc,
+			cy,
+			workspace,
+			workSpaceSizeInBytes
+		};
 
-	*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
-	assert(function != NULL);
+		union func_data new_func_data;
+		new_func_data.cudnnRnnInfRecord = rnn_record;
+		func_record new_record = {CUDNN_RNN_INF_RECORD, new_func_data};
 
-	status = (*function)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
-	assert (status == CUDNN_STATUS_SUCCESS);
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+		block(idx);
+	}
+	else {
+		cudnnStatus_t (*function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes);
+
+		
+		
+		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
+		assert(function != NULL);
+
+		status = (*function)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
+		printf("------------------------- cudnn status is %d\n", status);
+		assert (status == CUDNN_STATUS_SUCCESS);	
+
+		cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		CHECK_CUDA_ERROR(err_all); 
+	
+		if (func_indexes[idx] == 30)
+			while(1);
+	}
 
 	return status;
 
 }
 
+cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {
+	
+	DEBUG_PRINT("Caught a cudnnDestroyRNNDescriptor! Do nothing!\n");	
+	return CUDNN_STATUS_SUCCESS;
+}
 
 cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
 
 	// mock cudnn destroy TensorDescriptor
-	//DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
+	DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
 
 
 cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
 
-	//DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
+	DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 
 }
@@ -770,6 +829,13 @@ cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t con
 	//DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
+
+cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc) {
+	DEBUG_PRINT("Caught a cudnnDestroyDropoutDescriptor! Do nothing!\n");
+	return CUDNN_STATUS_SUCCESS;
+
+}
+
 
 // CUBLAS ....
 
@@ -806,14 +872,13 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
 
-		//pthread_mutex_lock(mutexes[idx]);
-		//kqueues[idx]->push(new_record);
-		//pthread_mutex_unlock(mutexes[idx]);
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
 
 		func_indexes[idx] += 1;
-	//}
-
-	//else {
+	}
+	else {
 
 		cublasStatus_t (*function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 
