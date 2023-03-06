@@ -34,7 +34,7 @@
 #define VGG16 "vgg16"
 #define RESNET50 "resnet50"
 #define RESNET101 "resnet101"
-
+#define GNMT "gnmt"
 
 typedef struct kernel_record {
 
