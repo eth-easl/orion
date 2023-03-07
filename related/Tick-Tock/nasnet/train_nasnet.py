@@ -40,7 +40,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         for _ in range(num_epochs):
             for batch_idx, batch in enumerate(train_loader):
                 with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-                    optimizer.zero_grad()
                     data, target = batch[0].to(device), batch[1].to(device)
                     output = model(data)
                     loss = metric_fn(output, target)
@@ -53,6 +52,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     loss.backward()
                     optimizer.step()
+                    optimizer.zero_grad()
 
     end = time.time()
     print(f"TID: {tid}, training took {end - start} sec.")

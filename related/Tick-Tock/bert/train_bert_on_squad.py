@@ -41,7 +41,7 @@ class GradientClipper:
             multi_tensor_applier(self.multi_tensor_scale, self._overflow_buf, [l, l], clip_coef)
 
 
-def setup_model(model_config):
+def setup_model():
     config = modeling.BertConfig.from_json_file(LARGE_CONFIG_FILE)
     # Padding for divisibility by 8
     if config.vocab_size % 8 != 0:
@@ -93,7 +93,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5,
                              warmup=0.1,
                              t_total=num_train_optimization_steps)
-    # TODO: fullfill this tokenizer
+
     tokenizer = BertTokenizer(vocab_file=VOCAB_FILE, do_lower_case=True, max_len=512)
     train_features = convert_examples_to_features(
         examples=train_examples,
@@ -115,34 +115,38 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     model.train()
     gradClipper = GradientClipper(max_grad_norm=1.0)
 
-    for _ in range(num_epochs):
-        for step, batch in enumerate(train_dataloader):
-            batch = tuple(t.to(device) for t in batch)
-            input_ids, input_mask, segment_ids, start_positions, end_positions = batch
-            start_logits, end_logits = model(input_ids, segment_ids, input_mask)
+    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
+        for _ in range(num_epochs):
+            for batch_idx, batch in enumerate(train_dataloader):
+                with ForwardControl(tid, batch_idx, sync_info, my_stream):
+                    batch = tuple(t.to(device) for t in batch)
+                    input_ids, input_mask, segment_ids, start_positions, end_positions = batch
+                    start_logits, end_logits = model(input_ids, segment_ids, input_mask)
 
-            if len(start_positions.size()) > 1:
-                start_positions = start_positions.squeeze(-1)
-            if len(end_positions.size()) > 1:
-                end_positions = end_positions.squeeze(-1)
-            # sometimes the start/end positions are outside our model inputs, we ignore these terms
-            ignored_index = start_logits.size(1)
-            start_positions.clamp_(0, ignored_index)
-            end_positions.clamp_(0, ignored_index)
-            loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
-            start_loss = loss_fct(start_logits, start_positions)
-            end_loss = loss_fct(end_logits, end_positions)
-            loss = (start_loss + end_loss) / 2
-            if model_config['use_fp16']:
-                with amp.scale_loss(loss, optimizer) as scaled_loss:
-                    scaled_loss.backward()
-            else:
-                loss.backward()
+                with BackwardControl(tid, batch_idx, sync_info, my_stream):
+                    if len(start_positions.size()) > 1:
+                        start_positions = start_positions.squeeze(-1)
+                    if len(end_positions.size()) > 1:
+                        end_positions = end_positions.squeeze(-1)
+                    # sometimes the start/end positions are outside our model inputs, we ignore these terms
+                    ignored_index = start_logits.size(1)
+                    start_positions.clamp_(0, ignored_index)
+                    end_positions.clamp_(0, ignored_index)
+                    loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
+                    start_loss = loss_fct(start_logits, start_positions)
+                    end_loss = loss_fct(end_logits, end_positions)
+                    loss = (start_loss + end_loss) / 2
+                    if model_config['use_fp16']:
+                        with amp.scale_loss(loss, optimizer) as scaled_loss:
+                            scaled_loss.backward()
+                    else:
+                        loss.backward()
 
-            # gradient clipping
-            gradClipper.step(amp.master_params(optimizer))
-            if model_config['use_fp16']:
-                # modify learning rate with special warm up for BERT which FusedAdam doesn't do
-                scheduler.step()
-            optimizer.step()
-            optimizer.zero_grad()
+                    # gradient clipping
+                    gradClipper.step(amp.master_params(optimizer))
+                    if model_config['use_fp16']:
+                        # modify learning rate with special warm up for BERT which FusedAdam doesn't do
+                        scheduler.step()
+                    optimizer.step()
+                    optimizer.zero_grad()
+

@@ -4,6 +4,7 @@ import time
 import torch.nn as nn
 import torch.optim
 from utils.sync_info import SyncInfo
+from utils.sync_control import *
 import gnmt.seq2seq.utils as seq2seq_utils
 
 import gnmt.seq2seq.train.trainer as trainers
@@ -123,17 +124,17 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     trainer.model.train()
     print_every = 50
     loss_sum = 0
-    if not sync_info.no_sync_control:
-        sync_info.barrier.wait()
-    for epoch in range(num_epochs):
-        train_loader.sampler.set_epoch(epoch)
-        for batch_idx, (src, tgt) in enumerate(train_loader):
-            trainer.model.zero_grad()
-            loss_per_token, loss_per_sentence = trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream)
-            loss_sum += loss_per_token
-            if batch_idx % print_every == 0:
-                print(f'loss: {loss_sum / print_every}')
-                loss_sum = 0
+
+    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
+        for epoch in range(num_epochs):
+            train_loader.sampler.set_epoch(epoch)
+            for batch_idx, (src, tgt) in enumerate(train_loader):
+                trainer.model.zero_grad()
+                loss_per_token, loss_per_sentence = trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream, batch_idx=batch_idx)
+                loss_sum += loss_per_token
+                if batch_idx % print_every == 0:
+                    print(f'loss: {loss_sum / print_every}')
+                    loss_sum = 0
 
     sync_info.no_sync_control = True
 
