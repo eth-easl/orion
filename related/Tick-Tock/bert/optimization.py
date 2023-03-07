@@ -25,7 +25,6 @@ from torch.nn.utils import clip_grad_norm_
 from apex.optimizers import FusedAdam
 from apex.multi_tensor_apply import multi_tensor_applier
 import amp_C
-from utils import is_main_process
 
 multi_tensor_l2norm = amp_C.multi_tensor_l2norm
 lamb_compute_update = amp_C.multi_tensor_lamb_stage1_cuda
