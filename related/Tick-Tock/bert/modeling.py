@@ -34,8 +34,7 @@ from torch import nn
 from torch.nn import CrossEntropyLoss
 from torch.utils import checkpoint
 
-sys.path.append('/workspace/bert/')
-from file_utils import cached_path
+
 
 from torch.nn import Module
 from torch.nn.parameter import Parameter
@@ -118,8 +117,10 @@ def load_tf_weights_in_bert(model, tf_checkpoint_path):
         pointer.data = torch.from_numpy(array)
     return model
 
+# TODO: originally NVIDIA uses approximate=True; however that conflicts with Pytorch doc
+# issue submitted at https://github.com/NVIDIA/DeepLearningExamples/issues/1272
 def gelu(x):
-    return torch.nn.functional.gelu(x, approximate=True)
+    return torch.nn.functional.gelu(x, approximate='tanh')
 
 def swish(x):
     return x * torch.sigmoid(x)

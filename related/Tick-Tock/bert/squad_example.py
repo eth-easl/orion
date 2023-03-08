@@ -2,6 +2,35 @@ from bert.tokenization import whitespace_tokenize
 import collections
 import json
 
+class InputFeatures(object):
+    """A single set of features of data."""
+
+    def __init__(self,
+                 unique_id,
+                 example_index,
+                 doc_span_index,
+                 tokens,
+                 token_to_orig_map,
+                 token_is_max_context,
+                 input_ids,
+                 input_mask,
+                 segment_ids,
+                 start_position=None,
+                 end_position=None,
+                 is_impossible=None):
+        self.unique_id = unique_id
+        self.example_index = example_index
+        self.doc_span_index = doc_span_index
+        self.tokens = tokens
+        self.token_to_orig_map = token_to_orig_map
+        self.token_is_max_context = token_is_max_context
+        self.input_ids = input_ids
+        self.input_mask = input_mask
+        self.segment_ids = segment_ids
+        self.start_position = start_position
+        self.end_position = end_position
+        self.is_impossible = is_impossible
+
 
 class SquadExample(object):
     """
@@ -119,6 +148,42 @@ def read_squad_examples(input_file, is_training, version_2_with_negative):
                     is_impossible=is_impossible)
                 examples.append(example)
     return examples
+
+def _improve_answer_span(doc_tokens, input_start, input_end, tokenizer,
+                         orig_answer_text):
+    """Returns tokenized answer spans that better match the annotated answer."""
+
+    # The SQuAD annotations are character based. We first project them to
+    # whitespace-tokenized words. But then after WordPiece tokenization, we can
+    # often find a "better match". For example:
+    #
+    #   Question: What year was John Smith born?
+    #   Context: The leader was John Smith (1895-1943).
+    #   Answer: 1895
+    #
+    # The original whitespace-tokenized answer will be "(1895-1943).". However
+    # after tokenization, our tokens will be "( 1895 - 1943 ) .". So we can match
+    # the exact answer, 1895.
+    #
+    # However, this is not always possible. Consider the following:
+    #
+    #   Question: What country is the top exporter of electornics?
+    #   Context: The Japanese electronics industry is the lagest in the world.
+    #   Answer: Japan
+    #
+    # In this case, the annotator chose "Japan" as a character sub-span of
+    # the word "Japanese". Since our WordPiece tokenizer does not split
+    # "Japanese", we just use "Japanese" as the annotation. This is fairly rare
+    # in SQuAD, but does happen.
+    tok_answer_text = " ".join(tokenizer.tokenize(orig_answer_text))
+
+    for new_start in range(input_start, input_end + 1):
+        for new_end in range(input_end, new_start - 1, -1):
+            text_span = " ".join(doc_tokens[new_start:(new_end + 1)])
+            if text_span == tok_answer_text:
+                return (new_start, new_end)
+
+    return (input_start, input_end)
 
 
 def _check_is_max_context(doc_spans, cur_span_index, position):

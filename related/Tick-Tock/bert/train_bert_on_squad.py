@@ -1,3 +1,5 @@
+import pickle
+
 from apex import amp
 from apex.optimizers import FusedAdam
 import torch
@@ -7,38 +9,40 @@ from bert.optimization import BertAdam
 import bert.modeling as modeling
 from bert.squad_example import *
 from bert.tokenization import BertTokenizer
+import os
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 
 LARGE_CONFIG_FILE = './bert/bert_configs/large.json'
 BASE_CONFIG_FILE = './bert/bert_configs/base.json'
-SQUAD_VERSION1 = '/cluster/cluster/scratch/xianma/bert/download/squad/v1.1/train-v1.1.json'
-SQUAD_VERSION2 = '/cluster/cluster/scratch/xianma/bert/download/squad/v2.0/train-v2.0.json'
-VOCAB_FILE = '/cluster/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16/vocab.txt'
+SQUAD_VERSION1 = '/cluster/scratch/xianma/bert/download/squad/v1.1/train-v1.1.json'
+SQUAD_VERSION2 = '/cluster/scratch/xianma/bert/download/squad/v2.0/train-v2.0.json'
+VOCAB_FILE = '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16/vocab.txt'
 
 from apex.multi_tensor_apply import multi_tensor_applier
-class GradientClipper:
-    """
-    Clips gradient norm of an iterable of parameters.
-    """
-    def __init__(self, max_grad_norm):
-        self.max_norm = max_grad_norm
-        if multi_tensor_applier.available:
-            import amp_C
-            self._overflow_buf = torch.cuda.IntTensor([0])
-            self.multi_tensor_l2norm = amp_C.multi_tensor_l2norm
-            self.multi_tensor_scale = amp_C.multi_tensor_scale
-        else:
-            raise RuntimeError('Gradient clipping requires cuda extensions')
-
-    def step(self, parameters):
-        l = [p.grad for p in parameters if p.grad is not None]
-        total_norm, _ = multi_tensor_applier(self.multi_tensor_l2norm, self._overflow_buf, [l], False)
-        total_norm = total_norm.item()
-        if (total_norm == float('inf')): return
-        clip_coef = self.max_norm / (total_norm + 1e-6)
-        if clip_coef < 1:
-            multi_tensor_applier(self.multi_tensor_scale, self._overflow_buf, [l, l], clip_coef)
+# TODO: uncomment to enable fp16
+# class GradientClipper:
+#     """
+#     Clips gradient norm of an iterable of parameters.
+#     """
+#     def __init__(self, max_grad_norm):
+#         self.max_norm = max_grad_norm
+#         if multi_tensor_applier.available:
+#             import amp_C
+#             self._overflow_buf = torch.cuda.IntTensor([0])
+#             self.multi_tensor_l2norm = amp_C.multi_tensor_l2norm
+#             self.multi_tensor_scale = amp_C.multi_tensor_scale
+#         else:
+#             raise RuntimeError('Gradient clipping requires cuda extensions')
+#
+#     def step(self, parameters):
+#         l = [p.grad for p in parameters if p.grad is not None]
+#         total_norm, _ = multi_tensor_applier(self.multi_tensor_l2norm, self._overflow_buf, [l], False)
+#         total_norm = total_norm.item()
+#         if (total_norm == float('inf')): return
+#         clip_coef = self.max_norm / (total_norm + 1e-6)
+#         if clip_coef < 1:
+#             multi_tensor_applier(self.multi_tensor_scale, self._overflow_buf, [l, l], clip_coef)
 
 
 def setup_model():
@@ -54,8 +58,9 @@ def setup_model():
 
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
     squad_version = model_config['squad_version']
+    squad_file = SQUAD_VERSION1 if squad_version == 1 else SQUAD_VERSION2
     train_examples = read_squad_examples(
-        input_file=SQUAD_VERSION1 if squad_version == 1 else SQUAD_VERSION2,
+        input_file=squad_file,
         is_training=True,
         version_2_with_negative=squad_version == 2
     )
@@ -63,8 +68,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     num_train_optimization_steps = int(len(train_examples) / batch_size) * num_epochs
     model = setup_model()
     model = model.to(device)
-
-
 
     # Prepare optimizer
     param_optimizer = list(model.named_parameters())
@@ -77,7 +80,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
         {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-    # TODO: check if the yaml parser can successfully parse it as a boolean
+
     if model_config['use_fp16']:
         optimizer = FusedAdam(optimizer_grouped_parameters, lr=5e-5, bias_correction=False)
         loss_scale = model_config['fp16_loss_scale']
@@ -95,14 +98,25 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                              t_total=num_train_optimization_steps)
 
     tokenizer = BertTokenizer(vocab_file=VOCAB_FILE, do_lower_case=True, max_len=512)
-    train_features = convert_examples_to_features(
-        examples=train_examples,
-        tokenizer=tokenizer,
-        max_seq_length=384,
-        doc_stride=128,
-        max_query_length=64,
-        is_training=True
-    )
+
+    cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
+    try:
+        with open(cache_features_file, 'rb') as reader:
+            train_features = pickle.load(reader)
+    except:
+        print(f'no cache file detected as {cache_features_file}; building features from squad examples...')
+        train_features = convert_examples_to_features(
+            examples=train_examples,
+            tokenizer=tokenizer,
+            max_seq_length=384,
+            doc_stride=128,
+            max_query_length=64,
+            is_training=True
+        )
+        print(f'saving features to {cache_features_file}')
+        with open(cache_features_file, 'wb') as writer:
+            pickle.dump(train_features, writer)
+
     all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
     all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
     all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
@@ -113,8 +127,10 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
     model.train()
-    gradClipper = GradientClipper(max_grad_norm=1.0)
-
+    # TODO: this requires amp_C package which isn't avaiable for a pure python apex
+    # gradClipper = GradientClipper(max_grad_norm=1.0)
+    loss_sum = 0
+    print_every = 50
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
         for _ in range(num_epochs):
             for batch_idx, batch in enumerate(train_dataloader):
@@ -141,12 +157,17 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                             scaled_loss.backward()
                     else:
                         loss.backward()
-
                     # gradient clipping
-                    gradClipper.step(amp.master_params(optimizer))
+                    # TODO: uncomment to enable amp_C
+                    # gradClipper.step(amp.master_params(optimizer))
                     if model_config['use_fp16']:
                         # modify learning rate with special warm up for BERT which FusedAdam doesn't do
                         scheduler.step()
                     optimizer.step()
                     optimizer.zero_grad()
+
+                loss_sum += loss.item()
+                if batch_idx % print_every == 0:
+                    print(f"current loss: {loss_sum/print_every}")
+                    loss_sum = 0
 
