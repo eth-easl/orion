@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright (c) 2019 NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) 2019-2021 NVIDIA CORPORATION. All rights reserved.
 # Copyright 2018 The Google AI Language Team Authors and The HugginFace Inc. team.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import os
 import random
 import sys
 from io import open
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -853,6 +854,10 @@ def main():
                         default=None,
                         type=str,
                         help="Location to cache train feaures. Will default to the dataset directory")
+    parser.add_argument("--profile",
+                        default=False,
+                        action='store_true',
+                        help="Whether to profile model.")
 
     args = parser.parse_args()
     args.fp16 = args.fp16 or args.amp
@@ -868,11 +873,20 @@ def main():
         n_gpu = 1
 
     if is_main_process():
+        Path(os.path.dirname(args.json_summary)).mkdir(parents=True, exist_ok=True)
         dllogger.init(backends=[dllogger.JSONStreamBackend(verbosity=dllogger.Verbosity.VERBOSE,
                                                            filename=args.json_summary),
                                 dllogger.StdOutBackend(verbosity=dllogger.Verbosity.VERBOSE, step_format=format_step)])
     else:
         dllogger.init(backends=[])
+
+    dllogger.metadata("e2e_train_time", {"unit": "s"})
+    dllogger.metadata("training_sequences_per_second", {"unit": "sequences/s"})
+    dllogger.metadata("final_loss", {"unit": None})
+    dllogger.metadata("e2e_inference_time", {"unit": "s"})
+    dllogger.metadata("inference_sequences_per_second", {"unit": "sequences/s"})
+    dllogger.metadata("exact_match", {"unit": None})
+    dllogger.metadata("F1", {"unit": None})
 
     print("device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".format(
         device, n_gpu, bool(args.local_rank != -1), args.fp16))
@@ -931,12 +945,13 @@ def main():
     if config.vocab_size % 8 != 0:
         config.vocab_size += 8 - (config.vocab_size % 8)
 
-    modeling.ACT2FN["bias_gelu"] = modeling.bias_gelu_training
     model = modeling.BertForQuestionAnswering(config)
     # model = modeling.BertForQuestionAnswering.from_pretrained(args.bert_model,
     # cache_dir=os.path.join(str(PYTORCH_PRETRAINED_BERT_CACHE), 'distributed_{}'.format(args.local_rank)))
     dllogger.log(step="PARAMETER", data={"loading_checkpoint": True})
-    model.load_state_dict(torch.load(args.init_checkpoint, map_location='cpu')["model"], strict=False)
+    checkpoint = torch.load(args.init_checkpoint, map_location='cpu')
+    checkpoint = checkpoint["model"] if "model" in checkpoint.keys() else checkpoint
+    model.load_state_dict(checkpoint, strict=False)
     dllogger.log(step="PARAMETER", data={"loaded_checkpoint": True})
     model.to(device)
     num_weights = sum([p.numel() for p in model.parameters() if p.requires_grad])
@@ -1044,6 +1059,7 @@ def main():
         model.train()
         gradClipper = GradientClipper(max_grad_norm=1.0)
         final_loss = None
+
         train_start = time.time()
         for epoch in range(int(args.num_train_epochs)):
             train_iter = tqdm(train_dataloader, desc="Iteration",
@@ -1097,7 +1113,6 @@ def main():
                 if step % args.log_freq == 0:
                     dllogger.log(step=(epoch, global_step,), data={"step_loss": final_loss,
                                                                    "learning_rate": optimizer.param_groups[0]['lr']})
-
         time_to_train = time.time() - train_start
 
     if args.do_train and is_main_process() and not args.skip_checkpoint:

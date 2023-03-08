@@ -117,8 +117,6 @@ def load_tf_weights_in_bert(model, tf_checkpoint_path):
         pointer.data = torch.from_numpy(array)
     return model
 
-# TODO: originally NVIDIA uses approximate=True; however that conflicts with Pytorch doc
-# issue submitted at https://github.com/NVIDIA/DeepLearningExamples/issues/1272
 def gelu(x):
     return torch.nn.functional.gelu(x, approximate='tanh')
 

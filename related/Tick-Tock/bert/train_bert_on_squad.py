@@ -1,9 +1,12 @@
 import pickle
+import time
 
 from apex import amp
 from apex.optimizers import FusedAdam
 import torch
 from torch.utils.data import DataLoader, RandomSampler, TensorDataset
+import random
+import numpy as np
 from bert.schedulers import LinearWarmUpScheduler
 from bert.optimization import BertAdam
 import bert.modeling as modeling
@@ -13,11 +16,10 @@ import os
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 
-LARGE_CONFIG_FILE = './bert/bert_configs/large.json'
-BASE_CONFIG_FILE = './bert/bert_configs/base.json'
 SQUAD_VERSION1 = '/cluster/scratch/xianma/bert/download/squad/v1.1/train-v1.1.json'
 SQUAD_VERSION2 = '/cluster/scratch/xianma/bert/download/squad/v2.0/train-v2.0.json'
-VOCAB_FILE = '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16/vocab.txt'
+LARGE_MODEL_DIR = '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+BASE_MODEL_DIR = '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
 
 from apex.multi_tensor_apply import multi_tensor_applier
 # TODO: uncomment to enable fp16
@@ -45,8 +47,10 @@ from apex.multi_tensor_apply import multi_tensor_applier
 #             multi_tensor_applier(self.multi_tensor_scale, self._overflow_buf, [l, l], clip_coef)
 
 
-def setup_model():
-    config = modeling.BertConfig.from_json_file(LARGE_CONFIG_FILE)
+def setup_model(model_config):
+    arch = model_config['arch']
+    config_file = os.path.join(LARGE_MODEL_DIR if arch == 'large' else BASE_MODEL_DIR, 'bert_config.json')
+    config = modeling.BertConfig.from_json_file(config_file)
     # Padding for divisibility by 8
     if config.vocab_size % 8 != 0:
         config.vocab_size += 8 - (config.vocab_size % 8)
@@ -57,6 +61,10 @@ def setup_model():
 
 
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+    seed = int(time.time())
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
     squad_version = model_config['squad_version']
     squad_file = SQUAD_VERSION1 if squad_version == 1 else SQUAD_VERSION2
     train_examples = read_squad_examples(
@@ -66,7 +74,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     )
     batch_size = model_config['batch_size']
     num_train_optimization_steps = int(len(train_examples) / batch_size) * num_epochs
-    model = setup_model()
+    model = setup_model(model_config)
     model = model.to(device)
 
     # Prepare optimizer
@@ -96,8 +104,8 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5,
                              warmup=0.1,
                              t_total=num_train_optimization_steps)
-
-    tokenizer = BertTokenizer(vocab_file=VOCAB_FILE, do_lower_case=True, max_len=512)
+    vocab_file = os.path.join(LARGE_MODEL_DIR if model_config['arch'] == 'large' else BASE_MODEL_DIR, 'vocab.txt')
+    tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
 
     cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
     try:

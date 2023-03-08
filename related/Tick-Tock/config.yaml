@@ -1,6 +1,6 @@
 ---
 policy: temporal # either "temporal" or "tick-tock"
-model0: gnmt # these two names should strictly correspond to the model names below
+model0: bert # these two names should strictly correspond to the model names below
 model1: vision
 num_epochs: 5
 
@@ -32,5 +32,6 @@ bert:
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
   squad_version: 1 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
   batch_size: 32
+  arch: base # either base or large
 
 
