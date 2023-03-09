@@ -107,7 +107,7 @@ def train():
                 optimizer.zero_grad()
             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
 
-        
+
             if args.train:
                 if args.arch=='inception_v3':
                     output, _ = model(data)
@@ -127,7 +127,7 @@ def train():
                 loss = metric_fn(output, target)
                 loss.backward()
                 optimizer.step()
-            
+
             print("Iter ", batch_idx, " took ", time.time()-start_iter)
             batch_idx, batch = next(train_iter)
 

@@ -51,7 +51,7 @@ def train():
     print("Configure dataset")
 
     train_dir = args.train_dir
-    
+
     train_transform = transforms.Compose([
                                 #transforms.RandomCrop(32, padding=4),
                                 #transforms.RandomHorizontalFlip(),
@@ -77,7 +77,7 @@ def train():
             model.train()
         else:
             model.eval()
-        
+
         train_size = len(train_loader)
         print("train size is: ", train_size)
 
@@ -89,10 +89,10 @@ def train():
         batch_idx, batch = next(train_iter)
 
         while batch_idx < 200: #train_size:
-            
+
             if args.train:
                 optimizer.zero_grad()
-            
+
             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
 
 
@@ -100,14 +100,14 @@ def train():
                 output = model(data)
             else:
                 with torch.no_grad():
-                    output = model(data) 
-            
+                    output = model(data)
+
 
             if args.train:
                 loss = metric_fn(output, target)
                 loss.backward()
                 optimizer.step()
-            
+
             print("Iter ", batch_idx, " took ", time.time()-start_iter)
             batch_idx, batch = next(train_iter)
 

@@ -239,9 +239,9 @@ class FirstCell(nn.Module):
         x_left = self.final_path_bn(torch.cat([x_path1, x_path1], 1))
 
         x_right = self.conv_1x1(x)
-        
+
         return NormalCellBranchCombine(self, x_left, x_right)
-        
+
 
 class NormalCell(nn.Module):
 
