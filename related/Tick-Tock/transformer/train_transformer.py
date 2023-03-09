@@ -10,7 +10,7 @@ import time
 import torch.nn as nn
 import torch.optim as optim
 import yaml
-import lamb
+import transformer.lamb as lamb
 from transformer.data_utils import *
 from transformer.mem_transformer import MemTransformerLM
 import sys
@@ -119,7 +119,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         'dropatt': model_consts['dropatt'],
         'dtype': None,
         'tie_weight': True,
-        'd_embed': -1,
+        'd_embed': model_consts['d_model'],
         'div_val': model_consts['div_val'],
         'tie_projs': tie_projs,
         'pre_lnorm': False,
@@ -157,13 +157,15 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
     mem = None
     clip = 0.25
-
+    print_every = 50
+    loss_sum = 0
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
         for epoch in range(num_epochs):
             for batch_idx, (data, target, seq_len, _) in enumerate(train_iter):
                 with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream),\
                         torch.cuda.amp.autocast(enable_autocast):
                     loss, mem = model(data, target, mem)
+                    loss = loss.float().mean().type_as(loss)
 
                 with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     if model_config['use_fp16']:
@@ -185,4 +187,8 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     else:
                         optimizer.step()
                     model.zero_grad()
+                loss_sum += loss.item()
+                if batch_idx % print_every == 0:
+                    print(f'current loss: {loss_sum / print_every}')
+                    loss_sum = 0
 

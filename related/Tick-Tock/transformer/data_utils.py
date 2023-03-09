@@ -21,9 +21,9 @@ import numpy as np
 import sacremoses
 import torch
 
-import utils
-from utils.vocabulary import OpenAIVocab
-from utils.vocabulary import Vocab
+
+from transformer.transformer_utils.vocabulary import OpenAIVocab
+from transformer.transformer_utils.vocabulary import Vocab
 
 
 class LMOrderedIterator(object):
@@ -55,10 +55,6 @@ class LMOrderedIterator(object):
             warmup_data = self.data.roll((self.warmup_elems, 1), (0, 1))[:self.warmup_elems]
             self.data = torch.cat((warmup_data, self.data))
 
-        # Partition data for DistributedDataParallel
-        world_size = utils.distributed.get_world_size()
-        rank = utils.distributed.get_rank()
-        self.data = self.data.chunk(world_size, dim=1)[rank]
 
         # Number of mini-batches
         self.n_batch = (self.data.size(0) + self.bptt - 1) // self.bptt
@@ -301,10 +297,10 @@ def get_lm_corpus(datadir, dataset, vocab):
         raise RuntimeError('Unsupported vocab')
 
     if os.path.exists(fn):
-        logging.info('Loading cached dataset...')
+        print('Loading cached dataset...')
         corpus = torch.load(fn)
     else:
-        logging.info('Producing dataset {}...'.format(dataset))
+        print('Producing dataset {}...'.format(dataset))
         kwargs = {}
         if dataset in ['wt103', 'wt2']:
             kwargs['special'] = ['<eos>']
@@ -320,9 +316,7 @@ def get_lm_corpus(datadir, dataset, vocab):
             pass
 
         corpus = Corpus(datadir, dataset, vocab, **kwargs)
-        with utils.distributed.sync_workers() as rank:
-            if rank == 0:
-                torch.save(corpus, fn)
+        torch.save(corpus, fn)
 
     return corpus
 
