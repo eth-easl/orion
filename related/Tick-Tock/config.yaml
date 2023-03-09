@@ -33,5 +33,9 @@ bert:
   squad_version: 1 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
   batch_size: 32
   arch: base # either base or large
-
-
+transformer:
+  arch: base # either base or large
+  use_fp16: false
+  amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
+  apex_amp_opt_level: '02' # '00', '01', '02', '03', only takes effect when use_fp16 is true
+  batch_size: 32
