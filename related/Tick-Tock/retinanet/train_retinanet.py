@@ -7,15 +7,14 @@ import time
 from utils.sync_control import *
 from retinanet.model.retinanet import retinanet_from_backbone
 from retinanet.coco_utils import get_openimages, get_coco
-
-DATASET_DIR = '/cluster/scratch/xianma/retinanet'
+import utils.constants as constants
 
 
 def get_dataset_fn(name):
     paths = {
-        "coco": (get_coco, 91, '/cluster/scratch/xianma/retinanet'),
+        "coco": (get_coco, 91, constants.coco_root),
         "openimages": (get_openimages, 601, None),  # Full openimages dataset
-        "openimages-mlperf": (get_openimages, 264, None),  # L0 classes with more than 1000 samples
+        "openimages-mlperf": (get_openimages, None),  # L0 classes with more than 1000 samples
     }
     return paths[name]
 
@@ -42,7 +41,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                                     image_size=[800, 800],
                                     data_layout=data_layout,
                                     pretrained=False,
-                                    pretrained_backbone=False,
                                     trainable_backbone_layers=3)
     model.to(device)
     if data_layout == 'channels_last':
@@ -65,8 +63,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         pin_memory=True, collate_fn=collate_fn)
 
     model.train()
-    loss_sum = 0
-    print_every = 50
+
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
         for epoch in range(num_epochs):
             for batch_idx, (images, targets) in enumerate(data_loader):
@@ -77,11 +74,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     with torch.cuda.amp.autocast(enabled=model_config['use_amp']):
                         loss_dict = model(images, targets)
                         losses = sum(loss for loss in loss_dict.values())
-
-                loss_sum += losses.item()
-                if batch_idx % print_every == 0:
-                    print(f"loss for thread {tid}: {loss_sum / print_every}")
-                    loss_sum = 0
 
                 with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     scaler.scale(losses).backward()

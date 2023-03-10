@@ -79,10 +79,9 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     optimizerD = optimizer_func(netD.parameters())
     optimizerG = optimizer_func(netG.parameters())
     batch_size = model_config['batch_size']
-    print_every = 50
 
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        start = time.time()
+
         for epoch in range(num_epochs):
             for batch_idx, batch in enumerate(dataloader):
                 ############################
@@ -96,7 +95,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     errD_real = criterion(output, label)
                     errD_real.backward()
-                    D_x = output.mean().item()
+
 
                 # train discriminator with fake data
                 with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
@@ -108,8 +107,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     errD_fake = criterion(output, label)
                     errD_fake.backward()
-                    D_G_z1 = output.mean().item()
-                    errD = errD_real + errD_fake
                     optimizerD.step()
                     netD.zero_grad()
 
@@ -123,14 +120,5 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                 with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     errG = criterion(output, label)
                     errG.backward()
-                    D_G_z2 = output.mean().item()
                     optimizerG.step()
                     netG.zero_grad()
-
-                if batch_idx % print_every == 0:
-                    print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
-                          % (epoch, num_epochs, batch_idx, len(dataloader),
-                             errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
-
-    end = time.time()
-    print(f"TID: {tid}, training took {end - start} sec.")

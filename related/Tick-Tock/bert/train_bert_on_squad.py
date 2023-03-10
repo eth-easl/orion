@@ -13,13 +13,10 @@ import bert.modeling as modeling
 from bert.squad_example import *
 from bert.tokenization import BertTokenizer
 import os
+import utils.constants as constants
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 
-SQUAD_VERSION1 = '/cluster/scratch/xianma/bert/download/squad/v1.1/train-v1.1.json'
-SQUAD_VERSION2 = '/cluster/scratch/xianma/bert/download/squad/v2.0/train-v2.0.json'
-LARGE_MODEL_DIR = '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
-BASE_MODEL_DIR = '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
 
 from apex.multi_tensor_apply import multi_tensor_applier
 # TODO: uncomment to enable fp16
@@ -49,7 +46,10 @@ from apex.multi_tensor_apply import multi_tensor_applier
 
 def setup_model(model_config):
     arch = model_config['arch']
-    config_file = os.path.join(LARGE_MODEL_DIR if arch == 'large' else BASE_MODEL_DIR, 'bert_config.json')
+    config_file = os.path.join(
+        model_config['large_model_dir'] if arch == 'large' else model_config['base_model_dir'],
+        'bert_config.json'
+    )
     config = modeling.BertConfig.from_json_file(config_file)
     # Padding for divisibility by 8
     if config.vocab_size % 8 != 0:
@@ -66,7 +66,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     np.random.seed(seed)
     torch.manual_seed(seed)
     squad_version = model_config['squad_version']
-    squad_file = SQUAD_VERSION1 if squad_version == 1 else SQUAD_VERSION2
+    squad_file = constants.squad_version1 if squad_version == 1 else constants.squad_version2
     train_examples = read_squad_examples(
         input_file=squad_file,
         is_training=True,
@@ -104,7 +104,10 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5,
                              warmup=0.1,
                              t_total=num_train_optimization_steps)
-    vocab_file = os.path.join(LARGE_MODEL_DIR if model_config['arch'] == 'large' else BASE_MODEL_DIR, 'vocab.txt')
+    vocab_file = os.path.join(
+        model_config['large_model_dir'] if model_config['arch'] == 'large' else model_config['base_model_dir'],
+        'vocab.txt'
+    )
     tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
 
     cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
@@ -137,8 +140,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     model.train()
     # TODO: this requires amp_C package which isn't avaiable for a pure python apex
     # gradClipper = GradientClipper(max_grad_norm=1.0)
-    loss_sum = 0
-    print_every = 50
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
         for _ in range(num_epochs):
             for batch_idx, batch in enumerate(train_dataloader):
@@ -174,8 +175,4 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     optimizer.step()
                     optimizer.zero_grad()
 
-                loss_sum += loss.item()
-                if batch_idx % print_every == 0:
-                    print(f"current loss: {loss_sum/print_every}")
-                    loss_sum = 0
 

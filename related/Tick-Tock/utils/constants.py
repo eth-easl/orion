@@ -1,4 +1,11 @@
-imagenet_root = '/cluster/scratch/xianma/vision/train'
-cifar10_root = '/cluster/scratch/xianma/cifar10'
-lsun_root = '/cluster/scratch/xianma/lsun'
-mnist_root = '/cluster/scratch/xianma/mnist'
+# to be loaded from config.yaml
+imagenet_root = None
+cifar10_root = None
+lsun_root = None
+mnist_root = None
+squad_version1 = None
+squad_version2 = None
+wmt16_en_de_root = None
+coco_root = None
+wikitext_103_dir = None
+

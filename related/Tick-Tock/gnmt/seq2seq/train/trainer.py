@@ -180,7 +180,3 @@ class Seq2SeqTrainer:
             # .step() includes zero_grad
             self.fp_optimizer.step(loss, self.optimizer, self.scheduler, update=True)
 
-        loss_per_token = loss_per_batch / int(sum(tgt_length - 1))
-        loss_per_sentence = loss_per_batch / B
-
-        return loss_per_token, loss_per_sentence

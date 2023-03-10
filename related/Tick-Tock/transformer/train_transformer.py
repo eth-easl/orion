@@ -13,13 +13,14 @@ import yaml
 import transformer.lamb as lamb
 from transformer.data_utils import *
 from transformer.mem_transformer import MemTransformerLM
+import utils.constants as constants
 import sys
 try:
     from apex import amp
 except ModuleNotFoundError:
     warnings.warn('APEX AMP is unavailable')
 
-WIKITEXT_103_DIR = '/cluster/scratch/xianma/transformer/wikitext-103'
+
 dataset = 'wt103'
 vocab = 'word'
 
@@ -96,7 +97,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     np.random.seed(seed)
     torch.manual_seed(seed)
     batch_size = model_config['batch_size']
-    corpus = get_lm_corpus(datadir=WIKITEXT_103_DIR, dataset='wt103', vocab=model_consts['vocab'])
+    corpus = get_lm_corpus(datadir=constants.wikitext_103_dir, dataset='wt103', vocab=model_consts['vocab'])
     ntokens = len(corpus.vocab)
 
     ext_len = 0
@@ -157,8 +158,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
     mem = None
     clip = 0.25
-    print_every = 50
-    loss_sum = 0
+
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
         for epoch in range(num_epochs):
             for batch_idx, (data, target, seq_len, _) in enumerate(train_iter):
@@ -187,8 +187,4 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     else:
                         optimizer.step()
                     model.zero_grad()
-                loss_sum += loss.item()
-                if batch_idx % print_every == 0:
-                    print(f'current loss: {loss_sum / print_every}')
-                    loss_sum = 0
 

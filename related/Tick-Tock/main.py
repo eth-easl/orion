@@ -3,6 +3,7 @@ import threading
 
 import yaml
 from utils.sync_info import SyncInfo
+import utils.constants as constants
 from vision.train_imagenet import train_wrapper as vision_train_wrapper
 from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
 from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
@@ -25,6 +26,8 @@ model_to_train_wrapper = {
 if __name__ == "__main__":
     with open('./config.yaml', 'r') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
+    for key, value in config['data_dir'].items():
+        constants.__dict__[key] = value
 
     device = torch.device("cuda:0")
 
