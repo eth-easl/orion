@@ -35,7 +35,12 @@ bert:
   arch: base # either base or large
 transformer:
   arch: base # either base or large
-  use_fp16: true
+  use_fp16: false
   amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
   apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
-  batch_size: 32
+  batch_size: 8
+retinanet:
+  dataset_name: coco # coco, openimages, or openimages-mlperf
+  use_amp: false
+  num_workers: 2
+  batch_size: 8

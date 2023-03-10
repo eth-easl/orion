@@ -9,6 +9,8 @@ from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
 from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper
 from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper
 from transformer.train_transformer import train_wrapper as transformer_train_wrapper
+from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
+
 
 model_to_train_wrapper = {
     'nasnet': nasnet_train_wrapper,
@@ -17,6 +19,7 @@ model_to_train_wrapper = {
     'gnmt': gnmt_train_wrapper,
     'bert': bert_train_wrapper,
     'transformer': transformer_train_wrapper,
+    'retinanet': retinanet_train_wrapper,
 }
 
 if __name__ == "__main__":
