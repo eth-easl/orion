@@ -136,7 +136,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
                                all_start_positions, all_end_positions)
     train_sampler = RandomSampler(train_data)
-    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
+    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size, num_workers=model_config['num_workers'])
     model.train()
     # TODO: this requires amp_C package which isn't avaiable for a pure python apex
     # gradClipper = GradientClipper(max_grad_norm=1.0)

@@ -41,6 +41,7 @@ bert:
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
   squad_version: 1 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
   batch_size: 32
+  num_workers: 2
   arch: base # either base or large
   large_model_dir: '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
   base_model_dir: '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
