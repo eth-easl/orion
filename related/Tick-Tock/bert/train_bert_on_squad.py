@@ -146,8 +146,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     batch = tuple(t.to(device) for t in batch)
                     input_ids, input_mask, segment_ids, start_positions, end_positions = batch
                     start_logits, end_logits = model(input_ids, segment_ids, input_mask)
-
-                with BackwardControl(tid, batch_idx, sync_info, my_stream):
                     if len(start_positions.size()) > 1:
                         start_positions = start_positions.squeeze(-1)
                     if len(end_positions.size()) > 1:
@@ -156,6 +154,8 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     ignored_index = start_logits.size(1)
                     start_positions.clamp_(0, ignored_index)
                     end_positions.clamp_(0, ignored_index)
+
+                with BackwardControl(tid, batch_idx, sync_info, my_stream):
                     loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
                     start_loss = loss_fct(start_logits, start_positions)
                     end_loss = loss_fct(end_logits, end_positions)

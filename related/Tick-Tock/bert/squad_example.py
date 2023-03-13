@@ -2,6 +2,7 @@ from bert.tokenization import whitespace_tokenize
 import collections
 import json
 
+# copied from https://github.com/NVIDIA/DeepLearningExamples/blob/6610c05c330b887744993fca30532cbb9561cbde/PyTorch/LanguageModeling/BERT/run_squad.py#L101
 class InputFeatures(object):
     """A single set of features of data."""
 
@@ -31,7 +32,7 @@ class InputFeatures(object):
         self.end_position = end_position
         self.is_impossible = is_impossible
 
-
+# copied from https://github.com/NVIDIA/DeepLearningExamples/blob/6610c05c330b887744993fca30532cbb9561cbde/PyTorch/LanguageModeling/BERT/run_squad.py#L61
 class SquadExample(object):
     """
     A single training/test example for the Squad dataset.
@@ -71,7 +72,7 @@ class SquadExample(object):
             s += ", is_impossible: %r" % (self.is_impossible)
         return s
 
-
+# copied from https://github.com/NVIDIA/DeepLearningExamples/blob/6610c05c330b887744993fca30532cbb9561cbde/PyTorch/LanguageModeling/BERT/run_squad.py#L131
 def read_squad_examples(input_file, is_training, version_2_with_negative):
     """Read a SQuAD json file into a list of SquadExample."""
     with open(input_file, "r", encoding='utf-8') as reader:
@@ -149,6 +150,7 @@ def read_squad_examples(input_file, is_training, version_2_with_negative):
                 examples.append(example)
     return examples
 
+# copied from https://github.com/NVIDIA/DeepLearningExamples/blob/6610c05c330b887744993fca30532cbb9561cbde/PyTorch/LanguageModeling/BERT/run_squad.py#L348
 def _improve_answer_span(doc_tokens, input_start, input_end, tokenizer,
                          orig_answer_text):
     """Returns tokenized answer spans that better match the annotated answer."""
@@ -185,7 +187,7 @@ def _improve_answer_span(doc_tokens, input_start, input_end, tokenizer,
 
     return (input_start, input_end)
 
-
+# copied from https://github.com/NVIDIA/DeepLearningExamples/blob/6610c05c330b887744993fca30532cbb9561cbde/PyTorch/LanguageModeling/BERT/run_squad.py#L385
 def _check_is_max_context(doc_spans, cur_span_index, position):
     """Check if this is the 'max context' doc span for the token."""
 
@@ -222,7 +224,7 @@ def _check_is_max_context(doc_spans, cur_span_index, position):
 
     return cur_span_index == best_span_index
 
-
+# copied from https://github.com/NVIDIA/DeepLearningExamples/blob/6610c05c330b887744993fca30532cbb9561cbde/PyTorch/LanguageModeling/BERT/run_squad.py#L209
 def convert_examples_to_features(examples, tokenizer, max_seq_length,
                                  doc_stride, max_query_length, is_training):
     """Loads a data file into a list of `InputBatch`s."""

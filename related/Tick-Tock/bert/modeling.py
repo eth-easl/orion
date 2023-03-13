@@ -622,18 +622,6 @@ class BertPreTrainedModel(nn.Module):
         if isinstance(module, nn.Linear) and module.bias is not None:
             module.bias.data.zero_()
 
-    # @torch.jit.ignore
-    def checkpoint_activations(self, val):
-        def _apply_flag(module):
-            if hasattr(module, "_checkpoint_activations"):
-                module._checkpoint_activations=val
-        self.apply(_apply_flag)
-    def enable_apex(self, val):
-        def _apply_flag(module):
-            if hasattr(module, "apex_enabled"):
-                module.apex_enabled=val
-        self.apply(_apply_flag)
-
     @classmethod
     def from_scratch(cls, pretrained_model_name_or_path, distill_config=None, pooler=True, *inputs, **kwargs):
         resolved_config_file = os.path.join(
