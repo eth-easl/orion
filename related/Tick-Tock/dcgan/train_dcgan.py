@@ -3,7 +3,7 @@ from torchvision import models, datasets, transforms
 import torch
 import torch.nn as nn
 from dcgan.dcgan import *
-
+import random
 import utils.constants as constants
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
@@ -55,6 +55,9 @@ def setup_dataloader(model_config):
 
 
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+    seed = int(time.time())
+    random.seed(seed)
+    torch.manual_seed(seed)
     dataloader, num_channels = setup_dataloader(model_config)
     latent_z_vec_size = model_config['latent_z_vec_size']
     netG = Generator(
