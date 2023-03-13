@@ -29,6 +29,12 @@
 #define UNROLLED_ELEMENTWISE_KERNEL "void at::native::unrolled_elementwise_kernel"
 #define REDUCE_KERNEL "void at::native::reduce_kernel"
 #define MAX_POOL_FORWARD_NCHW "void at::native::(anonymous namespace)::max_pool_forward_nchw"
+#define ELEMENTWISE_KERNEL_WITH_INDEX "void (anonymous namespace)::elementwise_kernel_with_index"
+#define ELEMENTWISE_KERNEL "void at::native::elementwise_kernel"
+#define INDEX_SELECT_LARGE_INDEX "void at::native::(anonymous namespace)::indexSelectLargeIndex"
+#define VECTORIZED_LAYER_NORM_KERNEL "void at::native::(anonymous namespace)::vectorized_layer_norm_kernel"
+#define SOFTMAX_WARP_FORWARD "void (anonymous namespace)::softmax_warp_forward"
+#define CAT_ARRAY_BATCHED_COPY "void at::native::(anonymous namespace)::CatArrayBatchedCopy"
 
 #define MOBILENET "mobilenet"
 #define VGG16 "vgg16"
@@ -307,10 +313,60 @@ typedef struct cublasSgemm_record {
 
 } cublasSgemm_record;
 
+
+typedef struct cublasSgemmStridedBatched_record {
+
+	cublasHandle_t handle;
+	cublasOperation_t transa;
+	cublasOperation_t transb;
+	int m;
+	int n;
+	int k;
+	const float *alpha;
+       	const float *A;
+       	int lda;
+       	long long int strideA;
+       	const float *B;
+       	int ldb;
+       	long long int strideB;
+       	const float *beta;
+       	float *C;
+       	int ldc;
+       	long long int strideC;
+       	int batchCount;
+
+	cublasSgemmStridedBatched_record(cublasHandle_t handle_arg, cublasOperation_t transa_arg, cublasOperation_t transb_arg, int m_arg, int n_arg, int k_arg, const float *alpha_arg, const float *A_arg, int lda_arg, long long int strideA_arg, const float *B_arg, int ldb_arg, long long int strideB_arg, const float *beta_arg, float *C_arg, int ldc_arg, long long int strideC_arg, int batchCount_arg) {
+
+		handle = handle_arg;
+		transa = transa_arg;
+		transb = transb_arg;
+		m = m_arg;
+		n = n_arg;
+		k = k_arg;
+		alpha = alpha_arg;
+		A = A_arg;
+		lda = lda_arg;
+		strideA = strideA_arg;
+		B = B_arg;
+		ldb = ldb_arg;
+		strideB = strideB_arg;
+		beta = beta_arg;
+		C = C_arg;
+		ldc = ldc_arg;
+		strideC = strideC_arg;
+		batchCount = batchCount_arg;
+	}
+
+
+	~cublasSgemmStridedBatched_record() {}
+
+
+} cublasSgemmStridedBatched_record;
+
 //////////////////////////////////////////////////
 
 
-enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD, CUDNN_RNN_INF_RECORD, CUBLAS_SGEMM_RECORD};
+enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD, CUDNN_RNN_INF_RECORD, CUBLAS_SGEMM_RECORD, CUBLAS_SGEMM_STRIDED_RECORD};
 
 union func_data {
 
@@ -320,6 +376,7 @@ union func_data {
 	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
 	cudnnRNNForwardInference_record cudnnRnnInfRecord;
 	cublasSgemm_record cublasSgemmRecord;
+	cublasSgemmStridedBatched_record cublasSgemmStridedRecord;
 	memcpy_record mrecord;
 	malloc_record malrecord;
 	free_record frecord;

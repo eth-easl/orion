@@ -18,7 +18,9 @@ class PyScheduler:
                 "resnet50": model_lib_dir + "resnet50",
                 "resnet101": model_lib_dir + "resnet101",
                 "vgg16_bn": model_lib_dir + "vgg16_bn",
-                "mobilenet": model_lib_dir + "mobilenet"
+                "mobilenet": model_lib_dir + "mobilenet",
+                "gnmt": model_lib_dir + "gnmt_50_64",
+                "bert": model_lib_dir + "bert_large_8"
         }
     
     def run_scheduler(self, barrier, tids, model_names):

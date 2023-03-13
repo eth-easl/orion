@@ -474,6 +474,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[3] = data_ptr;
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// TODO: why BERT has problem here?
+			wait = true;
 		}
 		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
 			
@@ -511,10 +513,97 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			// TODO: check why invalid memory accesses here (for both reads and writes)
 			wait = true;
 		}
+		else if (!strncmp(kernel_name, ELEMENTWISE_KERNEL_WITH_INDEX, 57)) {
+
+			void** new_args = (void**)malloc(3*sizeof(void*));
+			new_args[0]  = (int*)malloc(sizeof(int));
+			*(((int*)new_args[0])) = *((int*)(args[0]));
+			
+			new_args[1] = args[1];
+			new_args[2] = args[2];
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// used in bert, only once so just wait
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, INDEX_SELECT_LARGE_INDEX, 61)) {
+
+			void** new_args = (void**)malloc(8*sizeof(void*));
+			new_args[0] = args[0];
+			new_args[1] = args[1];
+			new_args[2] = args[2];
+
+			for (int i=3; i<5; i++) {
+				new_args[i] = (int*)malloc(sizeof(int));
+				*(((int*)new_args[i])) = *((int*)(args[i]));
+			}
+
+			for (int i=5; i<7; i++) {
+				new_args[i] = (unsigned int*)malloc(sizeof(unsigned int));
+				*(((unsigned int*)new_args[i])) = *((unsigned int*)(args[i]));
+			}
+			
+			new_args[7] = (int64_t*)malloc(sizeof(int64_t));
+			*(((int64_t*)new_args[7])) = *((int64_t*)(args[7]));
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// invalid memory acces - why?
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, ELEMENTWISE_KERNEL, 35)) {
+
+			void** new_args = (void**)malloc(8*sizeof(void*));
+			
+			new_args[0] = (int*)malloc(sizeof(int));
+			*(((int*)new_args[0])) = *((int*)(args[0]));
+
+			new_args[1] = args[1];
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// TODO: VERY IMPORTANT - invalid memory access - why?
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, SOFTMAX_WARP_FORWARD, 48)) {
+			
+			void** new_args = (void**)malloc(8*sizeof(void*));
+			new_args[0] = args[0];
+			new_args[1] = args[1];
+			new_args[5] = args[5];
+
+			for (int i=2; i<5; i++) {
+				new_args[i] = (int*)malloc(sizeof(int));
+				*(((int*)new_args[i])) = *((int*)(args[i]));
+			}
+
+			new_args[6] = (int*)malloc(sizeof(int));
+			*(((int*)new_args[6])) = *((int*)(args[6]));
+
+			new_args[7] = (bool*)malloc(sizeof(bool));
+			*(((bool*)new_args[7])) = *((bool*)(args[7]));
+			
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+		
+		}
+		else if (!strncmp(kernel_name, VECTORIZED_LAYER_NORM_KERNEL, 68)) {
+
+			void** new_args = (void**)malloc(8*sizeof(void*));
+			
+			new_args[0] = (int*)malloc(sizeof(int));
+			*(((int*)new_args[0])) = *((int*)(args[0]));
+
+			new_args[1] = (float*)malloc(sizeof(float));
+			*(((float*)new_args[1])) = *((int*)(args[1]));
+
+			for (int i=2; i<8; i++)
+				new_args[i] = args[i];
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// TODO: FIXME!!!!!!
+			wait = true;
+		}
 		else {
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 		}
 
 
@@ -900,6 +989,64 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	
 	return status;
 
+}
+
+
+cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount) {
+
+	int idx = get_idx();
+	assert (idx >= 0);
+	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+
+	cublasSgemmStridedBatched_record record = {
+		handle,
+		transa,
+		transb,
+		m,
+		n,
+		k,
+		alpha,
+		A,
+		lda,
+		strideA,
+		B,
+		ldb,
+		strideB,
+		beta,
+		C,
+		ldc,
+		strideC,
+		batchCount
+	};
+
+	union func_data new_func_data;
+	new_func_data.cublasSgemmStridedRecord = record;
+	func_record new_record = {CUBLAS_SGEMM_STRIDED_RECORD, new_func_data};
+
+	if (idx < 2) {
+
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemmStridedBatched, handle is %p\n", func_indexes[idx], handle);
+	
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+	
+	}
+	else {
+
+		cublasStatus_t (*function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
+
+		*(void **)(&function) = dlsym(RTLD_NEXT, "cublasSgemmStridedBatched");
+		assert(function != NULL);
+
+		status = (*function)(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
+		assert (status == CUBLAS_STATUS_SUCCESS);
+		DEBUG_PRINT("CUBLAS status is %d\n", status);
+	}
+
+	return status;
 }
 
 cublasStatus_t cublasDestroy(cublasHandle_t handle) {

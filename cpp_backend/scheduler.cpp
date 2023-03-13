@@ -68,6 +68,12 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	assert(cublas_sgemm_function != NULL);
 
 
+	// CUBLAS sgemm strided
+	cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
+
+	*(void **)(&cublas_sgemm_strided_function) = dlsym(RTLD_DEFAULT, "cublasSgemmStridedBatched");
+	assert(&cublas_sgemm_strided_function != NULL);
+
 	cudaStream_t sched_stream;
 	cudaStreamCreate(&sched_stream);
 
@@ -162,6 +168,15 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 						printf("func is %p\n", cublas_sgemm_function); 
 						DEBUG_PRINT("handle is %p\n", record.handle);
 						(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
+					}
+
+					else if (frecord.type == CUBLAS_SGEMM_STRIDED_RECORD) {
+						DEBUG_PRINT("found a new sgemm strided record!\n");
+
+						cublasSgemmStridedBatched_record record = frecord.data.cublasSgemmStridedRecord;
+						DEBUG_PRINT("handle is %p\n", record.handle);
+						(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
+
 					}
 					
 					buffers[i]->pop();
