@@ -1,0 +1,51 @@
+---
+# these configs serve as constants and are not supposed to be tuned; not all fields are used
+base:
+  cuda: true
+  n_layer: 16
+  d_model: 512
+  n_head: 8
+  d_head: 64
+  d_inner: 2048
+  dropout: 0.1
+  dropatt: 0.0
+  optim: jitlamb
+  lr: 0.01
+  eta_min: 0.001
+  roll: true
+  warmup_step: 1000
+  max_step: 40000
+  tgt_len: 192
+  mem_len: 192
+  init_std: 0.02
+  eval_tgt_len: 192
+  log_interval: 10
+  eval_interval: 5000
+  vocab: word
+  adaptive: true
+  div_val: 1
+
+large:
+   cuda: true
+   n_layer: 18
+   d_model: 1024
+   n_head: 16
+   d_head: 64
+   d_inner: 4096
+   dropout: 0.2
+   dropatt: 0.2
+   optim: jitlamb
+   lr: 0.01
+   eta_min: 0.0001
+   roll: true
+   warmup_step: 16000
+   max_step: 100000
+   tgt_len: 384
+   mem_len: 384
+   init_std: 0.005
+   eval_tgt_len: 128
+   log_interval: 100
+   eval_interval: 5000
+   vocab: word
+   adaptive: true
+   div_val: 4
