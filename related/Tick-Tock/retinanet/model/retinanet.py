@@ -379,7 +379,7 @@ class RetinaNet(nn.Module):
         self._has_warned = False
 
 
-    @torch.jit.unused
+    # @torch.jit.unused
     def eager_outputs(self, losses, detections):
         # type: (Dict[str, Tensor], List[Dict[str, Tensor]]) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]
         if self.training:
@@ -502,7 +502,6 @@ class RetinaNet(nn.Module):
         images, targets = self.transform(images, targets)
 
         # Check for degenerate boxes
-        # TODO: Move this to a function
         if targets is not None:
             for target_idx, target in enumerate(targets):
                 boxes = target["boxes"]
@@ -523,7 +522,6 @@ class RetinaNet(nn.Module):
         if isinstance(features, torch.Tensor):
             features = OrderedDict([('0', features)])
 
-        # TODO: Do we want a list or a dict?
         features = list(features.values())
 
         # compute the retinanet heads outputs using the features

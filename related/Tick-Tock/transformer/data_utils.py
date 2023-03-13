@@ -46,7 +46,7 @@ class LMOrderedIterator(object):
         data = data[:n_step * bsz]
 
         # Evenly divide the data across the bsz batches.
-        self.data = data.view(bsz, -1).t().contiguous().pin_memory()
+        self.data = data.view(bsz, -1).t().contiguous() # .pin_memory()
 
         if mem_len and warmup:
             self.warmup_batches = (mem_len + bptt - 1) // bptt

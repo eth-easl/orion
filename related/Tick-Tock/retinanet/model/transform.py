@@ -9,13 +9,13 @@ from retinanet.model.image_list import ImageList
 from retinanet.model.roi_heads import paste_masks_in_image
 
 
-@torch.jit.unused
+# @torch.jit.unused
 def _get_shape_onnx(image: Tensor) -> Tensor:
     from torch.onnx import operators
     return operators.shape_as_tensor(image)[-2:]
 
 
-@torch.jit.unused
+# @torch.jit.unused
 def _fake_cast_onnx(v: Tensor) -> float:
     # ONNX requires a tensor but here we fake its type for JIT.
     return v

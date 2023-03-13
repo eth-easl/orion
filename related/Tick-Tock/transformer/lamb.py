@@ -146,7 +146,7 @@ class Lamb(Optimizer):
         return loss
 
 
-@torch.jit.script
+# @torch.jit.script
 def lamb_kernel(param, grad, exp_avg, exp_avg_sq, beta1: float,
                 beta2: float, step_size: float, eps: float, weight_decay: float):
     exp_avg = exp_avg * beta1 + (1 - beta1) * grad

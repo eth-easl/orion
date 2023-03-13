@@ -55,7 +55,6 @@ def setup_model(model_config):
     if config.vocab_size % 8 != 0:
         config.vocab_size += 8 - (config.vocab_size % 8)
     model = modeling.BertForQuestionAnswering(config)
-    # TODO: load the pre-trained weights into the model
     return model
 
 

@@ -70,7 +70,7 @@ class IntermediateLayerGetter(nn.ModuleDict):
         return out
 
 
-@torch.jit._script_if_tracing
+# @torch.jit._script_if_tracing
 def encode_boxes(reference_boxes, proposals, weights):
     # type: (torch.Tensor, torch.Tensor, torch.Tensor) -> torch.Tensor
     """

@@ -67,7 +67,7 @@ def batched_nms(
         return _batched_nms_coordinate_trick(boxes, scores, idxs, iou_threshold)
 
 
-@torch.jit._script_if_tracing
+# @torch.jit._script_if_tracing
 def _batched_nms_coordinate_trick(
     boxes: Tensor,
     scores: Tensor,
@@ -87,7 +87,7 @@ def _batched_nms_coordinate_trick(
     return keep
 
 
-@torch.jit._script_if_tracing
+# @torch.jit._script_if_tracing
 def _batched_nms_vanilla(
     boxes: Tensor,
     scores: Tensor,

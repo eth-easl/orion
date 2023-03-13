@@ -127,7 +127,7 @@ class SyntheticDataset(Dataset):
                           collate_fn=collate_fn,
                           sampler=sampler,
                           num_workers=num_workers,
-                          pin_memory=True,
+                          pin_memory=False,
                           drop_last=False)
 
     def __len__(self):
@@ -194,7 +194,7 @@ class RawTextDataset(Dataset):
                           collate_fn=collate_fn,
                           sampler=sampler,
                           num_workers=num_workers,
-                          pin_memory=True,
+                          pin_memory=False,
                           drop_last=False)
 
 
@@ -323,7 +323,7 @@ class TextDataset(Dataset):
                           collate_fn=collate_fn,
                           sampler=sampler,
                           num_workers=num_workers,
-                          pin_memory=True,
+                          pin_memory=False,
                           drop_last=False)
 
 

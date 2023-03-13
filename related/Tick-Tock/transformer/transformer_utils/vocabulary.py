@@ -208,7 +208,6 @@ class OpenAIVocab(Vocab):
         return len(self.tokenizer)
 
     def count_file(self, path, verbose=False, add_eos=False):
-        # TODO: train from scratch, respect self.max_size
         pass
 
     def build_vocab(self):

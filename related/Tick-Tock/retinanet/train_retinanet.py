@@ -60,7 +60,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     train_batch_sampler = torch.utils.data.BatchSampler(train_sampler, batch_size, drop_last=True)
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_sampler=train_batch_sampler, num_workers=model_config['num_workers'],
-        pin_memory=True, collate_fn=collate_fn)
+        pin_memory=False, collate_fn=collate_fn)
 
     model.train()
 

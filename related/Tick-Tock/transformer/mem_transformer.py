@@ -21,7 +21,7 @@ from transformer.transformer_utils.log_uniform_sampler import sample_logits
 from transformer.transformer_utils.proj_adaptive_softmax import ProjectedAdaptiveLogSoftmax
 
 
-@torch.jit.script
+# @torch.jit.script
 def add_and_scale(tensor1, tensor2, alpha: float):
     return alpha * (tensor1 + tensor2)
 

@@ -467,7 +467,7 @@ class BertEncoder(nn.Module):
         self.output_all_encoded_layers = config.output_all_encoded_layers
         self._checkpoint_activations = False
 
-    @torch.jit.unused
+    # @torch.jit.unused
     def checkpointed_forward(self, hidden_states, attention_mask):
         def custom(start, end):
             def custom_forward(*inputs):
@@ -622,7 +622,7 @@ class BertPreTrainedModel(nn.Module):
         if isinstance(module, nn.Linear) and module.bias is not None:
             module.bias.data.zero_()
 
-    @torch.jit.ignore
+    # @torch.jit.ignore
     def checkpoint_activations(self, val):
         def _apply_flag(module):
             if hasattr(module, "_checkpoint_activations"):
@@ -1348,7 +1348,6 @@ class BertForQuestionAnswering(BertPreTrainedModel):
             self.distill_config = {'use_pred_states' : False }
 
         self.bert = BertModel(config)
-        # TODO check with Google if it's normal there is no dropout on the token classifier of SQuAD in the TF version
         # self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
         if not self.distillation or self.distill_config["use_pred_states"]:

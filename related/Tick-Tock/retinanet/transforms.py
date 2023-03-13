@@ -17,10 +17,6 @@ def _flip_coco_person_keypoints(kps, width):
     return flipped_data
 
 
-################################################################################
-# TODO(ahmadki): remove this block, and replace get_image_size with F.get_image_size
-#                once https://github.com/pytorch/vision/pull/4321 is public
-
 from PIL import Image, ImageOps, ImageEnhance
 Image.MAX_IMAGE_PIXELS = None
 from typing import Any
@@ -31,7 +27,7 @@ except ImportError:
     accimage = None
 
 
-@torch.jit.unused
+# @torch.jit.unused
 def _is_pil_image(img: Any) -> bool:
     if accimage is not None:
         return isinstance(img, (Image.Image, accimage.Image))
@@ -43,7 +39,7 @@ def get_image_size_tensor(img: Tensor) -> List[int]:
     _assert_image_tensor(img)
     return [img.shape[-1], img.shape[-2]]
 
-@torch.jit.unused
+# @torch.jit.unused
 def get_image_size_pil(img: Any) -> List[int]:
     if _is_pil_image(img):
         return list(img.size)
@@ -70,7 +66,7 @@ def get_image_num_channels_tensor(img: Tensor) -> int:
 
     raise TypeError(f"Input ndim should be 2 or more. Got {img.ndim}")
 
-@torch.jit.unused
+# @torch.jit.unused
 def get_image_num_channels_pil(img: Any) -> int:
     if _is_pil_image(img):
         return len(img.getbands())
@@ -206,7 +202,7 @@ class RandomZoomOut(nn.Module):
             raise ValueError("Invalid canvas side range provided {}.".format(side_range))
         self.p = p
 
-    @torch.jit.unused
+    # @torch.jit.unused
     def _get_fill_value(self, is_pil):
         # type: (bool) -> int
         # We fake the type to make it work on JIT
