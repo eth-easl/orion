@@ -581,7 +581,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*(((bool*)new_args[7])) = *((bool*)(args[7]));
 			
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-		
+			// TODO: FIXME!
+			wait = true;
 		}
 		else if (!strncmp(kernel_name, VECTORIZED_LAYER_NORM_KERNEL, 68)) {
 
@@ -599,6 +600,34 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: FIXME!!!!!!
 			wait = true;
+		}
+		else if (!strncmp(kernel_name, TRIU_TRIL_KERNEL, 33)) {
+
+			void** new_args = (void**)malloc(4*sizeof(void*));
+			new_args[0] = args[0];
+			new_args[1] = args[1];
+
+			for (int i=2; i<4; i++) {
+				new_args[i] = (int64_t*)malloc(sizeof(int64_t));
+				*(((int64_t*)new_args[i])) = *((int64_t*)(args[i]));
+			}
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, CAT_ARRAY_BATCHED_COPY, 59)) {
+			
+			void** new_args = (void**)malloc(5*sizeof(void*));
+			for (int i=0; i<3; i++)
+				new_args[i] = args[i];
+
+			new_args[3] = (int*)malloc(sizeof(int));
+			*(((int*)new_args[3])) = *((int*)(args[3]));
+
+			new_args[4] = (unsigned int*)malloc(sizeof(unsigned int));
+			*(((unsigned int*)new_args[4])) = *((unsigned int*)(args[4]));
+			
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+
 		}
 		else {
 

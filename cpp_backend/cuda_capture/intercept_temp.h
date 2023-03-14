@@ -35,6 +35,7 @@
 #define VECTORIZED_LAYER_NORM_KERNEL "void at::native::(anonymous namespace)::vectorized_layer_norm_kernel"
 #define SOFTMAX_WARP_FORWARD "void (anonymous namespace)::softmax_warp_forward"
 #define CAT_ARRAY_BATCHED_COPY "void at::native::(anonymous namespace)::CatArrayBatchedCopy"
+#define TRIU_TRIL_KERNEL "void at::native::triu_tril_kernel"
 
 #define MOBILENET "mobilenet"
 #define VGG16 "vgg16"

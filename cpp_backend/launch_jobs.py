@@ -12,6 +12,10 @@ sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/
 from gnmt_trainer import gnmt_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
 from bert_trainer import bert_loop
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
+from transformer_trainer import transformer_loop
+
 
 from train_imagenet import imagenet_loop
 from scheduler_frontend import PyScheduler
@@ -37,12 +41,12 @@ def launch_jobs():
 
     print(torch.__version__)
 
-    model_names = ["bert", "bert"]
+    model_names = ["transformer", "transformer"]
 
     #torch.cuda.synchronize()
 
     # start threads
-    train_thread_0 = threading.Thread(target=bert_loop, args=(8, None, 0, barrier, 0))
+    train_thread_0 = threading.Thread(target=transformer_loop, args=(32, None, 0, barrier, 0))
     train_thread_0.start()
 
     #train_thread_1 = threading.Thread(target=imagenet_loop, args=(model_names[1], 32, None, 0, barrier, 1))

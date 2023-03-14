@@ -20,7 +20,8 @@ class PyScheduler:
                 "vgg16_bn": model_lib_dir + "vgg16_bn",
                 "mobilenet": model_lib_dir + "mobilenet",
                 "gnmt": model_lib_dir + "gnmt_50_64",
-                "bert": model_lib_dir + "bert_large_8"
+                "bert": model_lib_dir + "bert_large_8",
+                "transformer": model_lib_dir + "transformer_xl_32"
         }
     
     def run_scheduler(self, barrier, tids, model_names):
