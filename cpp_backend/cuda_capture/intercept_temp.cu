@@ -693,6 +693,24 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			wait = true;
 		}
+		else if (!strncmp(kernel_name, CUB_DEVICE_SCAN_INIT_KERNEL, 46)) {
+			
+			void** new_args = (void**)malloc(2*sizeof(void*));
+			new_args[0] = args[0];
+
+			new_args[1] = (size_t*)malloc(sizeof(size_t));
+			*(((size_t*)new_args[1])) = *((size_t*)(args[1]));
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, CUB_DEVICE_SCAN_KERNEL, 42)) {
+
+			
+			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
+			wait = true;
+
+		}
 		else {
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};

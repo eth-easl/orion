@@ -18,6 +18,8 @@ from transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
 from retinanet_trainer import retinanet_loop
 
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
+from dlrm_trainer import dlrm_loop
 
 from train_imagenet import imagenet_loop
 from scheduler_frontend import PyScheduler
@@ -43,12 +45,12 @@ def launch_jobs():
 
     print(torch.__version__)
 
-    model_names = ["retinanet", "retinanet"]
+    model_names = ["dlrm", "dlrm"]
 
     #torch.cuda.synchronize()
 
     # start threads
-    train_thread_0 = threading.Thread(target=retinanet_loop, args=(8, None, 0, barrier, 0))
+    train_thread_0 = threading.Thread(target=dlrm_loop, args=(16384, None, 0, barrier, 0))
     train_thread_0.start()
 
     #train_thread_1 = threading.Thread(target=imagenet_loop, args=(model_names[1], 32, None, 0, barrier, 1))

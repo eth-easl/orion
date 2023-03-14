@@ -26,6 +26,9 @@
 #define CUB_DEVICE_COMPACT_INIT_KERNEL "void at_cuda_detail::cub::DeviceCompactInitKernel"
 #define CUB_DEVICE_SELECT_SWEEP_KERNEL "void at_cuda_detail::cub::DeviceSelectSweepKernel"
 #define CUB_DEVICE_REDUCE_KERNEL "void at_cuda_detail::cub::DeviceReduceKernel"
+#define CUB_DEVICE_SCAN_INIT_KERNEL "void at_cuda_detail::cub::DeviceScanInitKernel"
+#define CUB_DEVICE_SCAN_KERNEL "void at_cuda_detail::cub::DeviceScanKernel"
+
 #define INDEX_ELEMENTWISE_KERNEL "void at::native::index_elementwise_kernel"
 #define UNROLLED_ELEMENTWISE_KERNEL "void at::native::unrolled_elementwise_kernel"
 #define REDUCE_KERNEL "void at::native::reduce_kernel"

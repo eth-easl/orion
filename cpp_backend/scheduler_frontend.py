@@ -22,7 +22,8 @@ class PyScheduler:
                 "gnmt": model_lib_dir + "gnmt_50_64",
                 "bert": model_lib_dir + "bert_large_8",
                 "transformer": model_lib_dir + "transformer_xl_32",
-                "retinanet": model_lib_dir + "retinanet_resnet_8"
+                "retinanet": model_lib_dir + "retinanet_resnet_8",
+                "dlrm": model_lib_dir + "dlrm_small"
         }
     
     def run_scheduler(self, barrier, tids, model_names):
