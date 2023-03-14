@@ -15,6 +15,8 @@ from bert_trainer import bert_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
 from transformer_trainer import transformer_loop
+sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
+from retinanet_trainer import retinanet_loop
 
 
 from train_imagenet import imagenet_loop
@@ -41,12 +43,12 @@ def launch_jobs():
 
     print(torch.__version__)
 
-    model_names = ["transformer", "transformer"]
+    model_names = ["retinanet", "retinanet"]
 
     #torch.cuda.synchronize()
 
     # start threads
-    train_thread_0 = threading.Thread(target=transformer_loop, args=(32, None, 0, barrier, 0))
+    train_thread_0 = threading.Thread(target=retinanet_loop, args=(8, None, 0, barrier, 0))
     train_thread_0.start()
 
     #train_thread_1 = threading.Thread(target=imagenet_loop, args=(model_names[1], 32, None, 0, barrier, 1))

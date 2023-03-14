@@ -25,6 +25,7 @@
 #define CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL "void at_cuda_detail::cub::DeviceReduceSingleTileKernel"
 #define CUB_DEVICE_COMPACT_INIT_KERNEL "void at_cuda_detail::cub::DeviceCompactInitKernel"
 #define CUB_DEVICE_SELECT_SWEEP_KERNEL "void at_cuda_detail::cub::DeviceSelectSweepKernel"
+#define CUB_DEVICE_REDUCE_KERNEL "void at_cuda_detail::cub::DeviceReduceKernel"
 #define INDEX_ELEMENTWISE_KERNEL "void at::native::index_elementwise_kernel"
 #define UNROLLED_ELEMENTWISE_KERNEL "void at::native::unrolled_elementwise_kernel"
 #define REDUCE_KERNEL "void at::native::reduce_kernel"
@@ -36,6 +37,8 @@
 #define SOFTMAX_WARP_FORWARD "void (anonymous namespace)::softmax_warp_forward"
 #define CAT_ARRAY_BATCHED_COPY "void at::native::(anonymous namespace)::CatArrayBatchedCopy"
 #define TRIU_TRIL_KERNEL "void at::native::triu_tril_kernel"
+#define UPSAMPLE_BILINEAR2D_OUT_FRAME "void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame"
+#define UPSAMPLE_NEAREST2D_NHWC_OUT_FRAME "void at::native::(anonymous namespace)::upsample_nearest2d_nhwc_out_frame"
 
 #define MOBILENET "mobilenet"
 #define VGG16 "vgg16"

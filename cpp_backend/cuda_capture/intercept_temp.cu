@@ -332,8 +332,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	//if (idx < 2)
-	//	block(idx);
+	// TODO: remove this
+	if (idx < 2)
+		block(idx);
 
 	if (idx < 2) 
 		DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
@@ -400,7 +401,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*((int*)new_args[4]) = *((int*)(args[4]));
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			
+			wait = true;
 
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_COMPACT_INIT_KERNEL, 49)) {
@@ -415,7 +416,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[2] = args[2];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-		
+			wait = true;
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_SELECT_SWEEP_KERNEL, 49)) {
 			
@@ -627,7 +628,70 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*(((unsigned int*)new_args[4])) = *((unsigned int*)(args[4]));
 			
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// TODO: FIXME
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, UPSAMPLE_BILINEAR2D_OUT_FRAME, 69)) {
+			
+			void** new_args = (void**)malloc(6*sizeof(void*));
+			
+			new_args[0] = (int*)malloc(sizeof(int));
+			*(((int*)new_args[0])) = *((int*)(args[0]));
 
+			new_args[1] = (float*)malloc(sizeof(float));
+			*(((float*)new_args[1])) = *((float*)(args[1]));
+
+			new_args[2] = (float*)malloc(sizeof(float));
+			*(((float*)new_args[2])) = *((float*)(args[2]));
+
+			new_args[3] = (bool*)malloc(sizeof(bool));
+			*(((bool*)new_args[3])) = *((bool*)(args[3]));
+
+			new_args[4] = args[4];
+			new_args[5] = args[5];
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			
+			// TODO: FIXME
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, UPSAMPLE_NEAREST2D_NHWC_OUT_FRAME, 73)) {
+
+			void** new_args = (void**)malloc(10*sizeof(void*));
+			
+			new_args[0] = args[0];
+			new_args[1] = args[1];
+
+			for (int i=2; i<7; i++){
+				new_args[i] = (size_t*)malloc(sizeof(size_t));
+				*(((size_t*)new_args[i])) = *((size_t*)(args[i]));
+			}
+
+			new_args[9] = (size_t*)malloc(sizeof(size_t));
+			*(((size_t*)new_args[9])) = *((size_t*)(args[9]));
+
+			for (int i=7; i<9; i++){
+				new_args[i] = (float*)malloc(sizeof(float));
+				*(((float*)new_args[i])) = *((float*)(args[i]));
+			}
+			
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			// TODO: FIXME
+			wait = true;
+		}
+		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_KERNEL, 44)) {
+			
+			void** new_args = (void**)malloc(5*sizeof(void*));
+			new_args[0] = args[0];
+			new_args[1] = args[1];
+			new_args[3] = args[3];
+			new_args[4] = args[4];
+
+			new_args[2] = (int*)malloc(sizeof(int));
+			*(((int*)new_args[2])) = *((int*)(args[2]));
+
+			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+			wait = true;
 		}
 		else {
 

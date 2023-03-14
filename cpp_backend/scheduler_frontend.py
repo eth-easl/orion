@@ -21,7 +21,8 @@ class PyScheduler:
                 "mobilenet": model_lib_dir + "mobilenet",
                 "gnmt": model_lib_dir + "gnmt_50_64",
                 "bert": model_lib_dir + "bert_large_8",
-                "transformer": model_lib_dir + "transformer_xl_32"
+                "transformer": model_lib_dir + "transformer_xl_32",
+                "retinanet": model_lib_dir + "retinanet_resnet_8"
         }
     
     def run_scheduler(self, barrier, tids, model_names):
