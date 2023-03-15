@@ -9,26 +9,26 @@ from torchvision import models
 import torch
 
 sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
-from gnmt_trainer import gnmt_loop
+from benchmark_suite.gnmt_trainer import gnmt_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
-from bert_trainer import bert_loop
+from benchmark_suite.bert_trainer import bert_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
-from transformer_trainer import transformer_loop
+from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
-from retinanet_trainer import retinanet_loop
+from benchmark_suite.retinanet_trainer import retinanet_loop
 
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
-from dlrm_trainer import dlrm_loop
+from benchmark_suite.dlrm_trainer import dlrm_loop
 
-from train_imagenet import imagenet_loop
-from scheduler_frontend import PyScheduler
+from benchmark_suite.train_imagenet import imagenet_loop
+from cpp_backend.scheduler.scheduler_frontend import PyScheduler
 
 def seed_everything(seed: int):
     import random, os
     import numpy as np
-                    
-    
+
+
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)

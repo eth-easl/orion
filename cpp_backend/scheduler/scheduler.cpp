@@ -11,11 +11,13 @@ using namespace std;
 void* klib;
 
 
-void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
-	
 
-	DEBUG_PRINT("entered busy wait!\n");	
-			
+
+void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
+
+
+	DEBUG_PRINT("entered busy wait!\n");
+
 	queue<struct func_record>** buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
 	//(queue<struct kernel_record>**)qbuffers;
 	for (int i=0; i<num_clients; i++)
@@ -28,7 +30,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	// for memcpy
 	cudaError_t (*memcpy_function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
 	*(void **)(&memcpy_function) = dlsym (RTLD_DEFAULT, "cudaMemcpy");
-	
+
 	// for memcpy_async
 	cudaError_t (*memcpy_async_function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
 	*(void **)(&memcpy_async_function) = dlsym (RTLD_DEFAULT, "cudaMemcpyAsync");
@@ -78,7 +80,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	cudaStreamCreate(&sched_stream);
 
 	int seen[num_clients] = {0};
-	
+
 	int num_kernels = 1000;
 	int num_iters = 1;
 	int it = 0;
@@ -100,7 +102,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
 					struct func_record frecord = buffers[i]->front();
-					
+
 					// case 1
 					if (frecord.type == KERNEL_RECORD) {
 						//DEBUG_PRINT("found a new kernel record! kernel func is %p\n", kernel_function);
@@ -126,7 +128,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 					}
 
-					else if (frecord.type == CUDNN_CONV_RECORD) {					
+					else if (frecord.type == CUDNN_CONV_RECORD) {
 						//DEBUG_PRINT("found a new cudnn conv record!\n");
 						cudnnConvolutionForward_record record = frecord.data.cudnnConvRecord;
 						cudnnSetStream(record.handle, 0);
@@ -143,7 +145,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 					}
 
 					else if (frecord.type == CUDNN_BNORM_INF_RECORD) {
-						//DEBUG_PRINT("found a new bnorm inf record!\n"); 
+						//DEBUG_PRINT("found a new bnorm inf record!\n");
 						cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
 						cudnnSetStream(record.handle, 0);
 						(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
@@ -153,19 +155,19 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 
 					else if (frecord.type == CUDNN_RNN_INF_RECORD) {
 						DEBUG_PRINT("found a new cudnn rnn inf record!\n");
-						
+
 						cudnnRNNForwardInference_record record = frecord.data.cudnnRnnInfRecord;
 						DEBUG_PRINT("CX IS %p\n", record.cx);
 						(*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
-					}				
-						
+					}
+
 
 					else if (frecord.type == CUBLAS_SGEMM_RECORD) {
 						//DEBUG_PRINT("found a new sgemm record!\n");
-					
+
 						// TODO: what to do about streams?
 						cublasSgemm_record record = frecord.data.cublasSgemmRecord;
-						printf("func is %p\n", cublas_sgemm_function); 
+						printf("func is %p\n", cublas_sgemm_function);
 						DEBUG_PRINT("handle is %p\n", record.handle);
 						(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
 					}
@@ -178,7 +180,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 						(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
 
 					}
-					
+
 					buffers[i]->pop();
 
 				}
@@ -193,13 +195,13 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	}
 
 	return NULL;
-	
+
 }
 
 extern "C" {
 
 	Scheduler* sched_init() {
-		
+
 		Scheduler* sched = new Scheduler();
 		return sched;
 	}
@@ -236,7 +238,7 @@ extern "C" {
 			fprintf(stderr, "Error: %s\n", dlerror());
 			return;
 		}
-		
+
 #ifdef SYS_gettid
 		pid_t mytid = syscall(SYS_gettid);
 #else
@@ -247,7 +249,7 @@ extern "C" {
 		thread_ids_all[0] = tid0;
 		thread_ids_all[1] = tid1;
 		thread_ids_all[2] = mytid;
-		
+
 		DEBUG_PRINT("Scheduler setup the thread ids to be %d, %d, %d\n", thread_ids_all[0], thread_ids_all[1], thread_ids_all[2]);
 
 
@@ -265,19 +267,17 @@ extern "C" {
 
 	}
 
-	void* sched_func(Scheduler* scheduler, int num_clients) { 
-		
+	void* sched_func(Scheduler* scheduler, int num_clients) {
+
 		//Scheduler* scheduler = (Scheduler*)(arg);
-		void** buffers = (void**)dlsym(klib, "kqueues"); 
-	
+		void** buffers = (void**)dlsym(klib, "kqueues");
+
 		DEBUG_PRINT("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
-		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes"); 
+		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
 
 		DEBUG_PRINT("entered sched func!\n");
 		scheduler->busy_wait(buffers, mutexes, num_clients);
-		DEBUG_PRINT("exited sched func!\n");  
+		DEBUG_PRINT("exited sched func!\n");
 		return NULL;
 	}
 }
-
-
