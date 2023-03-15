@@ -8,7 +8,10 @@ void* klib;
 void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
 
 
+
 	DEBUG_PRINT("entered busy wait!\n");
+
+	register_functions();
 
 	queue<struct func_record>** buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
 	//(queue<struct kernel_record>**)qbuffers;
@@ -43,6 +46,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
 					struct func_record frecord = buffers[i]->front();
+					printf("found a record!\n");
 					schedule_kernel(frecord, sched_stream);
 					buffers[i]->pop();
 

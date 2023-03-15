@@ -10,8 +10,8 @@ utils.o: utils.cpp
 scheduler.o: scheduler.cpp
 	$(CC) $(CFLAGS) -fPIC -shared -c scheduler.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
 
-scheduler.so: scheduler.o kernel_launch.o
-	 $(CC) $(CFLAGS) -fPIC -shared kernel_launch.o scheduler.o -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o scheduler.so
+scheduler.so: scheduler.o utils.o
+	 $(CC) $(CFLAGS) -fPIC -shared utils.o  scheduler.o -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o scheduler.so
 
 
 all:

@@ -22,7 +22,7 @@ sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/
 from benchmark_suite.dlrm_trainer import dlrm_loop
 
 from benchmark_suite.train_imagenet import imagenet_loop
-from scheduler.scheduler_frontend import PyScheduler
+from scheduler_frontend import PyScheduler
 
 def seed_everything(seed: int):
     import random, os
@@ -40,7 +40,7 @@ def launch_jobs():
     # init
     barrier = threading.Barrier(2)
     home_directory = os.path.expanduser( '~' )
-    sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler.so")
+    sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler.so")
     py_scheduler = PyScheduler(sched_lib)
 
     print(torch.__version__)
