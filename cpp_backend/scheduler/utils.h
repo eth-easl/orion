@@ -17,3 +17,13 @@ extern cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cu
 
 void register_functions();
 void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream);
+
+typedef struct op_info {
+
+	string name;
+	bool profile; // 1: compute-bound, 0: mem-bound
+	int mem;
+	int sm_used;
+	float duration;
+
+} op_info;

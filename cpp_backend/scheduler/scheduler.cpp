@@ -2,7 +2,9 @@
 
 using namespace std;
 
+// globals
 void* klib;
+vector<vector<op_info>> op_info_vector;
 
 
 void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
@@ -74,18 +76,35 @@ extern "C" {
 	}
 
 
-	void populate_kernel_names(vector<char*>* kernel_vector, char* kernel_info_file) {
+	void populate_kernel_info(vector<char*>* kernel_vector, char* kernel_info_file, vector<op_info> ops) {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		printf("KERNEL_INFO_FILE IS %s\n", kernel_info_file);
 		string line;
 		std::ifstream infile(kernel_info_file);
 		assert (infile.is_open());
+
+		// ignore header
+		std::getline(infile, line);
+
 		while (std::getline(infile, line))
 		{
-			char* kernel_name = new char[line.length()+1];
-			strcpy(kernel_name, line.c_str());
+
+			std::cout << line << std::endl;
+			vector<string> v;
+			stringstream sline = stringstream(line);
+			while (sline.good()) {
+        		string substr;
+        		getline(sline, substr, ',');
+        		v.push_back(substr);
+    		}
+
+			char* kernel_name = new char[v[0].length()+1];
+			strcpy(kernel_name, v[0].c_str());
 			kernel_vector->push_back(kernel_name);
+
+			op_info info = {v[0], bool(stoi(v[1])), stoi(v[2]), stoi(v[3]), stof(v[4])};
+			ops.push_back(info);
 		}
 
 		infile.close();
@@ -127,10 +146,13 @@ extern "C" {
 		model_names_all[0] = model0;
 		model_names_all[1] = model1;
 
+		op_info_vector.push_back({});
+		op_info_vector.push_back({});
+
 		printf("func_names_all is %p\n", func_names_all);
 		printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[0], func_names_all[1]);
-		populate_kernel_names(func_names_all[0], file0);
-		populate_kernel_names(func_names_all[1], file1);
+		populate_kernel_info(func_names_all[0], file0, op_info_vector[0]);
+		populate_kernel_info(func_names_all[1], file1, op_info_vector[1]);
 
 	}
 

@@ -12,15 +12,6 @@
 
 #include "utils.h"
 
-struct sched_args {
-
-	volatile void** buffer;
-	pthread_barrier_t* barrier;
-	pthread_mutex_t** mutexes;
-
-};
-
-
 //void* sched_func(void* args);
 
 class Scheduler {
