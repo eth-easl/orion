@@ -1,6 +1,6 @@
 #include "scheduler.h"
 
-void register_functions() {
+unordered_map register_functions() {
 
     // for kernel
 	cudaError_t (*kernel_function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
