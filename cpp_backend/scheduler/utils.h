@@ -15,15 +15,17 @@ extern cudnnStatus_t (*cudnn_rnn_function)(cudnnHandle_t handle, const cudnnRNND
 extern cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 extern cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
 
-void register_functions();
-void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream);
-
 typedef struct op_info {
 
 	string name;
-	bool profile; // 1: compute-bound, 0: mem-bound
+	int profile; // 1: compute-bound, 0: mem-bound, -1: unclear
 	int mem;
 	int sm_used;
 	float duration;
 
 } op_info;
+
+void register_functions();
+void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream);
+void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int idx0, int idx1, int max_sms, cudaStream_t stream);
+void pop_from_queue(queue<struct func_record>* &client_queue, pthread_mutex_t* &client_mutex);

@@ -40,6 +40,6 @@ class PyScheduler:
         barrier.wait()
 
         num_clients = 1 if tids[1]==0 else 2
-        self._sched_lib.sched_func(self._scheduler, num_clients)
+        self._sched_lib.sched_func(self._scheduler, num_clients, False)
 
         torch.cuda.synchronize()

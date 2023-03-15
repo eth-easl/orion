@@ -17,8 +17,8 @@
 class Scheduler {
 
 	public:
-		void* busy_wait(void** buffers, pthread_mutex_t** mutexes, int num_clients);
-
+		void* busy_wait_fifo(void** buffers, pthread_mutex_t** mutexes, int num_clients);
+		void* busy_wait_profile(void** buffers, pthread_mutex_t** mutexes, int num_clients);
 };
 
 //void* sched_func(void* sched);

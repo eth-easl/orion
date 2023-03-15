@@ -5,13 +5,11 @@ using namespace std;
 // globals
 void* klib;
 vector<vector<op_info>> op_info_vector;
+int max_sms = 1000; // TODO: set real value
 
+void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
 
-void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
-
-
-
-	DEBUG_PRINT("entered busy wait!\n");
+	DEBUG_PRINT("entered busy wait FIFO!\n");
 
 	register_functions();
 
@@ -19,7 +17,6 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	//(queue<struct kernel_record>**)qbuffers;
 	for (int i=0; i<num_clients; i++)
 		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
-
 
 
 	cudaStream_t sched_stream;
@@ -64,7 +61,74 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 	}
 
 	return NULL;
+}
 
+
+void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
+
+	DEBUG_PRINT("entered busy wait PROFILE!\n");
+
+	register_functions();
+	queue<struct func_record>** buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
+	//(queue<struct kernel_record>**)qbuffers;
+	for (int i=0; i<num_clients; i++)
+		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
+
+	cudaStream_t sched_stream;
+	cudaStreamCreate(&sched_stream);
+
+	int seen[num_clients] = {0};
+
+	int num_kernels = 1000;
+	int num_iters = 1;
+	int it = 0;
+
+	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
+
+	DEBUG_PRINT("for ID 1: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[1], buffers[1], buffers);
+
+	while (it < num_iters) {
+		while(1) {
+			if (seen[0]==num_kernels and seen[1]==num_kernels)
+				break;
+
+			vector<func_record*> frecords = {NULL, NULL};
+
+			for (int i=0; i<num_clients; i++) {
+				if (seen[i] == num_kernels)
+					continue;
+				pthread_mutex_lock(mutexes[i]);
+				volatile int sz = buffers[i]->size();
+				if (sz > 0) {
+					struct func_record frecord = buffers[i]->front();
+					frecords[i] = &frecord;
+					printf("found a record on client %d!\n", i);
+				}
+				pthread_mutex_unlock(mutexes[i]);
+			}
+
+			if ((frecords[0] != NULL) and (frecords[1] != NULL))
+				schedule_pair(frecords, buffers, mutexes, op_info_vector, seen[0], seen[1], max_sms, sched_stream);
+
+			else if (frecords[0] != NULL) {
+				schedule_kernel(*(frecords[0]), sched_stream);
+				pop_from_queue(buffers[0], mutexes[0]);
+			}
+
+			else if (frecords[1] != NULL) {
+				schedule_kernel(*(frecords[1]), sched_stream);
+				pop_from_queue(buffers[1], mutexes[1]);
+			}
+
+
+		}
+		it += 1;
+		for (int i=0; i<num_clients; i++)
+			seen[i] = 0;
+		DEBUG_PRINT("restart! %d\n", it);
+	}
+
+	return NULL;
 }
 
 extern "C" {
@@ -103,7 +167,7 @@ extern "C" {
 			strcpy(kernel_name, v[0].c_str());
 			kernel_vector->push_back(kernel_name);
 
-			op_info info = {v[0], bool(stoi(v[1])), stoi(v[2]), stoi(v[3]), stof(v[4])};
+			op_info info = {v[0], stoi(v[1]), stoi(v[2]), stoi(v[3]), stof(v[4])};
 			ops.push_back(info);
 		}
 
@@ -156,7 +220,7 @@ extern "C" {
 
 	}
 
-	void* sched_func(Scheduler* scheduler, int num_clients) {
+	void* sched_func(Scheduler* scheduler, int num_clients, bool profile_mode) {
 
 		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues");
@@ -165,7 +229,10 @@ extern "C" {
 		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
 
 		DEBUG_PRINT("entered sched func!\n");
-		scheduler->busy_wait(buffers, mutexes, num_clients);
+		if (profile_mode)
+			scheduler->busy_wait_profile(buffers, mutexes, num_clients);
+		else
+			scheduler->busy_wait_fifo(buffers, mutexes, num_clients);
 		DEBUG_PRINT("exited sched func!\n");
 		return NULL;
 	}
