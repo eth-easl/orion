@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <cuda_runtime.h>
-#include <cuda.h>
 //#include <cublas.h>
 #include <dlfcn.h>
 #include <queue>
@@ -11,11 +9,11 @@
 #include <iostream>
 #include <string.h>
 #include <fstream>
-#include "cuda_capture/intercept_temp.h"
-#include "kernel_launch.h"
+
+#include "utils.h"
 
 struct sched_args {
-	
+
 	volatile void** buffer;
 	pthread_barrier_t* barrier;
 	pthread_mutex_t** mutexes;

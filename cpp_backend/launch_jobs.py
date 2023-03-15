@@ -22,7 +22,7 @@ sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/
 from benchmark_suite.dlrm_trainer import dlrm_loop
 
 from benchmark_suite.train_imagenet import imagenet_loop
-from cpp_backend.scheduler.scheduler_frontend import PyScheduler
+from scheduler.scheduler_frontend import PyScheduler
 
 def seed_everything(seed: int):
     import random, os

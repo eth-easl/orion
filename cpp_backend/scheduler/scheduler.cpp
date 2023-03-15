@@ -43,7 +43,7 @@ void* Scheduler::busy_wait(void** qbuffers, pthread_mutex_t** mutexes, int num_c
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
 					struct func_record frecord = buffers[i]->front();
-					schedule_kernel(frecord);
+					schedule_kernel(frecord, sched_stream);
 					buffers[i]->pop();
 
 				}
