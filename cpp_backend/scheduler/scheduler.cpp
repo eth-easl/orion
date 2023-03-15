@@ -46,9 +46,9 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 				if (sz > 0) {
 					struct func_record frecord = buffers[i]->front();
 					printf("found a record!\n");
-					schedule_kernel(frecord, sched_stream);
+					schedule_kernel(frecord, sched_stream, i);
 					buffers[i]->pop();
-
+					seen[i] += 1;
 				}
 				pthread_mutex_unlock(mutexes[i]);
 			}
@@ -100,24 +100,23 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 				pthread_mutex_lock(mutexes[i]);
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
-					struct func_record frecord = buffers[i]->front();
-					frecords[i] = &frecord;
-					printf("found a record on client %d!\n", i);
+					frecords[i] = &(buffers[i]->front());
 				}
 				pthread_mutex_unlock(mutexes[i]);
 			}
 
-			if ((frecords[0] != NULL) and (frecords[1] != NULL))
-				schedule_pair(frecords, buffers, mutexes, op_info_vector, seen[0], seen[1], max_sms, sched_stream);
+			if ((frecords[0] != NULL) and (frecords[1] != NULL)) {
+				schedule_pair(frecords, buffers, mutexes, op_info_vector, seen, max_sms, sched_stream);
+			}
 
 			else if (frecords[0] != NULL) {
-				schedule_kernel(*(frecords[0]), sched_stream);
-				pop_from_queue(buffers[0], mutexes[0]);
+				schedule_kernel(*(frecords[0]), sched_stream, 0);
+				pop_from_queue(buffers[0], mutexes[0], true);
 			}
 
 			else if (frecords[1] != NULL) {
-				schedule_kernel(*(frecords[1]), sched_stream);
-				pop_from_queue(buffers[1], mutexes[1]);
+				schedule_kernel(*(frecords[1]), sched_stream, 1);
+				pop_from_queue(buffers[1], mutexes[1], true);
 			}
 
 
@@ -140,7 +139,7 @@ extern "C" {
 	}
 
 
-	void populate_kernel_info(vector<char*>* kernel_vector, char* kernel_info_file, vector<op_info> ops) {
+	void populate_kernel_info(vector<char*>* kernel_vector, char* kernel_info_file, vector<op_info> &ops) {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		printf("KERNEL_INFO_FILE IS %s\n", kernel_info_file);
@@ -154,7 +153,7 @@ extern "C" {
 		while (std::getline(infile, line))
 		{
 
-			std::cout << line << std::endl;
+			//std::cout << line << std::endl;
 			vector<string> v;
 			stringstream sline = stringstream(line);
 			while (sline.good()) {
@@ -216,6 +215,7 @@ extern "C" {
 		printf("func_names_all is %p\n", func_names_all);
 		printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[0], func_names_all[1]);
 		populate_kernel_info(func_names_all[0], file0, op_info_vector[0]);
+		printf("----------- SIZE: %d\n", op_info_vector[0].size());
 		populate_kernel_info(func_names_all[1], file1, op_info_vector[1]);
 
 	}

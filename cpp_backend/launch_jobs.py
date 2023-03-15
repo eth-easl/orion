@@ -38,31 +38,31 @@ def seed_everything(seed: int):
 def launch_jobs():
 
     # init
-    barrier = threading.Barrier(2)
+    barrier = threading.Barrier(3)
     home_directory = os.path.expanduser( '~' )
     sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler.so")
     py_scheduler = PyScheduler(sched_lib)
 
     print(torch.__version__)
 
-    model_names = ["dlrm", "dlrm"]
+    model_names = ["transformer", "transformer"]
 
     #torch.cuda.synchronize()
 
     # start threads
-    train_thread_0 = threading.Thread(target=dlrm_loop, args=(16384, None, 0, barrier, 0))
+    train_thread_0 = threading.Thread(target=transformer_loop, args=(32, None, 0, barrier, 0))
     train_thread_0.start()
 
-    #train_thread_1 = threading.Thread(target=imagenet_loop, args=(model_names[1], 32, None, 0, barrier, 1))
-    #train_thread_1.start()
+    train_thread_1 = threading.Thread(target=transformer_loop, args=(32, None, 0, barrier, 0))
+    train_thread_1.start()
 
-    tids = [train_thread_0.native_id, 0] #train_thread_1.native_id]
+    tids = [train_thread_0.native_id, train_thread_1.native_id]
     sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names))
 
     sched_thread.start()
 
     train_thread_0.join()
-    #train_thread_1.join()
+    train_thread_1.join()
 
     print("train joined!")
 

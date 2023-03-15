@@ -11,7 +11,8 @@ cudnnStatus_t (*cudnn_rnn_function)(cudnnHandle_t handle, const cudnnRNNDescript
 cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
 
-void pop_from_queue(queue<struct func_record>* &client_queue, pthread_mutex_t* &client_mutex) {
+void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, bool lock_aquired) {
+	//if (!lock_aquired)
 	pthread_mutex_lock(client_mutex);
 	client_queue->pop();
 	pthread_mutex_unlock(client_mutex);
@@ -63,17 +64,18 @@ void register_functions() {
 }
 
 
-void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
+void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int idx) {
 
     // case 1
+	//DEBUG_PRINT("FRECORD TYPE IS %d\n", frecord.type);
 	if (frecord.type == KERNEL_RECORD) {
-		DEBUG_PRINT("found a new kernel record! kernel func is %p\n", kernel_function);
+		DEBUG_PRINT("found a new kernel record from idx %d! kernel func is %p\n", idx, kernel_function);
 		kernel_record record = frecord.data.krecord;
 		(*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, sched_stream);
 	}
 
 	else if (frecord.type == MEMCPY_RECORD) {
-		DEBUG_PRINT("found a new memcpy record!\n");
+		DEBUG_PRINT("found a new memcpy record from idx %d!\n", idx);
 		memcpy_record record = frecord.data.mrecord;
 		if (not record.async) {
 			(*memcpy_function)(record.dst, record.src, record.count, record.kind);
@@ -84,13 +86,13 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
 	}
 
 	else if (frecord.type == MALLOC_RECORD) {
-		DEBUG_PRINT("found a new malloc record!\n");
+		DEBUG_PRINT("found a new malloc record from idx %d!\n", idx);
 		malloc_record record = frecord.data.malrecord;
 		(*malloc_function)(record.devPtr, record.size);
     }
 
 	else if (frecord.type == CUDNN_CONV_RECORD) {
-	    DEBUG_PRINT("found a new cudnn conv record!\n");
+	    DEBUG_PRINT("found a new cudnn conv record from idx %d!\n", idx);
 		cudnnConvolutionForward_record record = frecord.data.cudnnConvRecord;
 		cudnnSetStream(record.handle, 0);
 		(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
@@ -98,7 +100,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
 	}
 
 	else if (frecord.type == CUDNN_BNORM_RECORD) {
-		DEBUG_PRINT("found a new bnorm record!\n");
+		DEBUG_PRINT("found a new bnorm record from idx %d!\n", idx);
 		cudnnBatchNormalizationForwardTrainingEx_record record = frecord.data.cudnnBNormRecord;
 		cudnnSetStream(record.handle, 0);
 		(*cudnn_bnorm_function)(record.handle, record.mode, record.bnOps, record.alpha, record.beta, record.xDesc, record.xData, record.zDesc, record.zData, record.yDesc, record.yData, record.bnScaleBiasMeanVarDesc, record.bnScaleData, record.bnBiasData, record.exponentialAverageFactor, record.resultRunningMeanData, record.resultRunningVarianceData, record.epsilon, record.saveMean, record.saveInvVariance, record.activationDesc, record.workspace, record.workSpaceSizeInBytes, record.reserveSpace, record.reserveSpaceSizeInBytes);
@@ -106,7 +108,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
 	}
 
 	else if (frecord.type == CUDNN_BNORM_INF_RECORD) {
-		DEBUG_PRINT("found a new bnorm inf record!\n");
+		DEBUG_PRINT("found a new bnorm inf record from idx %d!\n", idx);
 		cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
 		cudnnSetStream(record.handle, 0);
 		(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
@@ -114,13 +116,13 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
 	}
 
 	else if (frecord.type == CUDNN_RNN_INF_RECORD) {
-		DEBUG_PRINT("found a new cudnn rnn inf record!\n");
+		DEBUG_PRINT("found a new cudnn rnn inf record from idx %d!\n", idx);
 		cudnnRNNForwardInference_record record = frecord.data.cudnnRnnInfRecord;
 		(*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
 	}
 
     else if (frecord.type == CUBLAS_SGEMM_RECORD) {
-		DEBUG_PRINT("found a new sgemm record!\n");
+		DEBUG_PRINT("found a new sgemm record from idx %d!\n", idx);
 
 		// TODO: what to do about streams?
 		cublasSgemm_record record = frecord.data.cublasSgemmRecord;
@@ -129,7 +131,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
 	}
 
 	else if (frecord.type == CUBLAS_SGEMM_STRIDED_RECORD) {
-		DEBUG_PRINT("found a new sgemm strided record!\n");
+		DEBUG_PRINT("found a new sgemm strided record from idx %d!\n", idx);
 
 		cublasSgemmStridedBatched_record record = frecord.data.cublasSgemmStridedRecord;
 		DEBUG_PRINT("handle is %p\n", record.handle);
@@ -139,39 +141,47 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream) {
 }
 
 
-void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int idx0, int idx1, int max_sms, cudaStream_t stream) {
+void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int* seen, int max_sms, cudaStream_t stream) {
 
-	op_info op_info_0 = op_info_vector[0][idx0];
-	op_info op_info_1 = op_info_vector[1][idx1];
+	op_info op_info_0 = op_info_vector[0][seen[0]];
+	op_info op_info_1 = op_info_vector[1][seen[1]];
 
 	if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
-		schedule_kernel(*(frecords[0]), stream);
-		pop_from_queue(buffers[0], mutexes[0]);
+		schedule_kernel(*(frecords[0]), stream, 0);
+		pop_from_queue(buffers[0], mutexes[0], true);
+		seen[0] += 1;
 	}
 	// different profiles
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
-		schedule_kernel(*(frecords[0]), stream); // TODO: fix streams + priority
-		schedule_kernel(*(frecords[1]), stream); // TODO: fix streams + priority
-		pop_from_queue(buffers[0], mutexes[0]);
-		pop_from_queue(buffers[0], mutexes[0]);
+		schedule_kernel(*(frecords[0]), stream, 0); // TODO: fix streams + priority
+		schedule_kernel(*(frecords[1]), stream, 1); // TODO: fix streams + priority
+		pop_from_queue(buffers[0], mutexes[0], true);
+		pop_from_queue(buffers[1], mutexes[1], true);
+		seen[0] += 1;
+		seen[1] += 1;
 	}
 
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
-		schedule_kernel(*(frecords[0]), stream); // TODO: fix streams + priority
-		schedule_kernel(*(frecords[1]), stream); // TODO: fix streams + priority
-		pop_from_queue(buffers[0], mutexes[0]);
-		pop_from_queue(buffers[0], mutexes[0]);
+		schedule_kernel(*(frecords[0]), stream, 0); // TODO: fix streams + priority
+		schedule_kernel(*(frecords[1]), stream, 1); // TODO: fix streams + priority
+		pop_from_queue(buffers[0], mutexes[0], true);
+		pop_from_queue(buffers[1], mutexes[1], true);
+		seen[0] += 1;
+		seen[1] += 1;
 	}
 
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
-		schedule_kernel(*(frecords[0]), stream); // TODO: fix streams + priority
-		schedule_kernel(*(frecords[1]), stream); // TODO: fix streams + priority
-		pop_from_queue(buffers[0], mutexes[0]);
-		pop_from_queue(buffers[0], mutexes[0]);
+		schedule_kernel(*(frecords[0]), stream, 0); // TODO: fix streams + priority
+		schedule_kernel(*(frecords[1]), stream, 1); // TODO: fix streams + priority
+		pop_from_queue(buffers[0], mutexes[0], true);
+		pop_from_queue(buffers[1], mutexes[1], true);
+		seen[0] += 1;
+		seen[1] += 1;
 	}
 
 	else {
-		schedule_kernel(*(frecords[0]), stream);
-		pop_from_queue(buffers[0], mutexes[0]);
+		schedule_kernel(*(frecords[0]), stream, 0);
+		pop_from_queue(buffers[0], mutexes[0], true);
+		seen[0] += 1;
 	}
 }
