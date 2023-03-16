@@ -1,12 +1,8 @@
 import pandas as pd
+import sys
 
-
-#pwd = 'GNMT-WMT16-BS256'
-
-#pwd = 'RetinaNet-OpenImages-BS8'
-
-pwd = 'ResNet50-ImageNet-BS16'
-df = pd.read_csv(f'{pwd}/output_16_train.csv')
+pwd = sys.argv[1]
+df = pd.read_csv(f'{pwd}/output_ncu.csv')
 kernels = []
 metrics_to_get = ['Duration', 'Block Size', 'Grid Size', 'Compute (SM) [%]', 'DRAM Throughput', 'Registers Per Thread', 'Static Shared Memory Per Block']
 
@@ -61,4 +57,4 @@ labels = ['Kernel_Name', 'DRAM_Throughput(%)', 'Duration(ns)', 'Compute(SM)(%)',
 
 df_new = pd.DataFrame(kernels, columns=labels)
 print(df_new)
-df_new.to_csv(f'{pwd}/output_16_train_processed.csv')
+df_new.to_csv(f'{pwd}/output_ncu_processed.csv')
