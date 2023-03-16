@@ -121,10 +121,6 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 		err = (*function)(devPtr, size);
 		CHECK_CUDA_ERROR(err);
-		cudaError_t err_all = cudaDeviceSynchronize();
-		CHECK_CUDA_ERROR(err_all);
-		DEBUG_PRINT("[IDX %d] Malloc Done!!\n", idx);
-
 	}
 
 	return err;
@@ -149,13 +145,34 @@ cudaError_t cudaMallocManaged(void** devPtr, size_t size, unsigned int flags) {
 
 cudaError_t cudaFree(void* devPtr) {
 
-	DEBUG_PRINT("*********************************** Caught cudaFree! Free pointer that holds address %p\n", devPtr);
+	int idx = get_idx();
+	assert (idx >= 0);
+	DEBUG_PRINT("[IDX %d] Caught cudaFree! free up address of %p\n", idx, devPtr);
 
+	cudaError_t err = cudaSuccess;
 	cudaError_t (*function)(void* devPtr);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaFree");
 
-	cudaError_t err = cudaSuccess; //= (*function)(devPtr);
-	CHECK_CUDA_ERROR(err);
+	if (idx < 2) {
+
+		// wait for all kernels or memory operations to finish
+		block(idx,  mutexes, kqueues);
+		free_record new_free_record = {devPtr};
+
+		union func_data new_func_data;
+		new_func_data.frecord = new_free_record;
+		func_record new_record = {FREE_RECORD, new_func_data};
+
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+	}
+	else {
+		err = (*function)(devPtr);
+		CHECK_CUDA_ERROR(err);
+	}
+
 	return err;
 
 }

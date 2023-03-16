@@ -77,7 +77,7 @@ typedef struct memcpy_record {
 typedef struct malloc_record {
 
 	void** devPtr;
-       	size_t size;
+    size_t size;
 
 } malloc_record;
 
