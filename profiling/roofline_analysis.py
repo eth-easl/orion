@@ -20,15 +20,17 @@ mem_bound = 0
 rest = 0
 
 for index, row in df_raw.iterrows():
-    add = row[fadd]
-    mul = row[fmul]
+    add = str(row[fadd])
+    mul = str(row[fmul])
     fma = row[ffma]
     cycles = row[cycles_sec]
     bytes = row[bytes_sec]
+    print(add, mul, fma, cycles, bytes)
 
     fma = float(fma.replace("'", ''))
+    add = float(add.replace("'", ''))
+    mul = float(mul.replace("'", ''))
 
-    print(add, mul, fma, cycles, bytes)
 
     if add or mul or fma:
         flops_cycle = add+mul+fma*2
@@ -53,4 +55,4 @@ df_basic['AI(flops/bytes)'] = ai_list
 df_basic['Roofline_prof'] = roofline_prof
 df_basic.to_csv(f'{pwd}/output_ncu_sms_roofline.csv')
 
-print(f"comp bound: {comp_bound}, mem bound: {mem_bound}, rest: {rest}")
+print(f"comp bound: {comp_bound}, mem bound: {mem_bound}, rest: {rest}, total: {comp_bound+mem_bound+rest}")
