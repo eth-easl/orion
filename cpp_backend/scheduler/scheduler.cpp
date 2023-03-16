@@ -74,12 +74,15 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 	for (int i=0; i<num_clients; i++)
 		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	cudaStream_t sched_stream;
-	cudaStreamCreate(&sched_stream);
+	cudaStream_t* lp_stream0 = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+	cudaStream_t* lp_stream1 = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+	cudaStream_t* hp_stream = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+
+	create_streams(lp_stream0, lp_stream1, hp_stream);
 
 	int seen[num_clients] = {0};
 
-	int num_kernels = 1000;
+	int num_kernels = 2000;
 	int num_iters = 1;
 	int it = 0;
 
@@ -106,17 +109,17 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 			}
 
 			if ((frecords[0] != NULL) and (frecords[1] != NULL)) {
-				schedule_pair(frecords, buffers, mutexes, op_info_vector, seen, max_sms, sched_stream);
+				schedule_pair(frecords, buffers, mutexes, op_info_vector, seen, max_sms, *lp_stream0, *lp_stream1, *hp_stream);
 			}
 
 			else if (frecords[0] != NULL) {
-				schedule_kernel(*(frecords[0]), sched_stream, 0);
-				pop_from_queue(buffers[0], mutexes[0], true);
+				schedule_kernel(*(frecords[0]), *lp_stream0, 0);
+				pop_from_queue(buffers[0], mutexes[0]);
 			}
 
 			else if (frecords[1] != NULL) {
-				schedule_kernel(*(frecords[1]), sched_stream, 1);
-				pop_from_queue(buffers[1], mutexes[1], true);
+				schedule_kernel(*(frecords[1]), *lp_stream1, 1);
+				pop_from_queue(buffers[1], mutexes[1]);
 			}
 
 
@@ -229,6 +232,7 @@ extern "C" {
 		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
 
 		DEBUG_PRINT("entered sched func!\n");
+
 		if (profile_mode)
 			scheduler->busy_wait_profile(buffers, mutexes, num_clients);
 		else

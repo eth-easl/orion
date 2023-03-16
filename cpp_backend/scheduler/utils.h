@@ -28,5 +28,6 @@ typedef struct op_info {
 
 void register_functions();
 void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int idx);
-void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int* seen, int max_sms, cudaStream_t stream);
-void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex,  bool lock_aquired);
+void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int* seen, int max_sms, cudaStream_t lp_stream0, cudaStream_t lp_stream1, cudaStream_t hp_stream);
+void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex);
+void create_streams(cudaStream_t* lp_stream0, cudaStream_t* lp_stream1, cudaStream_t* hp_stream);

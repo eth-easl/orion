@@ -12,11 +12,24 @@ cudnnStatus_t (*cudnn_rnn_function)(cudnnHandle_t handle, const cudnnRNNDescript
 cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
 
-void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, bool lock_aquired) {
-	//if (!lock_aquired)
+void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex) {
 	pthread_mutex_lock(client_mutex);
 	client_queue->pop();
 	pthread_mutex_unlock(client_mutex);
+}
+
+void create_streams(cudaStream_t* lp_stream0, cudaStream_t* lp_stream1, cudaStream_t* hp_stream) {
+
+	int* lp = (int*)malloc(sizeof(int));
+	int* hp = (int*)malloc(sizeof(int));
+
+	cudaDeviceGetStreamPriorityRange(lp, hp);
+	DEBUG_PRINT("Highest stream priority is %d, lowest stream priority is %d\n", *hp, *lp);
+	assert(*lp==0);
+
+	cudaStreamCreateWithPriority(hp_stream, cudaStreamNonBlocking, *hp);
+	cudaStreamCreateWithPriority(lp_stream0, cudaStreamNonBlocking, 0); // default priority
+	cudaStreamCreateWithPriority(lp_stream1, cudaStreamNonBlocking, 0);
 }
 
 void register_functions() {
@@ -157,47 +170,47 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 }
 
 
-void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int* seen, int max_sms, cudaStream_t stream) {
+void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int* seen, int max_sms, cudaStream_t lp_stream0, cudaStream_t lp_stream1, cudaStream_t hp_stream) {
 
 	op_info op_info_0 = op_info_vector[0][seen[0]];
 	op_info op_info_1 = op_info_vector[1][seen[1]];
 
 	if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
-		schedule_kernel(*(frecords[0]), stream, 0);
-		pop_from_queue(buffers[0], mutexes[0], true);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0);
+		pop_from_queue(buffers[0], mutexes[0]);
 		seen[0] += 1;
 	}
 	// different profiles
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
-		schedule_kernel(*(frecords[0]), stream, 0); // TODO: fix streams + priority
-		schedule_kernel(*(frecords[1]), stream, 1); // TODO: fix streams + priority
-		pop_from_queue(buffers[0], mutexes[0], true);
-		pop_from_queue(buffers[1], mutexes[1], true);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0);
+		schedule_kernel(*(frecords[1]), lp_stream1, 1);
+		pop_from_queue(buffers[0], mutexes[0]);
+		pop_from_queue(buffers[1], mutexes[1]);
 		seen[0] += 1;
 		seen[1] += 1;
 	}
 
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
-		schedule_kernel(*(frecords[0]), stream, 0); // TODO: fix streams + priority
-		schedule_kernel(*(frecords[1]), stream, 1); // TODO: fix streams + priority
-		pop_from_queue(buffers[0], mutexes[0], true);
-		pop_from_queue(buffers[1], mutexes[1], true);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0);
+		schedule_kernel(*(frecords[1]), hp_stream, 1);
+		pop_from_queue(buffers[0], mutexes[0]);
+		pop_from_queue(buffers[1], mutexes[1]);
 		seen[0] += 1;
 		seen[1] += 1;
 	}
 
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
-		schedule_kernel(*(frecords[0]), stream, 0); // TODO: fix streams + priority
-		schedule_kernel(*(frecords[1]), stream, 1); // TODO: fix streams + priority
-		pop_from_queue(buffers[0], mutexes[0], true);
-		pop_from_queue(buffers[1], mutexes[1], true);
+		schedule_kernel(*(frecords[0]), hp_stream, 0);
+		schedule_kernel(*(frecords[1]), lp_stream1, 1);
+		pop_from_queue(buffers[0], mutexes[0]);
+		pop_from_queue(buffers[1], mutexes[1]);
 		seen[0] += 1;
 		seen[1] += 1;
 	}
 
 	else {
-		schedule_kernel(*(frecords[0]), stream, 0);
-		pop_from_queue(buffers[0], mutexes[0], true);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0);
+		pop_from_queue(buffers[0], mutexes[0]);
 		seen[0] += 1;
 	}
 }
