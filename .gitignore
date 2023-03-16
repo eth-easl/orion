@@ -4,3 +4,6 @@
 *.pyc
 *.so
 *.o
+*.ncu-rep
+*.svg
+*.png
