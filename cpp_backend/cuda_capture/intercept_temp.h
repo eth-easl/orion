@@ -7,12 +7,13 @@
 #include <cuda.h>
 #include <cudnn.h>
 #include <cublas.h>
+#include <assert.h>
+#include <vector>
 #include <sys/types.h>
 #include <syscall.h>
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <assert.h>
-#include <vector>
+#include "../system_utils.h"
 #include "Torch_Array.h"
 
 #ifdef INCLUDE_TORCH_CUDA
@@ -82,14 +83,14 @@ typedef struct malloc_record {
 
 typedef struct free_record {
 	void* devPtr;
-	
+
 } free_record;
 
 
 // CUDNN
 
 typedef struct cudnnConvolutionForward_record {
-	
+
 	cudnnHandle_t handle;
 	const void *alpha;
 	cudnnTensorDescriptor_t xDesc;
@@ -105,7 +106,7 @@ typedef struct cudnnConvolutionForward_record {
 	void *y;
 
 	cudnnConvolutionForward_record(cudnnHandle_t handle_arg, const void *alpha_arg, const cudnnTensorDescriptor_t xDesc_arg, const void *x_arg, const cudnnFilterDescriptor_t wDesc_arg, const void *w_arg, const cudnnConvolutionDescriptor_t convDesc_arg, cudnnConvolutionFwdAlgo_t algo_arg, void *workSpace_arg, size_t workSpaceSizeInBytes_arg, const void *beta_arg, const cudnnTensorDescriptor_t yDesc_arg, void *y_arg) {
-	
+
 		handle = handle_arg;
 		alpha = alpha_arg;
 		xDesc = xDesc_arg;
@@ -135,7 +136,7 @@ typedef struct cudnnBatchNormalizationForwardTrainingEx_record {
 	const void *beta;
 	cudnnTensorDescriptor_t xDesc;
 	const void *xData;
-	cudnnTensorDescriptor_t zDesc; 
+	cudnnTensorDescriptor_t zDesc;
 	const void *zData;
   	cudnnTensorDescriptor_t yDesc;
 	void  *yData;
@@ -155,7 +156,7 @@ typedef struct cudnnBatchNormalizationForwardTrainingEx_record {
 	size_t reserveSpaceSizeInBytes;
 
 	cudnnBatchNormalizationForwardTrainingEx_record(cudnnHandle_t handle_arg, cudnnBatchNormMode_t mode_arg, cudnnBatchNormOps_t bnOps_arg, const void *alpha_arg, const void *beta_arg, const cudnnTensorDescriptor_t xDesc_arg, const void *xData_arg, const cudnnTensorDescriptor_t zDesc_arg,  const void *zData_arg, const cudnnTensorDescriptor_t yDesc_arg, void *yData_arg, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc_arg, const void *bnScaleData_arg, const void *bnBiasData_arg, double exponentialAverageFactor_arg, void *resultRunningMeanData_arg, void *resultRunningVarianceData_arg, double epsilon_arg, void *saveMean_arg, void *saveInvVariance_arg, const cudnnActivationDescriptor_t activationDesc_arg,  void *workspace_arg, size_t workSpaceSizeInBytes_arg, void *reserveSpace_arg, size_t reserveSpaceSizeInBytes_arg) {
-		
+
 		handle = handle_arg;
 		mode = mode_arg;
 		bnOps = bnOps_arg;
@@ -393,9 +394,44 @@ union func_data {
 };
 
 typedef struct func_record {
-	
+
 	enum func_type type;
 	union func_data data;
 
 } func_record;
 
+
+// globals
+extern queue<func_record> kqueue0;
+extern queue<func_record> kqueue1;
+extern pthread_mutex_t mutex0;
+extern pthread_mutex_t mutex1;
+
+extern vector<char*> fnames0;
+extern vector<char*> fnames1;
+extern volatile pid_t thread_ids[3]; // N threads + scheduler
+
+extern queue<func_record>* kqueues[2];
+extern pthread_mutex_t* mutexes[2];
+extern vector<char*>* func_names[2];
+extern char* model_names[2];
+
+extern int func_indexes[2];
+
+
+// util functions
+int get_idx();
+void block(int idx, pthread_mutex_t** mutexes, queue<func_record>** kqueues);
+
+#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
+template <typename T>
+void check(T err, const char* const func, const char* const file,
+		           const int line)
+{
+	if (err != cudaSuccess)
+	{
+		printf("CUDA Runtime Error at: %s:%d\n", file, line);
+		printf("Error %d, %s\n", err, cudaGetErrorString(err));
+	}
+	assert (err == cudaSuccess);
+}

@@ -1,29 +1,8 @@
-#ifdef DEBUG
-# define DEBUG_PRINT(...) fprintf(stdout, __VA_ARGS__)
-#else
-# define DEBUG_PRINT(...) do {} while (0)
-#endif
-
 #include "intercept_temp.h"
 
 using namespace std;
 using at::native::ReduceOp;
 using at::_isnan;
-
-
-#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
-template <typename T>
-void check(T err, const char* const func, const char* const file,
-		           const int line)
-{
-	if (err != cudaSuccess)
-	{
-		printf("CUDA Runtime Error at: %s:%d\n", file, line);
-		printf("Error %d, %s\n", err, cudaGetErrorString(err));
-	}
-	assert (err == cudaSuccess);
-}
-
 
 template <typename acc_t>
 struct MaxNanFunctor {
@@ -83,26 +62,6 @@ vector<char*>* func_names[2] = {&fnames0, &fnames1};
 char* model_names[2];
 
 int func_indexes[2] = {0, 0};
-int i=0;
-
-int get_idx() {
-
-#ifdef SYS_gettid
-	pid_t tid = syscall(SYS_gettid);
-#else
-#error "SYS_gettid unavailable on this system"
-#endif
-	//DEBUG_PRINT("------------------- tid is %d, %d, %d, %d\n", tid, thread_ids[0], thread_ids[1], thread_ids[2]);
-	if (tid == thread_ids[0])
-		return 0;
-	else if (tid == thread_ids[1])
-		return 1;
-	else if (tid == thread_ids[2])
-		return 2;
-	else
-		return -1;
-}
-
 
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
@@ -125,17 +84,6 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 DEBUG_PRINT("\n");
 }
 
-void block(int idx) {
-
-	while (1) {
-		pthread_mutex_lock(mutexes[idx]);
-		volatile int sz = kqueues[idx]->size(); // wait. TODO: is this needed?
-		pthread_mutex_unlock(mutexes[idx]);
-		if (sz==0)
-			break;
-	}
-
-}
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
@@ -152,7 +100,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	if (idx < 2) {
 
 		// wait for all kernels or memory operations to finish
-		block(idx);
+		block(idx,  mutexes, kqueues);
 
 		malloc_record new_malloc_record = {devPtr, size};
 		union func_data new_func_data;
@@ -165,7 +113,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		pthread_mutex_unlock(mutexes[idx]);
 
 		// wait for mem to be allocated
-		block(idx);
+		block(idx,  mutexes, kqueues);
 		DEBUG_PRINT("[IDX %d] Exit malloc!\n", idx);
 	}
 
@@ -227,8 +175,7 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 	if (idx < 2) {
 
 		// wait for all kernels or memory operations to finish
-		block(idx);
-
+		block(idx,  mutexes, kqueues);
 		memcpy_record new_memcpy_record = {dst, src, count, kind, 0, false};
 
 		union func_data new_func_data;
@@ -240,7 +187,7 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 		pthread_mutex_unlock(mutexes[idx]);
 
 		// wait for memcpy to finish
-		block(idx);
+		block(idx,  mutexes, kqueues);
 	}
 
 	else {
@@ -271,7 +218,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	if (idx < 2) {
 
 		// wait for all kernels or memory operations to finish
-		block(idx);
+		block(idx,  mutexes, kqueues);
 
 		memcpy_record new_memcpy_record = {dst, src, count, kind, stream, true};
 
@@ -284,7 +231,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 		pthread_mutex_unlock(mutexes[idx]);
 
 		// although async, wait for debugging purposes
-		block(idx);
+		block(idx,  mutexes, kqueues);
 	}
 
 	else {
@@ -334,7 +281,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 	// TODO: remove this
 	if (idx < 2)
-		block(idx);
+		block(idx,  mutexes, kqueues);
 
 	if (idx < 2)
 		DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
@@ -729,7 +676,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		func_indexes[idx] += 1;
 
 		//if (wait)
-		block(idx);
+		block(idx,  mutexes, kqueues);
 
 	}
 	else {
@@ -754,417 +701,5 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 // CUDNN ....
 
-cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
-
-
-	int idx = get_idx();
-	assert (idx >= 0);
-	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-
-	// create record
-	cudnnConvolutionForward_record new_conv_record = {
-		handle,
-		alpha,
-		xDesc,
-		x,
-		wDesc,
-		w,
-		convDesc,
-		algo,
-		workSpace,
-		workSpaceSizeInBytes,
-		beta,
-		yDesc,
-		y
-	};
-	union func_data new_func_data;
-	new_func_data.cudnnConvRecord = new_conv_record;
-	func_record new_record = {CUDNN_CONV_RECORD, new_func_data};
-
-
-
-	// push or run
-	if (idx < 2) {
-		 pthread_mutex_lock(mutexes[idx]);
-		 kqueues[idx]->push(new_record);
-		 pthread_mutex_unlock(mutexes[idx]);
-
-		 func_indexes[idx] += 1;
-		 block(idx);
-	}
-	else {
-		cudnnStatus_t (*function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
-		assert(function != NULL);
-
-		status = (*function)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
-		assert (status == CUDNN_STATUS_SUCCESS);
-
-	}
-
-	return status;
-
-}
-
-cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes) {
-
-	int idx = get_idx();
-	assert (idx >= 0);
-	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	DEBUG_PRINT("[INTERCEPTER] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p, index is %d\n", handle, idx);
-
-
-	// create record
-	cudnnBatchNormalizationForwardTrainingEx_record new_bn_record = {
-		handle,
-		mode,
-		bnOps,
-		alpha,
-		beta,
-		xDesc,
-		xData,
-		zDesc,
-		zData,
-		yDesc,
-		yData,
-		bnScaleBiasMeanVarDesc,
-		bnScaleData,
-		bnBiasData,
-		exponentialAverageFactor,
-		resultRunningMeanData,
-		resultRunningVarianceData,
-		epsilon,
-		saveMean,
-		saveInvVariance,
-		activationDesc,
-		workspace,
-		workSpaceSizeInBytes,
-		reserveSpace,
-		reserveSpaceSizeInBytes
-
-	};
-	union func_data new_func_data;
-	new_func_data.cudnnBNormRecord = new_bn_record;
-	func_record new_record = {CUDNN_BNORM_RECORD, new_func_data};
-
-	// push or run
-
-	if (idx < 2) {
-		pthread_mutex_lock(mutexes[idx]);
-		kqueues[idx]->push(new_record);
-		pthread_mutex_unlock(mutexes[idx]);
-
-	}
-	else {
-		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
-
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
-		assert(function != NULL);
-
-		status = (*function)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
-		assert (status == CUDNN_STATUS_SUCCESS);
-
-	}
-
-	return status;
-}
-
-
-cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon)
-
-{
-
-	int idx = get_idx();
-	assert (idx >= 0);
-	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-
-
-
-	// create record
-	cudnnBatchNormalizationForwardInference_record bn_record = {
-		handle,
-		mode,
-		alpha,
-		beta,
-		xDesc,
-		x,
-		yDesc,
-		y,
-		bnScaleBiasMeanVarDesc,
-		bnScale,
-		bnBias,
-		estimatedMean,
-		estimatedVariance,
-		epsilon
-	};
-
-	union func_data new_func_data;
-	new_func_data.cudnnBNormInfRecord = bn_record;
-	func_record new_record = {CUDNN_BNORM_INF_RECORD, new_func_data};
-
-	if (idx < 2) {
-
-		pthread_mutex_lock(mutexes[idx]);
-		kqueues[idx]->push(new_record);
-		pthread_mutex_unlock(mutexes[idx]);
-
-		func_indexes[idx] += 1;
-		block(idx);
-
-	}
-	else {
-
-		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
-
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
-		assert(function != NULL);
-
-		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
-		assert (status == CUDNN_STATUS_SUCCESS);
-
-	}
-
-	return status;
-}
-
-
-cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes)  {
-
-	int idx = get_idx();
-	assert (idx >= 0);
-	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-	printf("------------------------------------------------- IDX [%d], CX IS %p, CY IS %p\n", idx, cx, cy);
-
-	if (idx < 2) {
-
-		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	        //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
-
-		*xDesc_new = *xDesc;
-		printf("%p, %p, %p, %p\n", xDesc, *xDesc, xDesc_new, *(xDesc_new));
-		//memcpy(xDesc_new, xDesc, sizeof(cudnnTensorDescriptor_t));
-
-		cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-		*yDesc_new = *yDesc;
-
-
-		cudnnRNNForwardInference_record rnn_record = {
-			handle,
-			rnnDesc,
-			seqLength,
-			xDesc_new,
-			x,
-			hxDesc,
-			hx,
-			cxDesc,
-			cx,
-			wDesc,
-			w,
-			yDesc_new,
-			y,
-			hyDesc,
-			hy,
-			cyDesc,
-			cy,
-			workspace,
-			workSpaceSizeInBytes
-		};
-
-		union func_data new_func_data;
-		new_func_data.cudnnRnnInfRecord = rnn_record;
-		func_record new_record = {CUDNN_RNN_INF_RECORD, new_func_data};
-
-		pthread_mutex_lock(mutexes[idx]);
-		kqueues[idx]->push(new_record);
-		pthread_mutex_unlock(mutexes[idx]);
-
-		func_indexes[idx] += 1;
-		block(idx);
-	}
-	else {
-		cudnnStatus_t (*function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes);
-
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
-		assert(function != NULL);
-
-		status = (*function)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
-
-
-		printf("------------------------- cudnn status is %d\n", status);
-		// TODO: not sure why this complains here in just one call!
-		//assert (status == CUDNN_STATUS_SUCCESS);
-
-		cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		CHECK_CUDA_ERROR(err_all);
-	}
-
-	return status;
-
-}
-
-cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {
-
-	//DEBUG_PRINT("Caught a cudnnDestroyRNNDescriptor! Do nothing!\n");
-	return CUDNN_STATUS_SUCCESS;
-}
-
-cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
-
-	// mock cudnn destroy TensorDescriptor
-	//DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
-	return CUDNN_STATUS_SUCCESS;
-}
-
-
-cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
-
-	//DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
-	return CUDNN_STATUS_SUCCESS;
-
-}
-
-
-cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t convDesc) {
-
-	//DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
-	return CUDNN_STATUS_SUCCESS;
-}
-
-cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc) {
-	//DEBUG_PRINT("Caught a cudnnDestroyDropoutDescriptor! Do nothing!\n");
-	return CUDNN_STATUS_SUCCESS;
-
-}
-
 
 // CUBLAS ....
-
-cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc) {
-
-	int idx = get_idx();
-	assert (idx >= 0);
-	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
-
-	cublasSgemm_record blassgemm_record = {
-		handle,
-		transa,
-		transb,
-		m,
-		n,
-		k,
-		alpha,
-		A,
-		lda,
-		B,
-		ldb,
-		beta,
-		C,
-		ldc
-	};
-
-	union func_data new_func_data;
-	new_func_data.cublasSgemmRecord = blassgemm_record;
-	func_record new_record = {CUBLAS_SGEMM_RECORD, new_func_data};
-
-	printf("Intercepter func is %p\n", cublasSgemm);
-
-	if (idx < 2) {
-
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
-
-		pthread_mutex_lock(mutexes[idx]);
-		kqueues[idx]->push(new_record);
-		pthread_mutex_unlock(mutexes[idx]);
-
-		func_indexes[idx] += 1;
-		block(idx);
-	}
-	else {
-
-		cublasStatus_t (*function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
-
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cublasSgemm_v2");
-		assert(function != NULL);
-
-		status = (*function)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-		assert (status == CUBLAS_STATUS_SUCCESS);
-		DEBUG_PRINT("CUBLAS status is %d\n", status);
-
-	}
-
-	return status;
-
-}
-
-
-cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount) {
-
-	int idx = get_idx();
-	assert (idx >= 0);
-	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
-
-	cublasSgemmStridedBatched_record record = {
-		handle,
-		transa,
-		transb,
-		m,
-		n,
-		k,
-		alpha,
-		A,
-		lda,
-		strideA,
-		B,
-		ldb,
-		strideB,
-		beta,
-		C,
-		ldc,
-		strideC,
-		batchCount
-	};
-
-	union func_data new_func_data;
-	new_func_data.cublasSgemmStridedRecord = record;
-	func_record new_record = {CUBLAS_SGEMM_STRIDED_RECORD, new_func_data};
-
-	if (idx < 2) {
-
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemmStridedBatched, handle is %p\n", func_indexes[idx], handle);
-
-		pthread_mutex_lock(mutexes[idx]);
-		kqueues[idx]->push(new_record);
-		pthread_mutex_unlock(mutexes[idx]);
-
-		func_indexes[idx] += 1;
-		block(idx);
-
-	}
-	else {
-
-		cublasStatus_t (*function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
-
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cublasSgemmStridedBatched");
-		assert(function != NULL);
-
-		status = (*function)(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
-		assert (status == CUBLAS_STATUS_SUCCESS);
-		DEBUG_PRINT("CUBLAS status is %d\n", status);
-	}
-
-	return status;
-}
-
-cublasStatus_t cublasDestroy(cublasHandle_t handle) {
-
-	DEBUG_PRINT("Caught a cublasDestroy! Do nothing!\n");
-	return CUBLAS_STATUS_SUCCESS;
-}
