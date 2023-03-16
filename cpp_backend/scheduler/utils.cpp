@@ -79,11 +79,12 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 			break;
 		}
 		case MEMCPY_RECORD: {
-			DEBUG_PRINT("found a new memcpy record from idx %d!\n", idx);
 			memcpy_record record = frecord.data.mrecord;
 			if (not record.async) {
+				DEBUG_PRINT("found a new memcpy record from idx %d!\n", idx);
 				(*memcpy_function)(record.dst, record.src, record.count, record.kind);
 			} else {
+				DEBUG_PRINT("found a new memcpy-async record from idx %d!\n", idx);
 				(*memcpy_async_function)(record.dst, record.src, record.count, record.kind, sched_stream);
 			}
 			break;
@@ -103,7 +104,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 		case CUDNN_CONV_RECORD: {
 			DEBUG_PRINT("found a new cudnn conv record from idx %d!\n", idx);
 			cudnnConvolutionForward_record record = frecord.data.cudnnConvRecord;
-			cudnnSetStream(record.handle, 0);
+			cudnnSetStream(record.handle, sched_stream);
 			(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
 			cudnnSetStream(record.handle, 0); // TODO: I want to set the default stream here
 			break;
@@ -111,7 +112,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 		case CUDNN_BNORM_RECORD: {
 			DEBUG_PRINT("found a new bnorm inf record from idx %d!\n", idx);
 			cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
-			cudnnSetStream(record.handle, 0);
+			cudnnSetStream(record.handle, sched_stream);
 			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
 			cudnnSetStream(record.handle, 0);
 			break;
@@ -119,7 +120,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 		case CUDNN_BNORM_INF_RECORD: {
 			DEBUG_PRINT("found a new bnorm inf record from idx %d!\n", idx);
 			cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
-			cudnnSetStream(record.handle, 0);
+			cudnnSetStream(record.handle, sched_stream);
 			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
 			cudnnSetStream(record.handle, 0);
 			break;
@@ -127,19 +128,25 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 		case CUDNN_RNN_INF_RECORD: {
 			DEBUG_PRINT("found a new cudnn rnn inf record from idx %d!\n", idx);
 			cudnnRNNForwardInference_record record = frecord.data.cudnnRnnInfRecord;
+			cudnnSetStream(record.handle, sched_stream);
 			(*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
+			cudnnSetStream(record.handle, 0);
 			break;
 		}
 		case CUBLAS_SGEMM_RECORD: {
 			cublasSgemm_record record = frecord.data.cublasSgemmRecord;
 			DEBUG_PRINT("handle is %p\n", record.handle);
+			cublasSetStream_v2(record.handle, sched_stream);
 			(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
+			cublasSetStream_v2(record.handle, 0);
 			break;
 		}
 		case CUBLAS_SGEMM_STRIDED_RECORD: {
 			cublasSgemmStridedBatched_record record = frecord.data.cublasSgemmStridedRecord;
 			DEBUG_PRINT("handle is %p\n", record.handle);
+			cublasSetStream_v2(record.handle, sched_stream);
 			(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
+			cublasSetStream_v2(record.handle, 0);
 			break;
 		}
 		default:

@@ -253,7 +253,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 
 	else {
 
-		err = (*function)(dst, src, count, kind, 0); // TODO: not sure about which stream to use here
+		err = (*function)(dst, src, count, kind, stream); // TODO: not sure about which stream to use here
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
 		CHECK_CUDA_ERROR(err_all);
@@ -699,7 +699,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	else {
 		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
 
-		err = (*function)(func, gridDim, blockDim, args, sharedMem, 0);
+		err = (*function)(func, gridDim, blockDim, args, sharedMem, stream);
 		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
 
