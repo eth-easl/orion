@@ -20,10 +20,10 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 
 
 	cudaStream_t sched_stream;
-	cudaStreamCreate(&sched_stream);
+	CHECK_CUDA_ERROR(cudaStreamCreate(&sched_stream));
 
 	cudaEvent_t sched_event;
-	cudaEventCreateWithFlags(&sched_event, cudaEventDisableTiming);
+	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&sched_event, cudaEventDisableTiming));
 
 	int seen[num_clients] = {0};
 

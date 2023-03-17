@@ -46,3 +46,16 @@ void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* cl
 void create_streams(cudaStream_t* lp_stream0, cudaStream_t* lp_stream1, cudaStream_t* hp_stream);
 void create_events(cudaEvent_t* lp_event0, cudaEvent_t* lp_event1, cudaEvent_t* hp_event);
 void wait_for_stream(int idx, int current_prio, int prev_prio, cudaStream_t sched_stream, cudaEvent_t lp_event0, cudaEvent_t lp_event1, cudaEvent_t hp_event);
+
+#define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
+template <typename T>
+void check(T err, const char* const func, const char* const file,
+		           const int line)
+{
+	if (err != cudaSuccess)
+	{
+		printf("CUDA Runtime Error at: %s:%d\n", file, line);
+		printf("Error %d, %s\n", err, cudaGetErrorString(err));
+	}
+	assert (err == cudaSuccess);
+}

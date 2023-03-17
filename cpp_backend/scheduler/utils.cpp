@@ -23,20 +23,21 @@ void create_streams(cudaStream_t* lp_stream0, cudaStream_t* lp_stream1, cudaStre
 	int* lp = (int*)malloc(sizeof(int));
 	int* hp = (int*)malloc(sizeof(int));
 
-	cudaDeviceGetStreamPriorityRange(lp, hp);
+	CHECK_CUDA_ERROR(cudaDeviceGetStreamPriorityRange(lp, hp));
+
 	DEBUG_PRINT("Highest stream priority is %d, lowest stream priority is %d\n", *hp, *lp);
 	assert(*lp==0);
 
-	cudaStreamCreateWithPriority(hp_stream, cudaStreamNonBlocking, *hp);
-	cudaStreamCreateWithPriority(lp_stream0, cudaStreamNonBlocking, 0); // default priority
-	cudaStreamCreateWithPriority(lp_stream1, cudaStreamNonBlocking, 0);
+	CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(hp_stream, cudaStreamNonBlocking, *hp));
+	CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(lp_stream0, cudaStreamNonBlocking, 0)); // default priority
+	CHECK_CUDA_ERROR(cudaStreamCreateWithPriority(lp_stream1, cudaStreamNonBlocking, 0));
 }
 
 void create_events(cudaEvent_t* lp_event0, cudaEvent_t* lp_event1, cudaEvent_t* hp_event) {
 
-	cudaEventCreateWithFlags(lp_event0, cudaEventDisableTiming);
-	cudaEventCreateWithFlags(lp_event1, cudaEventDisableTiming);
-	cudaEventCreateWithFlags(hp_event, cudaEventDisableTiming);
+	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(lp_event0, cudaEventDisableTiming));
+	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(lp_event1, cudaEventDisableTiming));
+	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(hp_event, cudaEventDisableTiming));
 }
 
 void register_functions() {
@@ -96,21 +97,21 @@ void wait_for_stream(int idx, int current_prio, int prev_prio, cudaStream_t sche
 		if (idx==0) {
 			if (current_prio==1) {
 				// hp stream waits for lp stream 0
-				cudaStreamWaitEvent(sched_stream, lp_event0, 0);
+				CHECK_CUDA_ERROR(cudaStreamWaitEvent(sched_stream, lp_event0, 0));
 			}
 			else {
 				// lp stream 0 waits for hp stream
-				cudaStreamWaitEvent(sched_stream, hp_event, 0);
+				CHECK_CUDA_ERROR(cudaStreamWaitEvent(sched_stream, hp_event, 0));
 			}
 		}
 		else {
 			if (current_prio==1) {
 				// hp stream waits for lp stream 1
-				cudaStreamWaitEvent(sched_stream, lp_event1, 0);
+				CHECK_CUDA_ERROR(cudaStreamWaitEvent(sched_stream, lp_event1, 0));
 			}
 			else {
 				// lp stream 1 waits for hp stream
-				cudaStreamWaitEvent(sched_stream, hp_event, 0);
+				CHECK_CUDA_ERROR(cudaStreamWaitEvent(sched_stream, hp_event, 0));
 			}
 		}
 	}
@@ -203,7 +204,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 			abort();
 	}
 
-	cudaEventRecord(event, sched_stream);
+	CHECK_CUDA_ERROR(cudaEventRecord(event, sched_stream));
 
 }
 
