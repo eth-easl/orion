@@ -49,7 +49,7 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 				if (sz > 0) {
 					struct func_record frecord = buffers[i]->front();
 					printf("found a record!\n");
-					schedule_kernel(frecord, sched_stream, i, sched_event);
+					schedule_kernel(frecord, &sched_stream, i, &sched_event);
 					buffers[i]->pop();
 					seen[i] += 1;
 				}
@@ -77,16 +77,11 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 	for (int i=0; i<num_clients; i++)
 		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	cudaStream_t* lp_stream0 = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-	cudaStream_t* lp_stream1 = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-	cudaStream_t* hp_stream = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+	cudaStream_t* sched_streams[num_clients+1] = {NULL};
+	cudaEvent_t* events[num_clients+1] = {NULL};
 
-	cudaEvent_t* lp_event0 = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
-	cudaEvent_t* lp_event1 = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
-	cudaEvent_t* hp_event = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
-
-	create_streams(lp_stream0, lp_stream1, hp_stream);
-	create_events(lp_event0, lp_event1, hp_event);
+	create_streams(sched_streams, num_clients+1);
+	create_events(events, num_clients+1);
 
 	int seen[num_clients] = {0};
 	int streams[num_clients] = {-1}; // 1: unitialized, 0: low prio, 1: high prio
@@ -125,26 +120,23 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 					op_info_vector,
 					seen,
 					max_sms,
-					*lp_stream0,
-					*lp_stream1,
-					*hp_stream,
+					sched_streams,
 					streams,
-					*lp_event0,
-					*lp_event1,
-					*hp_event
+					events,
+					num_clients+1
 				);
 			}
 
 			else if (frecords[0] != NULL) {
-				wait_for_stream(0, 0, streams[0], *lp_stream0,  *lp_event0,  *lp_event1, *hp_event);
-				schedule_kernel(*(frecords[0]), *lp_stream0, 0, *lp_event0);
+				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
+				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0]);
 				streams[0] = 0;
 				pop_from_queue(buffers[0], mutexes[0]);
 			}
 
 			else if (frecords[1] != NULL) {
-				wait_for_stream(1, 0, streams[1], *lp_stream1,  *lp_event0,  *lp_event1, *hp_event);
-				schedule_kernel(*(frecords[1]), *lp_stream1, 1, *lp_event1);
+				wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
+				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1]);
 				streams[1] = 0;
 				pop_from_queue(buffers[1], mutexes[1]);
 			}
