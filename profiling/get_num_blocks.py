@@ -1,8 +1,9 @@
 import pandas as pd
 from math import ceil, floor
+import sys
 
-pwd = 'ResNet50-ImageNet-BS16'
-df = pd.read_csv(f'{pwd}/output_16_train_processed.csv', index_col=0)
+pwd = sys.argv[1]
+df = pd.read_csv(f'{pwd}/output_ncu_processed.csv', index_col=0)
 
 # for V100
 max_threads_sm = 2048
@@ -37,7 +38,7 @@ for index, row in df.iterrows():
     blocks_per_sm = min(blocks_per_sm_threads, blocks_per_sm_shmem, blocks_per_sm_regs)
     sm_needed_kernel = ceil(num_blocks/blocks_per_sm)
 
-    print(blocks_per_sm, sm_needed_kernel)
+    #print(blocks_per_sm, sm_needed_kernel)
     sm_needed.append(sm_needed_kernel)
 
 
@@ -45,5 +46,5 @@ less = [x for x in  sm_needed if x < 80]
 print(len(less), len(sm_needed))
 
 df['SM_needed'] = sm_needed
-print(df)
-df.to_csv(f'{pwd}/output_16_processed_sms_new.csv', index=0)
+#print(df)
+df.to_csv(f'{pwd}/output_ncu_sms.csv', index=0)
