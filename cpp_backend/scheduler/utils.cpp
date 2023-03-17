@@ -32,6 +32,13 @@ void create_streams(cudaStream_t* lp_stream0, cudaStream_t* lp_stream1, cudaStre
 	cudaStreamCreateWithPriority(lp_stream1, cudaStreamNonBlocking, 0);
 }
 
+void create_events(cudaEvent_t* lp_event0, cudaEvent_t* lp_event1, cudaEvent_t* hp_event) {
+
+	cudaEventCreateWithFlags(lp_event0, cudaEventDisableTiming);
+	cudaEventCreateWithFlags(lp_event1, cudaEventDisableTiming);
+	cudaEventCreateWithFlags(hp_event, cudaEventDisableTiming);
+}
+
 void register_functions() {
 
     // for kernel
@@ -82,7 +89,36 @@ void register_functions() {
 }
 
 
-void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int idx) {
+void wait_for_stream(int idx, int current_prio, int prev_prio, cudaStream_t sched_stream, cudaEvent_t lp_event0, cudaEvent_t lp_event1, cudaEvent_t hp_event) {
+
+	if (prev_prio >= 0 && current_prio != prev_prio) {
+		// wait
+		if (idx==0) {
+			if (current_prio==1) {
+				// hp stream waits for lp stream 0
+				cudaStreamWaitEvent(sched_stream, lp_event0, 0);
+			}
+			else {
+				// lp stream 0 waits for hp stream
+				cudaStreamWaitEvent(sched_stream, hp_event, 0);
+			}
+		}
+		else {
+			if (current_prio==1) {
+				// hp stream waits for lp stream 1
+				cudaStreamWaitEvent(sched_stream, lp_event1, 0);
+			}
+			else {
+				// lp stream 1 waits for hp stream
+				cudaStreamWaitEvent(sched_stream, hp_event, 0);
+			}
+		}
+	}
+
+}
+
+
+void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int idx, cudaEvent_t event) {
 
 	switch (frecord.type) {
 		case KERNEL_RECORD: {
@@ -167,23 +203,44 @@ void schedule_kernel(struct func_record frecord, cudaStream_t sched_stream, int 
 			abort();
 	}
 
+	cudaEventRecord(event, sched_stream);
+
 }
 
 
-void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &buffers, pthread_mutex_t** &mutexes, vector<vector<op_info>> &op_info_vector, int* seen, int max_sms, cudaStream_t lp_stream0, cudaStream_t lp_stream1, cudaStream_t hp_stream) {
+void schedule_pair(
+	vector<func_record*> &frecords,
+	queue<struct func_record>** &buffers,
+	pthread_mutex_t** &mutexes,
+	vector<vector<op_info>> &op_info_vector,
+	int* seen, int max_sms,
+	cudaStream_t lp_stream0,
+	cudaStream_t lp_stream1,
+	cudaStream_t hp_stream,
+	int* streams,
+	cudaEvent_t lp_event0,
+	cudaEvent_t lp_event1,
+	cudaEvent_t hp_event
+) {
 
 	op_info op_info_0 = op_info_vector[0][seen[0]];
 	op_info op_info_1 = op_info_vector[1][seen[1]];
 
 	if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
-		schedule_kernel(*(frecords[0]), lp_stream0, 0);
+		wait_for_stream(0, 0, streams[0], lp_stream0, lp_event0, lp_event1, hp_event);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0, lp_event0);
+		streams[0] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
 		seen[0] += 1;
 	}
 	// different profiles
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
-		schedule_kernel(*(frecords[0]), lp_stream0, 0);
-		schedule_kernel(*(frecords[1]), lp_stream1, 1);
+		wait_for_stream(0, 0, streams[0], lp_stream0, lp_event0, lp_event1, hp_event);
+		wait_for_stream(1, 0, streams[1], lp_stream1, lp_event0, lp_event1, hp_event);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0, lp_event0);
+		schedule_kernel(*(frecords[1]), lp_stream1, 1, lp_event1);
+		streams[0] = 0;
+		streams[1] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
 		pop_from_queue(buffers[1], mutexes[1]);
 		seen[0] += 1;
@@ -191,8 +248,12 @@ void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &
 	}
 
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
-		schedule_kernel(*(frecords[0]), lp_stream0, 0);
-		schedule_kernel(*(frecords[1]), hp_stream, 1);
+		wait_for_stream(0, 0, streams[0], lp_stream0, lp_event0, lp_event1, hp_event);
+		wait_for_stream(1, 1, streams[1], hp_stream, lp_event0, lp_event1, hp_event);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0, lp_event0);
+		schedule_kernel(*(frecords[1]), hp_stream, 1, hp_event);
+		streams[0] = 0;
+		streams[1] = 1;
 		pop_from_queue(buffers[0], mutexes[0]);
 		pop_from_queue(buffers[1], mutexes[1]);
 		seen[0] += 1;
@@ -200,8 +261,12 @@ void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &
 	}
 
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
-		schedule_kernel(*(frecords[0]), hp_stream, 0);
-		schedule_kernel(*(frecords[1]), lp_stream1, 1);
+		wait_for_stream(0, 1, streams[0], hp_stream, lp_event0, lp_event1, hp_event);
+		wait_for_stream(1, 0, streams[1], lp_stream1, lp_event0, lp_event1, hp_event);
+		schedule_kernel(*(frecords[0]), hp_stream, 0, hp_event);
+		schedule_kernel(*(frecords[1]), lp_stream1, 1, lp_event1);
+		streams[0] = 1;
+		streams[1] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
 		pop_from_queue(buffers[1], mutexes[1]);
 		seen[0] += 1;
@@ -209,7 +274,9 @@ void schedule_pair(vector<func_record*> &frecords, queue<struct func_record>** &
 	}
 
 	else {
-		schedule_kernel(*(frecords[0]), lp_stream0, 0);
+		wait_for_stream(0, 0, streams[0], lp_stream0, lp_event0, lp_event1, hp_event);
+		schedule_kernel(*(frecords[0]), lp_stream0, 0, lp_event0);
+		streams[0] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
 		seen[0] += 1;
 	}
