@@ -2,7 +2,7 @@
 policy: tick-tock # either "temporal" or "tick-tock"
 model0: vision # these two names should strictly correspond to the model names below
 model1: vision
-num_epochs: 5
+num_epochs: 2
 data_dir:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
   cifar10_root: '/cluster/scratch/xianma/cifar10'

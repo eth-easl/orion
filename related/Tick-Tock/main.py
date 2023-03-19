@@ -7,6 +7,7 @@ import time
 import utils
 from utils.sync_info import SyncInfo
 import utils.constants as constants
+from utils import notifier
 from vision.train_imagenet import train_wrapper as vision_train_wrapper
 from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
 from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
@@ -102,3 +103,4 @@ if __name__ == "__main__":
         model1_train_wrapper(**model1_kwargs)
     end_time = time.time()
     logging.info(f'It takes {end_time - start_time} seconds in total.')
+    notifier.notify(subject='gpu_share training evaluation', body='it ends!')
