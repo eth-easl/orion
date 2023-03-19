@@ -1,3 +1,4 @@
+import logging
 import pickle
 import time
 
@@ -7,6 +8,8 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, TensorDataset
 import random
 import numpy as np
+
+import utils
 from bert.schedulers import LinearWarmUpScheduler
 from bert.optimization import BertAdam
 import bert.modeling as modeling
@@ -17,8 +20,9 @@ import utils.constants as constants
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 
-
 from apex.multi_tensor_apply import multi_tensor_applier
+
+
 # TODO: uncomment to enable fp16
 # class GradientClipper:
 #     """
@@ -56,7 +60,6 @@ def setup_model(model_config):
         config.vocab_size += 8 - (config.vocab_size % 8)
     model = modeling.BertForQuestionAnswering(config)
     return model
-
 
 
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
@@ -114,7 +117,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         with open(cache_features_file, 'rb') as reader:
             train_features = pickle.load(reader)
     except:
-        print(f'no cache file detected as {cache_features_file}; building features from squad examples...')
+        logging.info(f'no cache file detected as {cache_features_file}; building features from squad examples...')
         train_features = convert_examples_to_features(
             examples=train_examples,
             tokenizer=tokenizer,
@@ -123,7 +126,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
             max_query_length=64,
             is_training=True
         )
-        print(f'saving features to {cache_features_file}')
+        logging.info(f'saving features to {cache_features_file}')
         with open(cache_features_file, 'wb') as writer:
             pickle.dump(train_features, writer)
 
@@ -135,12 +138,17 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
                                all_start_positions, all_end_positions)
     train_sampler = RandomSampler(train_data)
-    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size, num_workers=model_config['num_workers'])
+    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
+                                  num_workers=model_config['num_workers'])
     model.train()
+    logging.info('bert model is set up')
+    loss_sum = 0
+    num_batches = len(train_dataloader)
     # TODO: this requires amp_C package which isn't avaiable for a pure python apex
     # gradClipper = GradientClipper(max_grad_norm=1.0)
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for _ in range(num_epochs):
+        start_time = time.time()
+        for epoch in range(num_epochs):
             for batch_idx, batch in enumerate(train_dataloader):
                 with ForwardControl(tid, batch_idx, sync_info, my_stream):
                     batch = tuple(t.to(device) for t in batch)
@@ -174,4 +182,10 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     optimizer.step()
                     optimizer.zero_grad()
 
+                loss_sum += loss.item()
+                if batch_idx % constants.print_every == 0:
+                    logging.info(
+                        f'thread {tid} epoch {epoch}/{num_epochs} batch {batch_idx}/{num_batches} current loss: {loss_sum / constants.print_every}')
+                    loss_sum = 0
 
+        logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train bert')

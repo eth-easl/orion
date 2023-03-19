@@ -1,20 +1,23 @@
 import torch
 from torchvision import models, datasets, transforms
 import torch.nn.functional as F
-
+import logging
+import utils
+import time
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 import utils.constants as constants
 
 
-
-
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
     model, optimizer, train_loader, metric_fn = setup(model_config, device)
     model.train()
-
+    loss_sum = 0
+    num_batches = len(train_loader)
+    logging.info('model is set up')
     with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for _ in range(num_epochs):
+        start_time = time.time()
+        for epoch in range(num_epochs):
             for batch_idx, batch in enumerate(train_loader):
                 with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
                     data, target = batch[0].to(device), batch[1].to(device)
@@ -25,6 +28,13 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
+
+                loss_sum += loss.item()
+                if batch_idx % constants.print_every == 0:
+                    logging.info(
+                        f'thread {tid} epoch {epoch}/{num_epochs} batch {batch_idx}/{num_batches} current loss: {loss_sum / constants.print_every}')
+                    loss_sum = 0
+        logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train imagenet')
 
 
 def setup(model_config, device):

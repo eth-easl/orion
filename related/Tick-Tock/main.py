@@ -1,7 +1,10 @@
 import torch
 import threading
-
+import logging
 import yaml
+import time
+
+import utils
 from utils.sync_info import SyncInfo
 import utils.constants as constants
 from vision.train_imagenet import train_wrapper as vision_train_wrapper
@@ -24,8 +27,24 @@ model_to_train_wrapper = {
 }
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)-8s: [%(filename)s:%(lineno)d] %(message)s',
+        datefmt='%d/%m/%Y %H:%M:%S',
+        handlers=[
+            # also output to console
+            # logging.StreamHandler(),
+            logging.FileHandler(utils.pretty_time() + '-training.log', mode='a'),
+        ]
+    )
+
     with open('./config.yaml', 'r') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
+    logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
+    model0_name = config['model0']
+    model1_name = config['model1']
+    policy = config['policy']
+    logging.info(f'start training with {model0_name} and {model1_name} using {policy}')
     for key, value in config['data_dir'].items():
         constants.__dict__[key] = value
 
@@ -44,9 +63,9 @@ if __name__ == "__main__":
     eventb1.set()
 
     num_epochs = config['num_epochs']
+    logging.info(f'number of epochs: {num_epochs}')
     sync_info = SyncInfo(eventf0, eventb0, eventf1, eventb1, barrier=threading.Barrier(2))
-    model0_name = config['model0']
-    model1_name = config['model1']
+
     model0_train_wrapper = model_to_train_wrapper[model0_name]
     model1_train_wrapper = model_to_train_wrapper[model1_name]
 
@@ -67,7 +86,8 @@ if __name__ == "__main__":
         'model_config': config[model1_name]
     }
 
-    if config['policy'] == "tick-tock":
+    start_time = time.time()
+    if policy == "tick-tock":
         thread0 = threading.Thread(target=model0_train_wrapper, kwargs=model0_kwargs)
         thread1 = threading.Thread(target=model1_train_wrapper, kwargs=model1_kwargs)
         thread0.start()
@@ -75,9 +95,10 @@ if __name__ == "__main__":
 
         thread0.join()
         thread1.join()
-        print("All threads joined!!!!!!!!!!")
 
     elif config['policy'] == "temporal":
         sync_info.no_sync_control = True
         model0_train_wrapper(**model0_kwargs)
         model1_train_wrapper(**model1_kwargs)
+    end_time = time.time()
+    logging.info(f'It takes {end_time - start_time} seconds in total.')
