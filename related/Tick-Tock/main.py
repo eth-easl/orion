@@ -3,7 +3,7 @@ import threading
 import logging
 import yaml
 import time
-
+import argparse
 import utils
 from utils.sync_info import SyncInfo
 import utils.constants as constants
@@ -27,7 +27,12 @@ model_to_train_wrapper = {
     'retinanet': retinanet_train_wrapper,
 }
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', default='./config.yaml', help='Path to the yaml config file', type=str)
+parser.add_argument('--log', default=utils.pretty_time() + '-training.log', help='Path to the log file', type=str)
+
 if __name__ == "__main__":
+    args = parser.parse_args()
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s %(levelname)-8s: [%(filename)s:%(lineno)d] %(message)s',
@@ -35,11 +40,11 @@ if __name__ == "__main__":
         handlers=[
             # also output to console
             # logging.StreamHandler(),
-            logging.FileHandler(utils.pretty_time() + '-training.log', mode='a'),
+            logging.FileHandler(args.log, mode='a'),
         ]
     )
 
-    with open('./config.yaml', 'r') as file:
+    with open(args.config, 'r') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
     logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
     model0_name = config['model0']
