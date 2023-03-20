@@ -455,7 +455,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
 				new_args[0] = new_reduce_arg;
 			}
-			else if (!strcmp(model_names[idx], MOBILENET) && func_indexes[idx] == 149) {
+			else if (!strcmp(model_names[idx], MOBILENET) && (func_indexes[idx] == 149 or func_indexes[idx] == 201)) {
 
 				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
@@ -468,6 +468,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			}
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
+
+			wait = true;
 		}
 		else if (!strncmp(kernel_name, MAX_POOL_FORWARD_NCHW, 61)) {
 
@@ -691,8 +693,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			//wait = true;
 		}
 
-
-
+		//new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
 		union func_data new_func_data;
 		new_func_data.krecord = new_kernel_record;
 		func_record new_record = {KERNEL_RECORD, new_func_data};

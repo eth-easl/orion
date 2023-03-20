@@ -205,7 +205,7 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 		*yDesc_new = *yDesc;
 
 
-		cudnnRNNForwardInference_record rnn_record = {
+		cudnnRNNForwardInf_record rnn_record = {
 			handle,
 			rnnDesc,
 			seqLength,
@@ -257,6 +257,99 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 
 	return status;
 
+}
+
+
+cudnnStatus_t cudnnRNNForwardTraining(
+	cudnnHandle_t handle,
+	const cudnnRNNDescriptor_t rnnDesc,
+	const int seqLength,
+	const cudnnTensorDescriptor_t *xDesc,
+	const void *x,
+    const cudnnTensorDescriptor_t hxDesc,
+    const void *hx,
+    const cudnnTensorDescriptor_t cxDesc,
+    const void *cx,
+    const cudnnFilterDescriptor_t wDesc,
+    const void *w,
+    const cudnnTensorDescriptor_t *yDesc,
+    void *y,
+    const cudnnTensorDescriptor_t hyDesc,
+    void *hy,
+    const cudnnTensorDescriptor_t cyDesc,
+    void *cy,
+    void *workspace,
+    size_t workSpaceSizeInBytes,
+    void *reserveSpace,
+    size_t reserveSpaceSizeInBytes
+) {
+
+	int idx = get_idx();
+	assert (idx >= 0);
+	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
+
+	if (idx < 2) {
+
+		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
+	        //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
+
+		*xDesc_new = *xDesc;
+		printf("%p, %p, %p, %p\n", xDesc, *xDesc, xDesc_new, *(xDesc_new));
+		//memcpy(xDesc_new, xDesc, sizeof(cudnnTensorDescriptor_t));
+
+		cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
+		*yDesc_new = *yDesc;
+
+		cudnnRNNForwardTraining_record rnn_record = {
+			handle,
+			rnnDesc,
+			seqLength,
+			xDesc,
+			x,
+			hxDesc,
+			hx,
+			cxDesc,
+			cx,
+			wDesc,
+			w,
+			yDesc,
+			y,
+			hyDesc,
+			hy,
+			cyDesc,
+			cy,
+			workspace,
+			workSpaceSizeInBytes,
+			reserveSpace,
+			reserveSpaceSizeInBytes
+		};
+
+		union func_data new_func_data;
+		new_func_data.cudnnRnnTrainRecord = rnn_record;
+		func_record new_record = {CUDNN_RNN_TRAIN_RECORD, new_func_data};
+
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+		block(idx,  mutexes, kqueues);
+	}
+	else {
+
+		cudnnStatus_t (*function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
+		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnRNNForwardTraining");
+		assert(function != NULL);
+
+		status = (*function)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+
+		cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		CHECK_CUDA_ERROR(err_all);
+	}
+
+	return status;
 }
 
 cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {

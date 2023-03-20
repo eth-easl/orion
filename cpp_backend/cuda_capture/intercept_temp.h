@@ -44,7 +44,7 @@
 #define UPSAMPLE_BILINEAR2D_OUT_FRAME "void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame"
 #define UPSAMPLE_NEAREST2D_NHWC_OUT_FRAME "void at::native::(anonymous namespace)::upsample_nearest2d_nhwc_out_frame"
 
-#define MOBILENET "mobilenet"
+#define MOBILENET "mobilenet_v2"
 #define VGG16 "vgg16"
 #define RESNET50 "resnet50"
 #define RESNET101 "resnet101"
@@ -231,16 +231,16 @@ typedef struct  cudnnBatchNormalizationForwardInference_record {
 } cudnnBatchNormalizationForwardInference_record;
 
 
-typedef struct cudnnRNNForwardInference_record {
+typedef struct cudnnRNNForwardInf_record {
 
 	cudnnHandle_t handle;
 	cudnnRNNDescriptor_t rnnDesc;
 	int seqLength;
 	const cudnnTensorDescriptor_t *xDesc;
 	const void *x;
-       	cudnnTensorDescriptor_t hxDesc;
-       	const void *hx;
-       	cudnnTensorDescriptor_t cxDesc;
+    cudnnTensorDescriptor_t hxDesc;
+    const void *hx;
+    cudnnTensorDescriptor_t cxDesc;
 	const void *cx;
 	cudnnFilterDescriptor_t wDesc;
 	const void *w;
@@ -253,7 +253,7 @@ typedef struct cudnnRNNForwardInference_record {
 	void *workspace;
 	size_t workSpaceSizeInBytes;
 
-	cudnnRNNForwardInference_record(cudnnHandle_t handle_arg, const cudnnRNNDescriptor_t rnnDesc_arg, const int seqLength_arg, const cudnnTensorDescriptor_t *xDesc_arg, const void *x_arg, cudnnTensorDescriptor_t hxDesc_arg, const void *hx_arg, cudnnTensorDescriptor_t cxDesc_arg, const void *cx_arg, cudnnFilterDescriptor_t wDesc_arg, const void *w_arg, const cudnnTensorDescriptor_t *yDesc_arg, void *y_arg, cudnnTensorDescriptor_t hyDesc_arg, void *hy_arg, cudnnTensorDescriptor_t cyDesc_arg, void *cy_arg, void *workspace_arg, size_t workSpaceSizeInBytes_arg) {
+	cudnnRNNForwardInf_record(cudnnHandle_t handle_arg, const cudnnRNNDescriptor_t rnnDesc_arg, const int seqLength_arg, const cudnnTensorDescriptor_t *xDesc_arg, const void *x_arg, cudnnTensorDescriptor_t hxDesc_arg, const void *hx_arg, cudnnTensorDescriptor_t cxDesc_arg, const void *cx_arg, cudnnFilterDescriptor_t wDesc_arg, const void *w_arg, const cudnnTensorDescriptor_t *yDesc_arg, void *y_arg, cudnnTensorDescriptor_t hyDesc_arg, void *hy_arg, cudnnTensorDescriptor_t cyDesc_arg, void *cy_arg, void *workspace_arg, size_t workSpaceSizeInBytes_arg) {
 
 		handle = handle_arg;
 		rnnDesc = rnnDesc_arg;
@@ -276,9 +276,63 @@ typedef struct cudnnRNNForwardInference_record {
 		workSpaceSizeInBytes = workSpaceSizeInBytes_arg;
 	}
 
-	~cudnnRNNForwardInference_record() {}
+	~cudnnRNNForwardInf_record() {}
 
 } cudnnRNNForwardInference_record;
+
+
+typedef struct cudnnRNNForwardTraining_record {
+
+	cudnnHandle_t handle;
+	cudnnRNNDescriptor_t rnnDesc;
+	int seqLength;
+	const cudnnTensorDescriptor_t *xDesc;
+	const void *x;
+    cudnnTensorDescriptor_t hxDesc;
+    const void *hx;
+    cudnnTensorDescriptor_t cxDesc;
+    const void *cx;
+    cudnnFilterDescriptor_t wDesc;
+    const void *w;
+    const cudnnTensorDescriptor_t *yDesc;
+    void *y;
+    cudnnTensorDescriptor_t hyDesc;
+    void *hy;
+    cudnnTensorDescriptor_t cyDesc;
+    void *cy;
+    void *workspace;
+    size_t workSpaceSizeInBytes;
+    void *reserveSpace;
+    size_t reserveSpaceSizeInBytes;
+
+	cudnnRNNForwardTraining_record(cudnnHandle_t handle_arg, const cudnnRNNDescriptor_t rnnDesc_arg, const int seqLength_arg, const cudnnTensorDescriptor_t *xDesc_arg, const void *x_arg, const cudnnTensorDescriptor_t hxDesc_arg, const void *hx_arg, const cudnnTensorDescriptor_t cxDesc_arg, const void *cx_arg, const cudnnFilterDescriptor_t wDesc_arg, const void *w_arg, const cudnnTensorDescriptor_t *yDesc_arg, void *y_arg, const cudnnTensorDescriptor_t hyDesc_arg, void *hy_arg, const cudnnTensorDescriptor_t cyDesc_arg, void *cy_arg, void *workspace_arg, size_t workSpaceSizeInBytes_arg, void *reserveSpace_arg, size_t reserveSpaceSizeInBytes_arg) {
+
+			handle = handle_arg;
+			rnnDesc = rnnDesc_arg;
+			seqLength = seqLength_arg;
+			xDesc = xDesc_arg;
+			x = x_arg;
+			hxDesc = hxDesc_arg;
+			hx = hx_arg;
+			cxDesc = cxDesc_arg;
+			cx = cx_arg;
+			wDesc = wDesc_arg;
+			w = w_arg;
+			yDesc = yDesc_arg;
+			y = y_arg;
+			hyDesc = hyDesc_arg;
+			hy = hy_arg;
+			cyDesc = cyDesc_arg;
+			cy = cy_arg;
+			workspace = workspace_arg;
+			workSpaceSizeInBytes = workSpaceSizeInBytes_arg;
+			reserveSpace = reserveSpace_arg;
+			reserveSpaceSizeInBytes = reserveSpaceSizeInBytes_arg;
+	}
+
+	~cudnnRNNForwardTraining_record() {}
+
+} cudnnRNNForwardTraining_record;
 
 // CUBLAS
 
@@ -374,7 +428,7 @@ typedef struct cublasSgemmStridedBatched_record {
 //////////////////////////////////////////////////
 
 
-enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD, CUDNN_RNN_INF_RECORD, CUBLAS_SGEMM_RECORD, CUBLAS_SGEMM_STRIDED_RECORD};
+enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD, CUDNN_RNN_INF_RECORD, CUDNN_RNN_TRAIN_RECORD, CUBLAS_SGEMM_RECORD, CUBLAS_SGEMM_STRIDED_RECORD};
 
 union func_data {
 
@@ -382,7 +436,8 @@ union func_data {
 	cudnnConvolutionForward_record cudnnConvRecord;
 	cudnnBatchNormalizationForwardTrainingEx_record cudnnBNormRecord;
 	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
-	cudnnRNNForwardInference_record cudnnRnnInfRecord;
+	cudnnRNNForwardInf_record cudnnRnnInfRecord;
+	cudnnRNNForwardTraining_record cudnnRnnTrainRecord;
 	cublasSgemm_record cublasSgemmRecord;
 	cublasSgemmStridedBatched_record cublasSgemmStridedRecord;
 	memcpy_record mrecord;

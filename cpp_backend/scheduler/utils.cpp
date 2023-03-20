@@ -9,6 +9,7 @@ cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, co
 cudnnStatus_t (*cudnn_bnorm_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
 cudnnStatus_t (*cudnn_bnorm_infer_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
 cudnnStatus_t (*cudnn_rnn_function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes);
+cudnnStatus_t (*cudnn_rnn_train_function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
 cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
 
@@ -82,6 +83,10 @@ void register_functions() {
 	// for rnn infer
 	*(void **)(&cudnn_rnn_function) = dlsym(RTLD_DEFAULT, "cudnnRNNForwardInference");
 	assert(cudnn_rnn_function != NULL);
+
+	// for rnn train
+	*(void **)(&cudnn_rnn_train_function) = dlsym(RTLD_DEFAULT, "cudnnRNNForwardTraining");
+	assert(cudnn_rnn_train_function != NULL);
 
 	// CUBLAS sgemm
 	*(void **)(&cublas_sgemm_function) = dlsym(RTLD_DEFAULT, "cublasSgemm_v2");
@@ -208,9 +213,39 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 		}
 		case CUDNN_RNN_INF_RECORD: {
 			DEBUG_PRINT("found a new cudnn rnn inf record from idx %d!\n", idx);
-			cudnnRNNForwardInference_record record = frecord.data.cudnnRnnInfRecord;
+			cudnnRNNForwardInf_record record = frecord.data.cudnnRnnInfRecord;
 			cudnnSetStream(record.handle, *sched_stream);
 			(*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
+			cudnnSetStream(record.handle, 0);
+			break;
+		}
+		case CUDNN_RNN_TRAIN_RECORD: {
+			DEBUG_PRINT("found a new cudnn rnn train record from idx %d!\n", idx);
+			cudnnRNNForwardTraining_record record = frecord.data.cudnnRnnTrainRecord;
+			cudnnSetStream(record.handle, *sched_stream);
+			(*cudnn_rnn_train_function)(
+				record.handle,
+				record.rnnDesc,
+				record.seqLength,
+				record.xDesc,
+				record.x,
+				record.hxDesc,
+				record.hx,
+				record.cxDesc,
+				record.cx,
+				record.wDesc,
+				record.w,
+				record.yDesc,
+				record.y,
+				record.hyDesc,
+				record.hy,
+				record.cyDesc,
+				record.cy,
+				record.workspace,
+				record.workSpaceSizeInBytes,
+				record.reserveSpace,
+				record.reserveSpaceSizeInBytes
+			);
 			cudnnSetStream(record.handle, 0);
 			break;
 		}
