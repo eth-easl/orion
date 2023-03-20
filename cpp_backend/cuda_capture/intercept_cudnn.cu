@@ -61,7 +61,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("[INTERCEPTER] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p, index is %d\n", handle, idx);
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
 
 	// create record
@@ -104,6 +104,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 		kqueues[idx]->push(new_record);
 		pthread_mutex_unlock(mutexes[idx]);
 
+		func_indexes[idx] += 1;
+		block(idx,  mutexes, kqueues);
 	}
 	else {
 		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);

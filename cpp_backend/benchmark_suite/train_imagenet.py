@@ -17,7 +17,7 @@ import os
 import argparse
 import threading
 
-def imagenet_loop(model_name, batchsize, local_rank, barrier, tid):
+def imagenet_loop(model_name, batchsize, train, local_rank, barrier, tid):
 
     print(model_name, batchsize, local_rank, barrier, tid)
     # do only forward for now, experimental
@@ -30,8 +30,10 @@ def imagenet_loop(model_name, batchsize, local_rank, barrier, tid):
     model = models.__dict__[model_name](num_classes=1000)
     model = model.to(0)
 
-    model.eval()
-
+    if train:
+        model.train()
+    else:
+        model.eval()
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -48,8 +50,11 @@ def imagenet_loop(model_name, batchsize, local_rank, barrier, tid):
             print(f"submit!, batch_idx is {batch_idx}")
             torch.cuda.profiler.cudart().cudaProfilerStart()
 
-            with torch.no_grad():
+            if train:
                 output = model(data)
+            else:
+                with torch.no_grad():
+                    output = model(data)
 
             torch.cuda.profiler.cudart().cudaProfilerStop()
 

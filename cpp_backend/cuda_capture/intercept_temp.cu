@@ -419,16 +419,21 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[0] = (int*)malloc(sizeof(int));
 			*((int*)new_args[0]) = *((int*)(args[0]));
 
+			printf("-------- allocated\n");
+
 			new_args[1] = args[1];
 			new_args[4] = args[4];
 			new_args[5] = args[5];
 			new_args[6] = args[6];
 			new_args[7] = args[7];
 
+			printf("-------- copied\n");
+
 			int data_size = *((int*)args[2]);
+			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
+
 			int* data_size_ptr = (int*)malloc(sizeof(int));
 			*data_size_ptr = data_size;
-			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
 			Array<char*, 10>* data_ptr = (Array<char*, 10>*)malloc(sizeof(Array<char*, 10>));
 			for (int i=0; i<data_size; i++) {
 				data_ptr->data[i] = ((Array<char*, 10>*)args[3])->data[i];
@@ -445,7 +450,12 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
 
 			void** new_args = (void**)malloc(sizeof(void*));
-			if (!strcmp(model_names[idx], MOBILENET) && func_indexes[idx] == 149) {
+			if (!strcmp(model_names[idx], RESNET50) && (func_indexes[idx] == 225 or func_indexes[idx] == 172)) {
+				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
+				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);
+				new_args[0] = new_reduce_arg;
+			}
+			else if (!strcmp(model_names[idx], MOBILENET) && func_indexes[idx] == 149) {
 
 				using arg_type = at::native::ReduceOp<float, at::native::MeanOps<float, float>, unsigned int, float, 4>;
 				arg_type* new_reduce_arg = create_new_reduce_arg<arg_type>(args[0]);

@@ -60,6 +60,7 @@ def launch_jobs(config_dict_list):
     print(torch.__version__)
 
     model_names = [config_dict['arch'] for config_dict in config_dict_list]
+    model_files = [config_dict['kernel_file'] for config_dict in config_dict_list]
     tids = []
     threads = []
     for i, config_dict in enumerate(config_dict_list):
@@ -74,7 +75,7 @@ def launch_jobs(config_dict_list):
 
     print(tids)
 
-    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names))
+    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names, model_files))
 
     sched_thread.start()
 

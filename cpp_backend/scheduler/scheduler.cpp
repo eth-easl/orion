@@ -177,7 +177,7 @@ extern "C" {
 		while (std::getline(infile, line))
 		{
 
-			//std::cout << line << std::endl;
+			std::cout << line << std::endl;
 			vector<string> v;
 			stringstream sline = stringstream(line);
 			while (sline.good()) {
@@ -227,6 +227,11 @@ extern "C" {
 
 		int num_kernels = 1;
 		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
+
+		char** model_names_all = (char**)dlsym(klib, "model_names");
+		for (int i=0; i<num_clients; i++) {
+			model_names_all[i] = models[i];
+		}
 
 		for (int i=0; i<num_clients; i++) {
 			op_info_vector.push_back({});

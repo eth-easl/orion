@@ -165,10 +165,36 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			break;
 		}
 		case CUDNN_BNORM_RECORD: {
-			DEBUG_PRINT("found a new bnorm inf record from idx %d!\n", idx);
-			cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
+			DEBUG_PRINT("found a new bnorm training record from idx %d!\n", idx);
+			cudnnBatchNormalizationForwardTrainingEx_record record = frecord.data.cudnnBNormRecord;
 			cudnnSetStream(record.handle, *sched_stream);
-			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
+			(*cudnn_bnorm_function)(
+				record.handle,
+				record.mode,
+				record.bnOps,
+				record.alpha,
+				record.beta,
+				record.xDesc,
+				record.xData,
+				record.zDesc,
+				record.zData,
+				record.yDesc,
+				record.yData,
+				record.bnScaleBiasMeanVarDesc,
+				record.bnScaleData,
+				record.bnBiasData,
+				record.exponentialAverageFactor,
+				record.resultRunningMeanData,
+				record.resultRunningVarianceData,
+				record.epsilon,
+				record.saveMean,
+				record.saveInvVariance,
+				record.activationDesc,
+				record.workspace,
+				record.workSpaceSizeInBytes,
+				record.reserveSpace,
+				record.reserveSpaceSizeInBytes
+			);
 			cudnnSetStream(record.handle, 0);
 			break;
 		}

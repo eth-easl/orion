@@ -13,27 +13,12 @@ class PyScheduler:
         self._sched_lib = sched_lib
         self._num_clients = num_clients
 
-        home_dir = os.path.expanduser('~')
-        model_lib_dir = home_dir + "/gpu_share_repo/cpp_backend/model_kernels/"
-
-        self._model_lib = {
-                "resnet50": model_lib_dir + "resnet50_with_profile",
-                "resnet101": model_lib_dir + "resnet101_with_profile",
-                "vgg16_bn": model_lib_dir + "vgg16_bn_with_profile",
-                "mobilenet": model_lib_dir + "mobilenet_with_profile",
-                "gnmt": model_lib_dir + "gnmt_50_64_with_profile",
-                "bert": model_lib_dir + "bert_large_8_with_profile",
-                "transformer": model_lib_dir + "transformer_xl_32_with_profile",
-                "retinanet": model_lib_dir + "retinanet_resnet_8_with_profile",
-                "dlrm": model_lib_dir + "dlrm_small_with_profile"
-        }
-
-    def run_scheduler(self, barrier, tids, model_names):
+    def run_scheduler(self, barrier, tids, model_names, kernel_files):
 
         torch.cuda.profiler.cudart().cudaProfilerStart()
 
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
-        lib_names = [self._model_lib[x].encode('utf-8') for x in model_names]
+        lib_names = [x.encode('utf-8') for x in kernel_files]
 
         # convert
         IntAr = ctypes.c_int * self._num_clients
