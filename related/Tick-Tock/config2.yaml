@@ -1,5 +1,5 @@
 ---
-policy: tick-tock # either "temporal" or "tick-tock"
+policy: temporal # either "temporal" or "tick-tock"
 model0: vision # these two names should strictly correspond to the model names below
 model1: vision
 num_epochs: 2

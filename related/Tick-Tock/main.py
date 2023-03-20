@@ -29,7 +29,7 @@ model_to_train_wrapper = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', default='./config.yaml', help='Path to the yaml config file', type=str)
-parser.add_argument('--log', default=utils.pretty_time() + '-training.log', help='Path to the log file', type=str)
+parser.add_argument('--log', default= f'./{utils.pretty_time()}-training.log', help='Path to the log file', type=str)
 
 if __name__ == "__main__":
     args = parser.parse_args()

@@ -2,7 +2,6 @@ import smtplib, ssl
 from email.mime.text import MIMEText
 import logging
 
-
 def notify(subject: str, body: str) -> None:
     port = 994
     server = "smtp.163.com"
@@ -13,13 +12,13 @@ def notify(subject: str, body: str) -> None:
     message['Subject'] = subject
     message['To'] = receiver_email
     message['From'] = sender_email
-
     context = ssl.create_default_context()
     try:
         with smtplib.SMTP_SSL(server, port, context=context) as server:
             server.login(sender_email, password)
             server.sendmail(sender_email, [receiver_email], message.as_string())
-    except:
-        logging.error('email fails to be sent')
+    except Exception as ex:
+        logging.exception(ex)
     else:
         logging.info('email is sent successfully')
+
