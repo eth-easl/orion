@@ -17,8 +17,9 @@ import os
 import argparse
 import threading
 
-def imagenet_loop(model_name, batchsize, train_loader, local_rank, barrier, tid):
+def imagenet_loop(model_name, batchsize, local_rank, barrier, tid):
 
+    print(model_name, batchsize, local_rank, barrier, tid)
     # do only forward for now, experimental
     barrier.wait()
 
@@ -31,7 +32,7 @@ def imagenet_loop(model_name, batchsize, train_loader, local_rank, barrier, tid)
 
     model.eval()
 
-    
+
     for i in range(1):
         print("Start epoch: ", i)
 
@@ -43,13 +44,13 @@ def imagenet_loop(model_name, batchsize, train_loader, local_rank, barrier, tid)
         torch.cuda.synchronize()
 
         while batch_idx < 1:
- 
+
             print(f"submit!, batch_idx is {batch_idx}")
             torch.cuda.profiler.cudart().cudaProfilerStart()
 
             with torch.no_grad():
                 output = model(data)
-            
+
             torch.cuda.profiler.cudart().cudaProfilerStop()
 
             print(output.shape)
@@ -59,11 +60,11 @@ def imagenet_loop(model_name, batchsize, train_loader, local_rank, barrier, tid)
 
             # notify the scheduler that everything is submitted
             #barrier.wait()
-            
+
             #torch.cuda.synchronize()
             # wait until all operations have been completed before starting the next iter
             #barrier.wait()
-        
+
         print("Epoch took: ", time.time()-start)
         while(True):
             pass

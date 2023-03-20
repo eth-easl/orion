@@ -199,7 +199,7 @@ extern "C" {
 	}
 
 
-	void setup(Scheduler* scheduler, int tid0, int tid1, char* model0, char* file0, char* model1, char* file1) {
+	void setup(Scheduler* scheduler, int num_clients, int* tids, char** models, char** files) {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
@@ -219,29 +219,21 @@ extern "C" {
 #endif
 
 		pid_t* thread_ids_all = (pid_t*)dlsym(klib, "thread_ids");
-		thread_ids_all[0] = tid0;
-		thread_ids_all[1] = tid1;
-		thread_ids_all[2] = mytid;
+		for (int i=0; i<num_clients; i++)
+			thread_ids_all[i] = tids[i];
+		thread_ids_all[2] = mytid; // TODO: make this configurable
 
 		DEBUG_PRINT("Scheduler setup the thread ids to be %d, %d, %d\n", thread_ids_all[0], thread_ids_all[1], thread_ids_all[2]);
-
 
 		int num_kernels = 1;
 		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
 
-		char** model_names_all = (char**)dlsym(klib, "model_names");
-		model_names_all[0] = model0;
-		model_names_all[1] = model1;
-
-		op_info_vector.push_back({});
-		op_info_vector.push_back({});
-
-		printf("func_names_all is %p\n", func_names_all);
-		printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[0], func_names_all[1]);
-		populate_kernel_info(func_names_all[0], file0, op_info_vector[0]);
-		printf("----------- SIZE: %d\n", op_info_vector[0].size());
-		populate_kernel_info(func_names_all[1], file1, op_info_vector[1]);
-
+		for (int i=0; i<num_clients; i++) {
+			op_info_vector.push_back({});
+			printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[i], func_names_all[i]);
+			populate_kernel_info(func_names_all[i], files[i], op_info_vector[i]);
+			printf("----------- SIZE: %d\n", op_info_vector[i].size());
+		}
 	}
 
 	void* sched_func(Scheduler* scheduler, int num_clients, bool profile_mode) {
