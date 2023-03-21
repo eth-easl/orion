@@ -35,15 +35,14 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barrier, tid):
     else:
         model.eval()
 
-    for i in range(1):
+    timings=[]
+    for i in range(10):
         print("Start epoch: ", i)
 
         start = time.time()
         start_iter = time.time()
 
         batch_idx = 0
-
-        torch.cuda.synchronize()
 
         while batch_idx < 1:
 
@@ -58,18 +57,21 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barrier, tid):
 
             torch.cuda.profiler.cudart().cudaProfilerStop()
 
-            print(output.shape)
             batch_idx += 1
 
             start_iter = time.time()
 
-            # notify the scheduler that everything is submitted
-            #barrier.wait()
-
             #torch.cuda.synchronize()
             # wait until all operations have been completed before starting the next iter
-            #barrier.wait()
 
-        print("Epoch took: ", time.time()-start)
-        while(True):
-            pass
+
+        # epoch_time = time.time()-start
+        # timings.append(epoch_time)
+        print("Epoch done!")
+        barrier.wait()
+        # barrier.wait()
+
+    # timings = timings[2:]
+    # print(f"Avg is {np.median(np.asarray(timings))} sec")
+
+#imagenet_loop('resnet50', 32, True, 0, None, 0)

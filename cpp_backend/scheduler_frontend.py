@@ -3,6 +3,7 @@ from ctypes import *
 import torch
 import numpy as np
 import os
+import time
 
 class PyScheduler:
 
@@ -13,7 +14,7 @@ class PyScheduler:
         self._sched_lib = sched_lib
         self._num_clients = num_clients
 
-    def run_scheduler(self, barrier, tids, model_names, kernel_files, num_kernels):
+    def run_scheduler(self, barrier, tids, model_names, kernel_files, num_kernels, iters):
 
         torch.cuda.profiler.cudart().cudaProfilerStart()
 
@@ -35,10 +36,21 @@ class PyScheduler:
 
         self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar)
 
-        barrier.wait()
-
         num_clients = len(tids)
         print(f"Num clients is {num_clients}")
-        self._sched_lib.sched_func(self._scheduler, num_clients, True)
 
-        torch.cuda.synchronize()
+        self._sched_lib.sched_setup(self._scheduler, num_clients, False)
+
+        print("before starting")
+        timings=[]
+        for i in range(iters):
+            start = time.time()
+            barrier.wait()
+            print(f"start iter {i}")
+            self._sched_lib.schedule(self._scheduler, num_clients, False)
+            torch.cuda.synchronize()
+            total_time = time.time()-start
+            print(f"Iteration {i} took {total_time} sec")
+            timings.append(total_time)
+        timings = timings[2:]
+        print(f"Avg is {np.median(np.asarray(timings))} sec")

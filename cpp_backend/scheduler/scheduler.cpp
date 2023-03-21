@@ -7,122 +7,131 @@ void* klib;
 vector<vector<op_info>> op_info_vector;
 int* fidx;
 int* num_client_kernels;
-int max_sms = 1000; // TODO: set real value
+int max_sms = 80;
+queue<struct func_record>** client_buffers;
+pthread_mutex_t** client_mutexes;
+queue<struct func_record>** buffers;
+int* seen;
 
-void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
+// fifo-globals
+cudaStream_t sched_stream;
+cudaEvent_t sched_event;
 
-	DEBUG_PRINT("entered busy wait FIFO!\n");
+// profile-globals
+cudaStream_t** sched_streams;
+cudaEvent_t** events;
+int* streams;
+
+void  Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 
 	register_functions();
-
-	queue<struct func_record>** buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
+	client_buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
 	//(queue<struct kernel_record>**)qbuffers;
 	for (int i=0; i<num_clients; i++)
-		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
+		client_buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-
-	cudaStream_t sched_stream;
 	CHECK_CUDA_ERROR(cudaStreamCreate(&sched_stream));
-
-	cudaEvent_t sched_event;
 	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&sched_event, cudaEventDisableTiming));
+	seen = (int*)calloc(num_clients,sizeof(int));
 
-	int seen[num_clients] = {0};
+}
 
-	int num_iters = 10;
-	int it = 0;
+void Scheduler::profile_prep(void** qbuffers, int num_clients) {
 
-	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
+	register_functions();
+	client_buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
+	//(queue<struct kernel_record>**)qbuffers;
+	for (int i=0; i<num_clients; i++)
+		client_buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	DEBUG_PRINT("for ID 1: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[1], buffers[1], buffers);
+	sched_streams = (cudaStream_t**)malloc((num_clients+1)*sizeof(cudaStream_t*));
+	for (int i=0; i<=num_clients; i++)
+		sched_streams[i] = NULL;
+
+	events = (cudaEvent_t**)malloc((num_clients+1)*sizeof(cudaEvent_t*));
+	for (int i=0; i<=num_clients; i++)
+		events[i] = NULL;
+
+	create_streams(sched_streams, num_clients+1);
+	create_events(events, num_clients+1);
+
+	seen = (int*)calloc(num_clients,sizeof(int));
+
+	streams = (int*)malloc(num_clients*sizeof(int));
+	for (int i=0; i<num_clients; i++)
+		streams[i] = -1;
 
 
-	while (it < num_iters) {
-		while(1) {
-			for (int i=0; i<num_clients; i++) {
-				if (seen[i] == num_client_kernels[i])
-					continue;
-				pthread_mutex_lock(mutexes[i]);
-				volatile int sz = buffers[i]->size();
-				if (sz > 0) {
-					struct func_record frecord = buffers[i]->front();
-					schedule_kernel(frecord, &sched_stream, i, &sched_event, seen);
-					buffers[i]->pop();
-				}
-				pthread_mutex_unlock(mutexes[i]);
+}
+
+void* Scheduler::busy_wait_fifo(int num_clients) {
+
+	while(1) {
+		for (int i=0; i<num_clients; i++) {
+			if (seen[i] == num_client_kernels[i])
+				continue;
+			pthread_mutex_lock(client_mutexes[i]);
+			volatile int sz = client_buffers[i]->size();
+			if (sz > 0) {
+				struct func_record frecord = client_buffers[i]->front();
+				schedule_kernel(frecord, &sched_stream, i, &sched_event, seen);
+				client_buffers[i]->pop();
 			}
+			pthread_mutex_unlock(client_mutexes[i]);
+		}
 
-			bool finished = true;
-			for (int i=0; i<num_clients; i++) {
-				if (seen[i] < num_client_kernels[i]) {
-					finished = false;
-					break;
-				}
-			}
-
-			if (finished) {
+		bool finished = true;
+		for (int i=0; i<num_clients; i++) {
+			if (seen[i] < num_client_kernels[i]) {
+				finished = false;
 				break;
 			}
+		}
 
+		if (finished) {
+			break;
 		}
-		it += 1;
-		for (int i=0; i<num_clients; i++) {
-			CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-			seen[i] = 0;
-			fidx[i] = 0;
-		}
-		printf("RESTART! %d\n", it);
+
 	}
+
+	for (int i=0; i<num_clients; i++) {
+		CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+		seen[i] = 0;
+		fidx[i] = 0;
+	}
+	printf("RESTART!\n");
 
 	return NULL;
 }
 
 
-void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
+void* Scheduler::busy_wait_profile(int num_clients) {
 
-	DEBUG_PRINT("entered busy wait PROFILE!\n");
+	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
 
-	register_functions();
-	queue<struct func_record>** buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
-	//(queue<struct kernel_record>**)qbuffers;
-	for (int i=0; i<num_clients; i++)
-		buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
-
-	cudaStream_t* sched_streams[num_clients+1] = {NULL};
-	cudaEvent_t* events[num_clients+1] = {NULL};
-
-	create_streams(sched_streams, num_clients+1);
-	create_events(events, num_clients+1);
-
-	int seen[num_clients] = {0};
-	int streams[num_clients] = {-1}; // 1: unitialized, 0: low prio, 1: high prio
-	int num_iters = 10;
-	int it = 0;
-
-	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
-
-	DEBUG_PRINT("for ID 1: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[1], buffers[1], buffers);
-
-	while (it < num_iters) {
+	if (1) {
 		while(1) {
 			vector<func_record*> frecords = {NULL, NULL};
 
 			for (int i=0; i<num_clients; i++) {
 				if (seen[i] == num_client_kernels[i])
 					continue;
-				pthread_mutex_lock(mutexes[i]);
-				volatile int sz = buffers[i]->size();
+
+				pthread_mutex_lock(client_mutexes[i]);
+				volatile int sz = client_buffers[i]->size();
 				if (sz > 0) {
-					frecords[i] = &(buffers[i]->front());
+					frecords[i] = &(client_buffers[i]->front());
 				}
-				pthread_mutex_unlock(mutexes[i]);
+				pthread_mutex_unlock(client_mutexes[i]);
+
 			}
+
 
 			if ((frecords[0] != NULL) and (frecords[1] != NULL)) {
 				schedule_pair(
 					frecords,
-					buffers,
-					mutexes,
+					client_buffers,
+					client_mutexes,
 					op_info_vector,
 					seen,
 					max_sms,
@@ -137,18 +146,19 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
 				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 				streams[0] = 0;
-				pop_from_queue(buffers[0], mutexes[0]);
+				pop_from_queue(client_buffers[0], client_mutexes[0]);
 			}
 
 			else if (frecords[1] != NULL) {
 				wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
 				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 				streams[1] = 0;
-				pop_from_queue(buffers[1], mutexes[1]);
+				pop_from_queue(client_buffers[1], client_mutexes[1]);
 			}
 
 			bool finished = true;
 			for (int i=0; i<num_clients; i++) {
+				//DEBUG_PRINT("%d, %d\n", seen[0], seen[1]);
 				if (seen[i] < num_client_kernels[i]) {
 					finished = false;
 					break;
@@ -160,14 +170,12 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 			}
 
 		}
-		it += 1;
 		for (int i=0; i<num_clients; i++) {
-			CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 			seen[i] = 0;
 			streams[i] = -1;
 			fidx[i] = 0;
 		}
-		printf("RESTART! %d\n", it);
+		printf("RESTART!\n");
 	}
 
 	return NULL;
@@ -263,20 +271,32 @@ extern "C" {
 
 	}
 
-	void* sched_func(Scheduler* scheduler, int num_clients, bool profile_mode) {
+	void* sched_setup(Scheduler* scheduler, int num_clients, bool profile_mode) {
 
 		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues");
 
 		DEBUG_PRINT("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
-		pthread_mutex_t** mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
+		client_mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
 
-		DEBUG_PRINT("entered sched func!\n");
+		DEBUG_PRINT("entered sched setup func!\n");
 
 		if (profile_mode)
-			scheduler->busy_wait_profile(buffers, mutexes, num_clients);
+			scheduler->profile_prep(buffers, num_clients);
 		else
-			scheduler->busy_wait_fifo(buffers, mutexes, num_clients);
+			scheduler->fifo_prep(buffers, num_clients);
+		DEBUG_PRINT("exited sched prep func!\n");
+		return NULL;
+	}
+
+
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode) {
+
+		DEBUG_PRINT("entered sched func!\n");
+		if (profile_mode)
+			scheduler->busy_wait_profile(num_clients);
+		else
+			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");
 		return NULL;
 	}

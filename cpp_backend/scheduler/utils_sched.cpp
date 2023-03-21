@@ -257,7 +257,6 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 		}
 		case CUBLAS_SGEMM_RECORD: {
 			cublasSgemm_record record = frecord.data.cublasSgemmRecord;
-			DEBUG_PRINT("handle is %p\n", record.handle);
 			cublasSetStream_v2(record.handle, *sched_stream);
 			(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
 			cublasSetStream_v2(record.handle, 0);
@@ -266,7 +265,6 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 		}
 		case CUBLAS_SGEMM_STRIDED_RECORD: {
 			cublasSgemmStridedBatched_record record = frecord.data.cublasSgemmStridedRecord;
-			DEBUG_PRINT("handle is %p\n", record.handle);
 			cublasSetStream_v2(record.handle, *sched_stream);
 			(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
 			cublasSetStream_v2(record.handle, 0);
@@ -285,8 +283,8 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 
 void schedule_pair(
 	vector<func_record*> &frecords,
-	queue<struct func_record>** &buffers,
-	pthread_mutex_t** &mutexes,
+	queue<struct func_record>** &cbuffers,
+	pthread_mutex_t** &cmutexes,
 	vector<vector<op_info>> &op_info_vector,
 	int* seen, int max_sms,
 	cudaStream_t** sched_streams,
@@ -302,8 +300,7 @@ void schedule_pair(
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 		streams[0] = 0;
-		pop_from_queue(buffers[0], mutexes[0]);
-		seen[0] += 1;
+		pop_from_queue(cbuffers[0], cmutexes[0]);
 	}
 	// different profiles
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
@@ -313,23 +310,19 @@ void schedule_pair(
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 		streams[0] = 0;
 		streams[1] = 0;
-		pop_from_queue(buffers[0], mutexes[0]);
-		pop_from_queue(buffers[1], mutexes[1]);
-		seen[0] += 1;
-		seen[1] += 1;
+		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[1], cmutexes[1]);
 	}
 
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
-		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
-		wait_for_stream(1, 1, streams[1], sched_streams[num_events-1], events, num_events);
+		// wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
+		// wait_for_stream(1, 1, streams[1], sched_streams[num_events-1], events, num_events);
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1], seen);
 		streams[0] = 0;
 		streams[1] = 1;
-		pop_from_queue(buffers[0], mutexes[0]);
-		pop_from_queue(buffers[1], mutexes[1]);
-		seen[0] += 1;
-		seen[1] += 1;
+		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[1], cmutexes[1]);
 	}
 
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
@@ -339,17 +332,13 @@ void schedule_pair(
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 		streams[0] = 1;
 		streams[1] = 0;
-		pop_from_queue(buffers[0], mutexes[0]);
-		pop_from_queue(buffers[1], mutexes[1]);
-		seen[0] += 1;
-		seen[1] += 1;
+		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[1], cmutexes[1]);
 	}
-
 	else {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 		streams[0] = 0;
-		pop_from_queue(buffers[0], mutexes[0]);
-		seen[0] += 1;
+		pop_from_queue(cbuffers[0], cmutexes[0]);
 	}
 }

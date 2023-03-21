@@ -76,7 +76,7 @@ def launch_jobs(config_dict_list):
 
     print(tids)
 
-    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names, model_files, num_kernels))
+    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names, model_files, num_kernels, 10))
 
     sched_thread.start()
 
