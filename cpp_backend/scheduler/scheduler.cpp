@@ -6,6 +6,7 @@ using namespace std;
 void* klib;
 vector<vector<op_info>> op_info_vector;
 int* fidx;
+int* num_client_kernels;
 int max_sms = 1000; // TODO: set real value
 
 void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
@@ -28,7 +29,6 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 
 	int seen[num_clients] = {0};
 
-	int num_kernels = 228;
 	int num_iters = 10;
 	int it = 0;
 
@@ -40,7 +40,7 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 	while (it < num_iters) {
 		while(1) {
 			for (int i=0; i<num_clients; i++) {
-				if (seen[i] == num_kernels)
+				if (seen[i] == num_client_kernels[i])
 					continue;
 				pthread_mutex_lock(mutexes[i]);
 				volatile int sz = buffers[i]->size();
@@ -54,7 +54,7 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 
 			bool finished = true;
 			for (int i=0; i<num_clients; i++) {
-				if (seen[i] < num_kernels) {
+				if (seen[i] < num_client_kernels[i]) {
 					finished = false;
 					break;
 				}
@@ -96,8 +96,6 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 
 	int seen[num_clients] = {0};
 	int streams[num_clients] = {-1}; // 1: unitialized, 0: low prio, 1: high prio
-
-	int num_kernels = 228;
 	int num_iters = 10;
 	int it = 0;
 
@@ -107,13 +105,10 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 
 	while (it < num_iters) {
 		while(1) {
-			if (seen[0]==num_kernels and seen[1]==num_kernels)
-				break;
-
 			vector<func_record*> frecords = {NULL, NULL};
 
 			for (int i=0; i<num_clients; i++) {
-				if (seen[i] == num_kernels)
+				if (seen[i] == num_client_kernels[i])
 					continue;
 				pthread_mutex_lock(mutexes[i]);
 				volatile int sz = buffers[i]->size();
@@ -154,7 +149,7 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 
 			bool finished = true;
 			for (int i=0; i<num_clients; i++) {
-				if (seen[i] < num_kernels) {
+				if (seen[i] < num_client_kernels[i]) {
 					finished = false;
 					break;
 				}
@@ -223,7 +218,7 @@ extern "C" {
 	}
 
 
-	void setup(Scheduler* scheduler, int num_clients, int* tids, char** models, char** files) {
+	void setup(Scheduler* scheduler, int num_clients, int* tids, char** models, char** files, int* num_kernels) {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
@@ -249,7 +244,6 @@ extern "C" {
 
 		DEBUG_PRINT("Scheduler setup the thread ids to be %d, %d, %d\n", thread_ids_all[0], thread_ids_all[1], thread_ids_all[2]);
 
-		int num_kernels = 1;
 		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
 
 		char** model_names_all = (char**)dlsym(klib, "model_names");
@@ -265,6 +259,8 @@ extern "C" {
 		}
 
 		fidx = (int*)dlsym(klib, "func_indexes");
+		num_client_kernels = num_kernels;
+
 	}
 
 	void* sched_func(Scheduler* scheduler, int num_clients, bool profile_mode) {

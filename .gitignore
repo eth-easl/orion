@@ -7,3 +7,4 @@
 *.ncu-rep
 *.svg
 *.png
+model_kernels/*

@@ -1,10 +1,12 @@
 [
 
 	{
-		"arch": "transformer",
-		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_32_fwd",
+		"arch": "resnet50",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/resnet50_32_fwd",
+		"num_kernels": 228,
 		"args": {
 			"batchsize": 32,
+			"model_name": "resnet50",
 			"train": true
 		}
 	}

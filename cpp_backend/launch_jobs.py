@@ -8,13 +8,13 @@ import sys
 from torchvision import models
 import torch
 
-sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
-from benchmark_suite.gnmt_trainer import gnmt_loop
-sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
-from benchmark_suite.bert_trainer import bert_loop
+# sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
+# from benchmark_suite.gnmt_trainer import gnmt_loop
+# sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
+# from benchmark_suite.bert_trainer import bert_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
-#from benchmark_suite.transformer_trainer import transformer_loop
+from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
 #from benchmark_suite.retinanet_trainer import retinanet_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
@@ -27,10 +27,10 @@ from scheduler_frontend import PyScheduler
 function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
-    "mobilenetv2": imagenet_loop,
-    "bert": bert_loop,
-    "gnmt": gnmt_loop,
-    "transformer": None, #transformer_loop,
+    "mobilenet_v2": imagenet_loop,
+    "bert": None, #bert_loop,
+    "gnmt": None, #gnmt_loop,
+    "transformer": transformer_loop,
     "retinanet": None, #retinanet_loop,
     "dlrm": None, #dlrm_loop
 }
@@ -61,6 +61,7 @@ def launch_jobs(config_dict_list):
 
     model_names = [config_dict['arch'] for config_dict in config_dict_list]
     model_files = [config_dict['kernel_file'] for config_dict in config_dict_list]
+    num_kernels = [config_dict['num_kernels'] for config_dict in config_dict_list]
     tids = []
     threads = []
     for i, config_dict in enumerate(config_dict_list):
@@ -75,7 +76,7 @@ def launch_jobs(config_dict_list):
 
     print(tids)
 
-    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names, model_files))
+    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barrier, tids, model_names, model_files, num_kernels))
 
     sched_thread.start()
 
