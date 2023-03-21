@@ -110,5 +110,5 @@ if __name__ == "__main__":
     logging.info(f'It takes {end_time - start_time} seconds in total.')
     notifier.notify(
         subject='gpu_share training evaluation',
-        body=f'the experiment training {model0_name} and {model1_name} with {policy} is finished!'
+        body=f'The experiment training {model0_name} and {model1_name} with {policy} is finished!'
     )

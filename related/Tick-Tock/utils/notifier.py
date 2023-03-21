@@ -5,8 +5,8 @@ import logging
 def notify(subject: str, body: str) -> None:
     port = 994
     server = "smtp.163.com"
-    password = '<replace with your password>'
-    sender_email = '<replace with your email address>'
+    password = 'PXVDMZFVSWZNHDRL'
+    sender_email = 'eth_research@163.com'
     receiver_email = 'xianzma@gmail.com'
     message = MIMEText(body, "plain", "utf-8")
     message['Subject'] = subject
