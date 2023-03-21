@@ -1,6 +1,10 @@
 import torch
 import threading
 import time
+import sys
+
+sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
+
 
 from seq2seq.models.gnmt import GNMT
 
@@ -27,16 +31,16 @@ def gnmt(batchsize, local_rank, do_eval=True, profile=None):
         model.eval()
     else:
         model.train()
-        criterion = LabelSmoothing(0.1, 0).to(local_rank)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+        #criterion = LabelSmoothing(0.1, 0).to(local_rank)
+        #optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
     batch_idx = 0
     torch.cuda.synchronize()
 
     while batch_idx < 10:
 
-        if not do_eval:
-            optimizer.zero_grad()
+        #if not do_eval:
+        #    optimizer.zero_grad()
 
         if batch_idx == 9:
             if profile == 'ncu':
@@ -49,10 +53,10 @@ def gnmt(batchsize, local_rank, do_eval=True, profile=None):
                 output = model(input0, input1, input2)
         else:
             output = model(input0, input1, input2)
-            T, B = output.size(0), output.size(1)
-            loss = criterion(output.view(T * B, -1), labels.contiguous().view(-1))
-            loss.backward()
-            optimizer.step()
+            #T, B = output.size(0), output.size(1)
+            #loss = criterion(output.view(T * B, -1), labels.contiguous().view(-1))
+            #loss.backward()
+            #optimizer.step()
 
 
         if batch_idx == 9:
@@ -66,4 +70,4 @@ def gnmt(batchsize, local_rank, do_eval=True, profile=None):
         print("Done!")
 
 if __name__ == "__main__":
-    gnmt(8, 0, True, 'ncu')
+    gnmt(128, 0, False, 'nsys')

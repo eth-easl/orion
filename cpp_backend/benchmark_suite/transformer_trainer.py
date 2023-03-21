@@ -4,7 +4,7 @@ import time
 
 from mem_transformer import MemTransformerLM
 
-def transformer_loop(batchsize, loader, local_rank, barrier, tid):
+def transformer_loop(batchsize, train, local_rank, barrier, tid):
 
     barrier.wait()
 
@@ -41,7 +41,10 @@ def transformer_loop(batchsize, loader, local_rank, barrier, tid):
 
     model = MemTransformerLM(**model_config).to(0)
 
-    model.eval()
+    if train:
+        model.train()
+    else:
+        model.eval()
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -50,16 +53,14 @@ def transformer_loop(batchsize, loader, local_rank, barrier, tid):
         start_iter = time.time()
         batch_idx = 0
         torch.cuda.synchronize()
-                                                                                 
-                                                                                 
-        while batch_idx < 1:                                                                                         
+
+        while batch_idx < 1:
             print(f"submit!, batch_idx is {batch_idx}")
-            #torch.cuda.profiler.cudart().cudaProfilerStart()
-            with torch.no_grad():
-                output = model(data, target, mems)
-            
-            torch.cuda.profiler.cudart().cudaProfilerStop()
-            #print(output)
-                
-            batch_idx += 1                                                                                                                                                                              
+            if train:
+                loss, output = model(data, target, mems)
+            else:
+                with torch.no_grad():
+                    output = model(data, target, mems)
+
+            batch_idx += 1
     print("Epoch took: ", time.time()-start)

@@ -1,0 +1,11 @@
+[
+
+	{
+		"arch": "transformer",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_32_fwd",
+		"args": {
+			"batchsize": 32,
+			"train": true
+		}
+	}
+]
