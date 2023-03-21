@@ -22,3 +22,16 @@ def notify(subject: str, body: str) -> None:
     else:
         logging.info('email is sent successfully')
 
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)-8s: [%(filename)s:%(lineno)d] %(message)s',
+        datefmt='%d/%m/%Y %H:%M:%S',
+        handlers=[
+            # also output to console
+            logging.StreamHandler(),
+        ]
+    )
+    notify('notification test', 'I hope it succeeds!')
+
