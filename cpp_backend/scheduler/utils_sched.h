@@ -28,7 +28,7 @@ typedef struct op_info {
 } op_info;
 
 void register_functions();
-void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event);
+void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event, int* seen);
 void schedule_pair(
 	vector<func_record*> &frecords,
 	queue<struct func_record>** &buffers,

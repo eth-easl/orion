@@ -336,11 +336,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			int data_size = *((int*)args[2]);
 			int* data_size_ptr = (int*)malloc(sizeof(int));
 			*data_size_ptr = data_size;
-			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
 			Array<char*, 10>* data_ptr = (Array<char*, 10>*)malloc(sizeof(Array<char*, 10>));
 			for (int i=0; i<data_size; i++) {
 				data_ptr->data[i] = ((Array<char*, 10>*)args[3])->data[i];
-				printf("POINTER AT INDEX %d IS %p\n", i, data_ptr->data[i]);
 			}
 
 			new_args[2] = data_size_ptr;
@@ -419,25 +417,19 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[0] = (int*)malloc(sizeof(int));
 			*((int*)new_args[0]) = *((int*)(args[0]));
 
-			printf("-------- allocated\n");
-
 			new_args[1] = args[1];
 			new_args[4] = args[4];
 			new_args[5] = args[5];
 			new_args[6] = args[6];
 			new_args[7] = args[7];
 
-			printf("-------- copied\n");
-
 			int data_size = *((int*)args[2]);
-			printf("******************* IDX IS %d, DATA SIZE IS %d\n", func_indexes[idx], data_size);
 
 			int* data_size_ptr = (int*)malloc(sizeof(int));
 			*data_size_ptr = data_size;
 			Array<char*, 10>* data_ptr = (Array<char*, 10>*)malloc(sizeof(Array<char*, 10>));
 			for (int i=0; i<data_size; i++) {
 				data_ptr->data[i] = ((Array<char*, 10>*)args[3])->data[i];
-				printf("POINTER AT INDEX %d IS %p\n", i, data_ptr->data[i]);
 			}
 
 			new_args[2] = data_size_ptr;

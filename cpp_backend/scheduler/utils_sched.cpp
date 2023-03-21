@@ -129,13 +129,14 @@ void wait_for_stream(int idx, int current_prio, int prev_prio, cudaStream_t* sch
 }
 
 
-void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event) {
+void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event, int* seen) {
 
 	switch (frecord.type) {
 		case KERNEL_RECORD: {
 			DEBUG_PRINT("found a new kernel record from idx %d! kernel func is %p\n", idx, kernel_function);
 			kernel_record record = frecord.data.krecord;
 			(*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, *sched_stream);
+			seen[idx] += 1;
 			break;
 		}
 		case MEMCPY_RECORD: {
@@ -167,6 +168,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnSetStream(record.handle, *sched_stream);
 			(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
 			cudnnSetStream(record.handle, 0); // TODO: I want to set the default stream here
+			seen[idx] += 1;
 			break;
 		}
 		case CUDNN_BNORM_RECORD: {
@@ -201,6 +203,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 				record.reserveSpaceSizeInBytes
 			);
 			cudnnSetStream(record.handle, 0);
+			seen[idx] += 1;
 			break;
 		}
 		case CUDNN_BNORM_INF_RECORD: {
@@ -209,6 +212,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnSetStream(record.handle, *sched_stream);
 			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
 			cudnnSetStream(record.handle, 0);
+			seen[idx] += 1;
 			break;
 		}
 		case CUDNN_RNN_INF_RECORD: {
@@ -217,6 +221,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnSetStream(record.handle, *sched_stream);
 			(*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
 			cudnnSetStream(record.handle, 0);
+			seen[idx] += 1;
 			break;
 		}
 		case CUDNN_RNN_TRAIN_RECORD: {
@@ -247,6 +252,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 				record.reserveSpaceSizeInBytes
 			);
 			cudnnSetStream(record.handle, 0);
+			seen[idx] += 1;
 			break;
 		}
 		case CUBLAS_SGEMM_RECORD: {
@@ -255,6 +261,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cublasSetStream_v2(record.handle, *sched_stream);
 			(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
 			cublasSetStream_v2(record.handle, 0);
+			seen[idx] += 1;
 			break;
 		}
 		case CUBLAS_SGEMM_STRIDED_RECORD: {
@@ -263,6 +270,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cublasSetStream_v2(record.handle, *sched_stream);
 			(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
 			cublasSetStream_v2(record.handle, 0);
+			seen[idx] += 1;
 			break;
 		}
 		default:
@@ -292,7 +300,7 @@ void schedule_pair(
 
 	if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0]);
+		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 		streams[0] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
 		seen[0] += 1;
@@ -301,8 +309,8 @@ void schedule_pair(
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
 		wait_for_stream(1, 0, streams[1], sched_streams[1], events, num_events);
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0]);
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1]);
+		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
+		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 		streams[0] = 0;
 		streams[1] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
@@ -314,8 +322,8 @@ void schedule_pair(
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
 		wait_for_stream(1, 1, streams[1], sched_streams[num_events-1], events, num_events);
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0]);
-		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1]);
+		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
+		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1], seen);
 		streams[0] = 0;
 		streams[1] = 1;
 		pop_from_queue(buffers[0], mutexes[0]);
@@ -327,8 +335,8 @@ void schedule_pair(
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
 		wait_for_stream(0, 1, streams[0], sched_streams[num_events-1], events, num_events);
 		wait_for_stream(1, 0, streams[1], sched_streams[1], events, num_events);
-		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1]);
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1]);
+		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1], seen);
+		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 		streams[0] = 1;
 		streams[1] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
@@ -339,7 +347,7 @@ void schedule_pair(
 
 	else {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0]);
+		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 		streams[0] = 0;
 		pop_from_queue(buffers[0], mutexes[0]);
 		seen[0] += 1;

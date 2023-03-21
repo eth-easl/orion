@@ -5,6 +5,7 @@ using namespace std;
 // globals
 void* klib;
 vector<vector<op_info>> op_info_vector;
+int* fidx;
 int max_sms = 1000; // TODO: set real value
 
 void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int num_clients) {
@@ -27,8 +28,8 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 
 	int seen[num_clients] = {0};
 
-	int num_kernels = 1000;
-	int num_iters = 1;
+	int num_kernels = 228;
+	int num_iters = 10;
 	int it = 0;
 
 	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
@@ -38,9 +39,6 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 
 	while (it < num_iters) {
 		while(1) {
-			if (seen[0]==num_kernels and seen[1]==num_kernels)
-				break;
-
 			for (int i=0; i<num_clients; i++) {
 				if (seen[i] == num_kernels)
 					continue;
@@ -48,19 +46,32 @@ void* Scheduler::busy_wait_fifo(void** qbuffers, pthread_mutex_t** mutexes, int 
 				volatile int sz = buffers[i]->size();
 				if (sz > 0) {
 					struct func_record frecord = buffers[i]->front();
-					printf("found a record!\n");
-					schedule_kernel(frecord, &sched_stream, i, &sched_event);
+					schedule_kernel(frecord, &sched_stream, i, &sched_event, seen);
 					buffers[i]->pop();
-					seen[i] += 1;
 				}
 				pthread_mutex_unlock(mutexes[i]);
 			}
 
+			bool finished = true;
+			for (int i=0; i<num_clients; i++) {
+				if (seen[i] < num_kernels) {
+					finished = false;
+					break;
+				}
+			}
+
+			if (finished) {
+				break;
+			}
+
 		}
 		it += 1;
-		for (int i=0; i<num_clients; i++)
+		for (int i=0; i<num_clients; i++) {
+			CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 			seen[i] = 0;
-		DEBUG_PRINT("restart! %d\n", it);
+			fidx[i] = 0;
+		}
+		printf("RESTART! %d\n", it);
 	}
 
 	return NULL;
@@ -86,8 +97,8 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 	int seen[num_clients] = {0};
 	int streams[num_clients] = {-1}; // 1: unitialized, 0: low prio, 1: high prio
 
-	int num_kernels = 2000;
-	int num_iters = 1;
+	int num_kernels = 228;
+	int num_iters = 10;
 	int it = 0;
 
 	DEBUG_PRINT("for ID 0: mutex address is %p, buffer address is %p, buffers is %p\n", mutexes[0], buffers[0], buffers);
@@ -129,26 +140,39 @@ void* Scheduler::busy_wait_profile(void** qbuffers, pthread_mutex_t** mutexes, i
 
 			else if (frecords[0] != NULL) {
 				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
-				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0]);
+				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 				streams[0] = 0;
 				pop_from_queue(buffers[0], mutexes[0]);
 			}
 
 			else if (frecords[1] != NULL) {
 				wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
-				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1]);
+				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 				streams[1] = 0;
 				pop_from_queue(buffers[1], mutexes[1]);
 			}
 
+			bool finished = true;
+			for (int i=0; i<num_clients; i++) {
+				if (seen[i] < num_kernels) {
+					finished = false;
+					break;
+				}
+			}
+
+			if (finished) {
+				break;
+			}
 
 		}
 		it += 1;
 		for (int i=0; i<num_clients; i++) {
+			CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 			seen[i] = 0;
 			streams[i] = -1;
+			fidx[i] = 0;
 		}
-		DEBUG_PRINT("restart! %d\n", it);
+		printf("RESTART! %d\n", it);
 	}
 
 	return NULL;
@@ -239,6 +263,8 @@ extern "C" {
 			populate_kernel_info(func_names_all[i], files[i], op_info_vector[i]);
 			printf("----------- SIZE: %d\n", op_info_vector[i].size());
 		}
+
+		fidx = (int*)dlsym(klib, "func_indexes");
 	}
 
 	void* sched_func(Scheduler* scheduler, int num_clients, bool profile_mode) {
