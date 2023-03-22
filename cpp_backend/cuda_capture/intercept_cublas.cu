@@ -28,8 +28,6 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	new_func_data.cublasSgemmRecord = blassgemm_record;
 	func_record new_record = {CUBLAS_SGEMM_RECORD, new_func_data};
 
-	printf("Intercepter func is %p\n", cublasSgemm);
-
 	if (idx < 2) {
 
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);

@@ -30,7 +30,8 @@ void  Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 	for (int i=0; i<num_clients; i++)
 		client_buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	CHECK_CUDA_ERROR(cudaStreamCreate(&sched_stream));
+	//CHECK_CUDA_ERROR(cudaStreamCreate(&sched_stream));
+	sched_stream = 0;
 	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&sched_event, cudaEventDisableTiming));
 	seen = (int*)calloc(num_clients,sizeof(int));
 
@@ -104,6 +105,28 @@ void* Scheduler::busy_wait_fifo(int num_clients) {
 	return NULL;
 }
 
+void* Scheduler::busy_wait_single_client(int client_id) {
+
+	printf("Inside busy_wait_single_client for client %d\n", client_id);
+	while(seen[client_id] < num_client_kernels[client_id]) {
+		pthread_mutex_lock(client_mutexes[client_id]);
+		volatile int sz = client_buffers[client_id]->size();
+		if (sz > 0) {
+			struct func_record frecord = client_buffers[client_id]->front();
+			schedule_kernel(frecord, &sched_stream, client_id, &sched_event, seen);
+			client_buffers[client_id]->pop();
+		}
+		pthread_mutex_unlock(client_mutexes[client_id]);
+	}
+
+	CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+	seen[client_id] = 0;
+	fidx[client_id] = 0;
+
+	printf("RESTART!\n");
+
+	return NULL;
+}
 
 void* Scheduler::busy_wait_profile(int num_clients) {
 
@@ -204,7 +227,6 @@ extern "C" {
 		while (std::getline(infile, line))
 		{
 
-			std::cout << line << std::endl;
 			vector<string> v;
 			stringstream sline = stringstream(line);
 			while (sline.good()) {
@@ -298,6 +320,11 @@ extern "C" {
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");
+		return NULL;
+	}
+
+	void* schedule_one(Scheduler* scheduler, int client_id) {
+		scheduler->busy_wait_single_client(client_id);
 		return NULL;
 	}
 }
