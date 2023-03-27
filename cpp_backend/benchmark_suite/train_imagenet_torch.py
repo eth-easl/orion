@@ -17,34 +17,27 @@ import os
 import argparse
 import threading
 
-
-def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
-
-    print(model_name, batchsize, local_rank, barriers, tid)
+def imagenet_loop(model_name, batchsize, train, local_rank, start_barriers, end_barriers, tid):
 
     # do only forward for now, experimental
-    barriers[0].wait()
-    ds = torch.cuda.default_stream()
-
-    #barriers[0].wait()
-
-    print("-------------- thread id:  ", threading.get_native_id())
-
-    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank).contiguous()
-    #data = torch.rand([batchsize, 2048]).to(local_rank)
-    model = models.__dict__[model_name](num_classes=1000)
-    model = model.to(0)
-
-    if train:
-        model.train()
-    else:
-        model.eval()
-
-    print("Enter loop!")
-
+    start_barriers[tid].wait()
     s = torch.cuda.Stream()
-    #with torch.cuda.stream(s):
-    if True:
+
+    with torch.cuda.stream(s):
+        print("-------------- thread id:  ", threading.get_native_id())
+
+        data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
+        #data = torch.rand([batchsize, 2048]).to(local_rank)
+        model = models.__dict__[model_name](num_classes=1000)
+        model = model.to(0)
+
+        if train:
+            model.train()
+        else:
+            model.eval()
+
+        print("Enter loop!")
+
         timings=[]
         for i in range(10):
             print("Start epoch: ", i)
@@ -57,7 +50,7 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
             while batch_idx < 1:
 
                 print(f"submit!, batch_idx is {batch_idx}")
-                #torch.cuda.profiler.cudart().cudaProfilerStart()
+                torch.cuda.profiler.cudart().cudaProfilerStart()
 
                 if train:
                     output = model(data)
@@ -65,22 +58,19 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
                     with torch.no_grad():
                         output = model(data)
 
-                #torch.cuda.profiler.cudart().cudaProfilerStop()
+                torch.cuda.profiler.cudart().cudaProfilerStop()
 
                 batch_idx += 1
 
                 start_iter = time.time()
 
-                #torch.cuda.synchronize()
-                # wait until all operations have been completed before starting the next iter
-
-
-            #barriers[0].wait()
+            print("Epoch done!")
+            end_barriers[tid].wait()
             if i < 9:
-                barriers[0].wait()
-                #barriers[0].wait()
-            print(f"{tid}, Epoch done!")
+                start_barriers[tid].wait()
 
+        # timings = timings[2:]
+        # print(f"Avg is {np.median(np.asarray(timings))} sec")
         print("Finished! Ready to join!")
 
 #imagenet_loop('resnet50', 32, True, 0, None, 0)

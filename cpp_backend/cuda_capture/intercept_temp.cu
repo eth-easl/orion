@@ -63,6 +63,9 @@ char* model_names[2];
 
 int func_indexes[2] = {0, 0};
 
+cudaStream_t client_streams[2];
+bool streams_set[2] = {false, false};
+
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d], ", i);
@@ -84,7 +87,6 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 DEBUG_PRINT("\n");
 }
 
-
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 
@@ -96,7 +98,6 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	cudaError_t (*function)(void** devPtr, size_t size);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
 
-
 	if (idx < 2) {
 
 		// wait for all kernels or memory operations to finish
@@ -106,7 +107,6 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		union func_data new_func_data;
 		new_func_data.malrecord = new_malloc_record;
 		func_record new_record = {MALLOC_RECORD, new_func_data};
-
 
 		pthread_mutex_lock(mutexes[idx]);
 		kqueues[idx]->push(new_record);
@@ -118,9 +118,11 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	}
 
 	else {
-
+		CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 		err = (*function)(devPtr, size);
 		CHECK_CUDA_ERROR(err);
+		cudaError_t err_all = cudaDeviceSynchronize();
+		CHECK_CUDA_ERROR(err_all);
 	}
 
 	return err;
@@ -206,7 +208,6 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 		// wait for memcpy to finish
 		block(idx,  mutexes, kqueues);
 	}
-
 	else {
 
 		err = (*function)(dst, src, count, kind);
@@ -226,10 +227,14 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	//DEBUG_PRINT("[IDX: %d] Caught cudaMemcpyAsync! src is %p, dst is %p, size is %d, stream is %d\n", idx, src, dst, count, stream);
+	DEBUG_PRINT("[IDX: %d] Caught cudaMemcpyAsync! src is %p, dst is %p, size is %d, stream is %d\n", idx, src, dst, count, stream);
 
 	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpyAsync");
+
+	// cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
+	// *(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpy");
+
 	cudaError_t err = cudaSuccess;
 
 	if (idx < 2) {
@@ -250,13 +255,13 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 		// although async, wait for debugging purposes
 		block(idx,  mutexes, kqueues);
 	}
-
 	else {
-
+		//CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 		err = (*function)(dst, src, count, kind, stream); // TODO: not sure about which stream to use here
+		//err = (*function)(dst, src, count, kind);
 		CHECK_CUDA_ERROR(err);
-		cudaError_t err_all = cudaDeviceSynchronize();
-		CHECK_CUDA_ERROR(err_all);
+		//cudaError_t err_all = cudaDeviceSynchronize(); // although async, wait for debugging purposes
+		//CHECK_CUDA_ERROR(err_all);
 	}
 
 	return err;
@@ -303,8 +308,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	if (idx < 2)
 		DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
 
-	//DEBUG_PRINT("[INTERCEPTER-CATCH] Captured a cudaLaunchKernel! idx is %d, function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
-	print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
+	DEBUG_PRINT("[INTERCEPTER-CATCH-%d] Captured a cudaLaunchKernel! function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	//print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
@@ -347,6 +352,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL, 54)) {
 
@@ -363,7 +369,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*((int*)new_args[4]) = *((int*)(args[4]));
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_COMPACT_INIT_KERNEL, 49)) {
@@ -378,7 +384,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[2] = args[2];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_SELECT_SWEEP_KERNEL, 49)) {
 
@@ -393,7 +399,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*((int*)new_args[8]) = *((int*)(args[8]));
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 
 		}
 		else if (!strncmp(kernel_name, INDEX_ELEMENTWISE_KERNEL, 41)) {
@@ -406,7 +412,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[1] = args[1];
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true; // leave this for now
+			//wait = true; // leave this for now
 		}
 		else if (!strncmp(kernel_name, UNROLLED_ELEMENTWISE_KERNEL, 44)) {
 
@@ -437,7 +443,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: why BERT has problem here?
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, REDUCE_KERNEL, 44)) {
 
@@ -461,7 +467,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			}
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, MAX_POOL_FORWARD_NCHW, 61)) {
 
@@ -480,7 +486,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 
 			// TODO: check why invalid memory accesses here (for both reads and writes)
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, ELEMENTWISE_KERNEL_WITH_INDEX, 57)) {
 
@@ -493,7 +499,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// used in bert, only once so just wait
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, INDEX_SELECT_LARGE_INDEX, 61)) {
 
@@ -517,7 +523,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// invalid memory acces - why?
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, ELEMENTWISE_KERNEL, 35)) {
 
@@ -529,7 +535,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_args[1] = args[1];
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: VERY IMPORTANT - invalid memory access - why?
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, SOFTMAX_WARP_FORWARD, 48)) {
 
@@ -551,7 +557,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: FIXME!
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, VECTORIZED_LAYER_NORM_KERNEL, 68)) {
 
@@ -568,7 +574,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: FIXME!!!!!!
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, TRIU_TRIL_KERNEL, 33)) {
 
@@ -581,7 +587,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 				*(((int64_t*)new_args[i])) = *((int64_t*)(args[i]));
 			}
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, CAT_ARRAY_BATCHED_COPY, 59)) {
 
@@ -597,7 +603,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: FIXME
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, UPSAMPLE_BILINEAR2D_OUT_FRAME, 69)) {
 
@@ -621,7 +627,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 
 			// TODO: FIXME
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, UPSAMPLE_NEAREST2D_NHWC_OUT_FRAME, 73)) {
 
@@ -645,7 +651,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
 			// TODO: FIXME
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_REDUCE_KERNEL, 44)) {
 
@@ -659,7 +665,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*(((int*)new_args[2])) = *((int*)(args[2]));
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_SCAN_INIT_KERNEL, 46)) {
 
@@ -670,19 +676,19 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 			*(((size_t*)new_args[1])) = *((size_t*)(args[1]));
 
 			new_kernel_record = {func, gridDim, blockDim, new_args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 		}
 		else if (!strncmp(kernel_name, CUB_DEVICE_SCAN_KERNEL, 42)) {
 
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
-			wait = true;
+			//wait = true;
 
 		}
 		else {
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
-			//wait = true;
+			wait = true;
 		}
 
 		//new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
@@ -706,11 +712,11 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
 
-		cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
+		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
 
-		cudaError_t err2 = cudaGetLastError();
-		CHECK_CUDA_ERROR(err2);
+		// cudaError_t err2 = cudaGetLastError();
+		// CHECK_CUDA_ERROR(err2);
 
 
 

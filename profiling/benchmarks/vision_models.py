@@ -23,6 +23,7 @@ print(torchvision.__file__)
 def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
 
     data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
+    target = torch.ones([batchsize]).to(torch.long).to(local_rank)
     #data = torch.rand([batchsize, 2048]).to(local_rank)
     model = models.__dict__[model_name](num_classes=1000)
     model = model.to(local_rank)
@@ -33,6 +34,8 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
         model.eval()
     else:
         model.train()
+        #optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
+        #criterion =  torch.nn.CrossEntropyLoss().to(local_rank)
 
     batch_idx = 0
     torch.cuda.synchronize()
@@ -49,7 +52,10 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
             with torch.no_grad():
                 output = model(data)
         else:
-            pass
+            output = model(data)
+            #loss = criterion(output, target)
+            #loss.backward()
+            #optimizer.step()
 
         if batch_idx == 9:
             if profile == 'ncu':
@@ -62,4 +68,4 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
     print("Done!")
 
 if __name__ == "__main__":
-    vision('resnet50', 4, 0, True, 'ncu')
+    vision('resnet50', 32, 0, False, 'nsys')

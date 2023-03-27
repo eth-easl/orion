@@ -334,6 +334,34 @@ typedef struct cudnnRNNForwardTraining_record {
 
 } cudnnRNNForwardTraining_record;
 
+typedef struct cudnnCreate_record {
+	cudnnHandle_t *handle;
+} cudnnCreate_record;
+
+typedef struct cudnnBatchNormReserve_record {
+
+	cudnnHandle_t handle;
+	cudnnBatchNormMode_t mode;
+	cudnnBatchNormOps_t bnOps;
+	cudnnActivationDescriptor_t activationDesc;
+	cudnnTensorDescriptor_t xDesc;
+    size_t *sizeInBytes;
+
+	cudnnBatchNormReserve_record(cudnnHandle_t handle_arg, cudnnBatchNormMode_t mode_arg, cudnnBatchNormOps_t bnOps_arg, const cudnnActivationDescriptor_t activationDesc_arg, const cudnnTensorDescriptor_t xDesc_arg, size_t *sizeInBytes_arg) {
+
+			handle = handle_arg;
+			mode = mode_arg;
+			bnOps = bnOps_arg;
+			activationDesc = activationDesc_arg;
+			xDesc = xDesc_arg;
+			sizeInBytes = sizeInBytes_arg;
+	}
+
+	~cudnnBatchNormReserve_record() {}
+
+} cudnnBNormReserve_record;
+
+
 // CUBLAS
 
 typedef struct cublasSgemm_record {
@@ -428,12 +456,28 @@ typedef struct cublasSgemmStridedBatched_record {
 //////////////////////////////////////////////////
 
 
-enum func_type {KERNEL_RECORD, MEMCPY_RECORD, MALLOC_RECORD, FREE_RECORD, CUDNN_CONV_RECORD, CUDNN_BNORM_RECORD, CUDNN_BNORM_INF_RECORD, CUDNN_RNN_INF_RECORD, CUDNN_RNN_TRAIN_RECORD, CUBLAS_SGEMM_RECORD, CUBLAS_SGEMM_STRIDED_RECORD};
+enum func_type {
+	KERNEL_RECORD,
+	MEMCPY_RECORD,
+	MALLOC_RECORD,
+	FREE_RECORD,
+	CUDNN_CREATE_RECORD,
+	CUDNN_CONV_RECORD,
+	CUDNN_BNORM_RECORD,
+	CUDNN_BNORM_RESERVE_RECORD,
+	CUDNN_BNORM_INF_RECORD,
+	CUDNN_RNN_INF_RECORD,
+	CUDNN_RNN_TRAIN_RECORD,
+	CUBLAS_SGEMM_RECORD,
+	CUBLAS_SGEMM_STRIDED_RECORD
+};
 
 union func_data {
 
 	kernel_record krecord;
+	cudnnCreate_record cudnnCreateRecord;
 	cudnnConvolutionForward_record cudnnConvRecord;
+	cudnnBatchNormReserve_record cudnnBNormResRecord;
 	cudnnBatchNormalizationForwardTrainingEx_record cudnnBNormRecord;
 	cudnnBatchNormalizationForwardInference_record cudnnBNormInfRecord;
 	cudnnRNNForwardInf_record cudnnRnnInfRecord;
@@ -473,6 +517,8 @@ extern char* model_names[2];
 
 extern int func_indexes[2];
 
+extern cudaStream_t client_streams[2];
+
 
 // util functions
 int get_idx();
@@ -482,8 +528,7 @@ void block(int idx, pthread_mutex_t** mutexes, queue<func_record>** kqueues);
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 template <typename T>
 void check(T err, const char* const func, const char* const file,
-		           const int line)
-{
+		           const int line) {
 	if (err != cudaSuccess)
 	{
 		printf("CUDA Runtime Error at: %s:%d\n", file, line);

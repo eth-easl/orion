@@ -12,6 +12,8 @@ queue<struct func_record>** client_buffers;
 pthread_mutex_t** client_mutexes;
 queue<struct func_record>** buffers;
 int* seen;
+cudnnHandle_t* global_handle0;
+cudnnHandle_t* global_handle1;
 
 // fifo-globals
 cudaStream_t sched_stream;
@@ -35,6 +37,15 @@ void  Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&sched_event, cudaEventDisableTiming));
 	seen = (int*)calloc(num_clients,sizeof(int));
 
+}
+
+void Scheduler::profile_reset(int num_clients) {
+
+	for (int i=0; i<num_clients; i++) {
+		seen[i] = 0;
+		streams[i] = -1;
+		fidx[i] = 0;
+	}
 }
 
 void Scheduler::profile_prep(void** qbuffers, int num_clients) {
@@ -62,6 +73,7 @@ void Scheduler::profile_prep(void** qbuffers, int num_clients) {
 	for (int i=0; i<num_clients; i++)
 		streams[i] = -1;
 
+	sched_stream = 0;
 
 }
 
@@ -131,7 +143,21 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 void* Scheduler::busy_wait_profile(int num_clients) {
 
 	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
+	int start0 = 0;
+	int start1 = 0;
 
+	cudaEvent_t** events0 = (cudaEvent_t**)malloc(num_client_kernels[0]*sizeof(cudaEvent_t));
+	cudaEvent_t** events1 = (cudaEvent_t**)malloc(num_client_kernels[1]*sizeof(cudaEvent_t));
+
+	for (int i=0; i<num_client_kernels[0]; i++) {
+		events0[i] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
+		CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events0[i], cudaEventDisableTiming));
+	}
+
+	for (int i=0; i<num_client_kernels[1]; i++) {
+		events1[i] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
+		CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events1[i], cudaEventDisableTiming));
+	}
 	if (1) {
 		while(1) {
 			vector<func_record*> frecords = {NULL, NULL};
@@ -149,6 +175,7 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 
 			}
 
+			// printf("frecords[0]=%p, frecords[1]=%p\n", frecords[0], frecords[1]);
 
 			if ((frecords[0] != NULL) and (frecords[1] != NULL)) {
 				schedule_pair(
@@ -167,16 +194,25 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 
 			else if (frecords[0] != NULL) {
 				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
+
+				//printf("record 0 is %d, have seen %d kernels\n", frecords[0]->type, seen[0]);
+
 				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 				streams[0] = 0;
 				pop_from_queue(client_buffers[0], client_mutexes[0]);
+
 			}
 
 			else if (frecords[1] != NULL) {
+
 				wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
+
+				//printf("record 1 is %d, have seen %d kernels\n", frecords[1]->type, seen[1]);
+
 				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
 				streams[1] = 0;
 				pop_from_queue(client_buffers[1], client_mutexes[1]);
+
 			}
 
 			bool finished = true;
@@ -198,7 +234,7 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 			streams[i] = -1;
 			fidx[i] = 0;
 		}
-		printf("RESTART!\n");
+		//printf("RESTART!\n");
 	}
 
 	return NULL;
@@ -297,6 +333,8 @@ extern "C" {
 
 		//Scheduler* scheduler = (Scheduler*)(arg);
 		void** buffers = (void**)dlsym(klib, "kqueues");
+		global_handle0 = NULL;
+		global_handle1 = NULL;
 
 		DEBUG_PRINT("buffers is %p, %p, %p\n", buffers, buffers[0], buffers[1]);
 		client_mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
@@ -308,6 +346,7 @@ extern "C" {
 		else
 			scheduler->fifo_prep(buffers, num_clients);
 		DEBUG_PRINT("exited sched prep func!\n");
+
 		return NULL;
 	}
 
@@ -325,6 +364,11 @@ extern "C" {
 
 	void* schedule_one(Scheduler* scheduler, int client_id) {
 		scheduler->busy_wait_single_client(client_id);
+		return NULL;
+	}
+
+	void* reset(Scheduler* scheduler, int num_clients) {
+		scheduler->profile_reset(num_clients);
 		return NULL;
 	}
 }

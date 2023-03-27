@@ -46,7 +46,8 @@ def transformer_loop(batchsize, train, local_rank, barrier, tid):
     else:
         model.eval()
 
-    for i in range(1):
+    timings=[]
+    for i in range(10):
         print("Start epoch: ", i)
 
         start = time.time()
@@ -63,4 +64,11 @@ def transformer_loop(batchsize, train, local_rank, barrier, tid):
                     output = model(data, target, mems)
 
             batch_idx += 1
-    print("Epoch took: ", time.time()-start)
+
+        torch.cuda.synchronize()
+        epoch_time = time.time()-start
+        timings.append(epoch_time)
+        print("Epoch took: ",epoch_time)
+
+    timings = timings[2:]
+    print(f"Avg is {np.median(np.asarray(timings))} sec")

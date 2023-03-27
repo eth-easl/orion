@@ -14,9 +14,7 @@ class PyScheduler:
         self._sched_lib = sched_lib
         self._num_clients = num_clients
 
-    def run_scheduler(self, barrier, tids, model_names, kernel_files, num_kernels, iters):
-
-        torch.cuda.profiler.cudart().cudaProfilerStart()
+    def run_scheduler(self, barriers, tids, model_names, kernel_files, num_kernels, iters):
 
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
         lib_names = [x.encode('utf-8') for x in kernel_files]
@@ -39,18 +37,28 @@ class PyScheduler:
         num_clients = len(tids)
         print(f"Num clients is {num_clients}")
 
-        self._sched_lib.sched_setup(self._scheduler, num_clients, False)
+        self._sched_lib.sched_setup(self._scheduler, num_clients, True)
 
         print("before starting")
         timings=[]
+        torch.cuda.profiler.cudart().cudaProfilerStart()
+
         for i in range(iters):
             start = time.time()
-            barrier.wait()
-            print(f"start iter {i}")
-            self._sched_lib.schedule(self._scheduler, num_clients, False)
+            barriers[0].wait()
+            #self._sched_lib.reset(num_clients)
+            #barriers[0].wait()
+            self._sched_lib.schedule(self._scheduler, num_clients, True)
+            #self._sched_lib.schedule_one(self._scheduler, 0)
             torch.cuda.synchronize()
+            #barriers[0].wait()
+            # for j in range(num_clients):
+            #     barriers[j].wait()
+            #     self._sched_lib.schedule_one(self._scheduler, j)
+            #     torch.cuda.synchronize()
             total_time = time.time()-start
             print(f"Iteration {i} took {total_time} sec")
             timings.append(total_time)
+        torch.cuda.profiler.cudart().cudaProfilerStop()
         timings = timings[2:]
         print(f"Avg is {np.median(np.asarray(timings))} sec")

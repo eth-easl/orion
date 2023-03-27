@@ -14,6 +14,7 @@ processed_kernel_names = []
 rem_kernel_names = []
 
 # this is for gnmt, since it is a bit strange
+'''
 idx = 0
 cudnn_list = [11, 14, 16, 19, 25, 37, 40, 44]
 cublas_list = [26, 46]
@@ -67,12 +68,12 @@ for i, row in df.iterrows():
         tokens = x.split('<')
         #print(tokens[0])
         processed_kernel_names.append([tokens[0],  row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
-'''
 
 for i,x in enumerate(processed_kernel_names):
     print(i,x)
 
 
 with open(output_file_name, 'w') as f:
+    f.write("Name,Profile,Memory_footprint,SM_usage,Duration\n");
     for x in processed_kernel_names:
-        f.write(x[0] + '\n')
+        f.write(x[0] + ',1,1,1,1\n')

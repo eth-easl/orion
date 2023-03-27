@@ -7,6 +7,9 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
 
+	if (idx < 2)
+		block(idx,  mutexes, kqueues);
+
 	cublasSgemm_record blassgemm_record = {
 		handle,
 		transa,

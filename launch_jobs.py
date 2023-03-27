@@ -33,7 +33,7 @@ def parse_input_file(job_file):
 
 def launch_jobs(job_list, policy, device, offset):
     num_jobs = len(job_list)
-    
+
     if policy == "profile":
         assert num_jobs >= 2
 
@@ -58,14 +58,14 @@ def launch_jobs(job_list, policy, device, offset):
                 threading.Thread(target=func_map[job_list[i]['func']], args=(layer_queues[i], job_list[i]['arch'], job_list[i]['batchsize'], None, device, barrier, i))
                 #threading.Thread(target=func_map[job_list[i]['func']], args=(layer_queues[i], barrier, i, device, job_list[i]['batchsize']))
         )
-    
+
     start = time.time()
     for i in range(num_jobs):
         train_threads[i].start()
 
     for i in range(num_jobs):
         train_threads[i].join()
-    
+
     sched_thread.join()
 
     print(f"-------------------------- all threads joined!It took: {time.time()-start}", flush=True)
