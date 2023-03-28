@@ -159,6 +159,10 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 		CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events1[i], cudaEventDisableTiming));
 	}
 	if (1) {
+
+		func_record* f0;
+		func_record* f1;
+
 		while(1) {
 			vector<func_record*> frecords = {NULL, NULL};
 
@@ -192,15 +196,14 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 				);
 			}
 
+
 			else if (frecords[0] != NULL) {
 				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
 
 				//printf("record 0 is %d, have seen %d kernels\n", frecords[0]->type, seen[0]);
-
 				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
-				streams[0] = 0;
 				pop_from_queue(client_buffers[0], client_mutexes[0]);
-
+				streams[0] = 0;
 			}
 
 			else if (frecords[1] != NULL) {
@@ -210,9 +213,8 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 				//printf("record 1 is %d, have seen %d kernels\n", frecords[1]->type, seen[1]);
 
 				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
-				streams[1] = 0;
 				pop_from_queue(client_buffers[1], client_mutexes[1]);
-
+				streams[1] = 0;
 			}
 
 			bool finished = true;

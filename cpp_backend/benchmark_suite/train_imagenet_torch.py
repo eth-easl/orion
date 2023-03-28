@@ -21,9 +21,8 @@ def imagenet_loop(model_name, batchsize, train, local_rank, start_barriers, end_
 
     # do only forward for now, experimental
     start_barriers[tid].wait()
-    s = torch.cuda.Stream()
 
-    with torch.cuda.stream(s):
+    if True:
         print("-------------- thread id:  ", threading.get_native_id())
 
         data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)

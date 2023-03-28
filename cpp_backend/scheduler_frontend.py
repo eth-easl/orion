@@ -44,12 +44,14 @@ class PyScheduler:
         torch.cuda.profiler.cudart().cudaProfilerStart()
 
         for i in range(iters):
-            start = time.time()
+
             barriers[0].wait()
+            start = time.time()
             #self._sched_lib.reset(num_clients)
             #barriers[0].wait()
             self._sched_lib.schedule(self._scheduler, num_clients, True)
             #self._sched_lib.schedule_one(self._scheduler, 0)
+            #barriers[0].wait()
             torch.cuda.synchronize()
             #barriers[0].wait()
             # for j in range(num_clients):

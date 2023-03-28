@@ -66,6 +66,20 @@ int func_indexes[2] = {0, 0};
 cudaStream_t client_streams[2];
 bool streams_set[2] = {false, false};
 
+cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
+cudaError_t (*memcpy_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind) = NULL;
+cudaError_t (*memcpy_async_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream) = NULL;
+cudaError_t (*malloc_func)(void** devPtr, size_t size) = NULL;
+cudaError_t (*free_func)(void* devPtr) = NULL;
+cudnnStatus_t (*cudnn_conv_func)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) = NULL;
+cudnnStatus_t (*cudnn_bnorm_func)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes) = NULL;
+cudnnStatus_t (*cudnn_bnorm_infer_func)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon) = NULL;
+cudnnStatus_t (*cudnn_rnn_func)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes) = NULL;
+cudnnStatus_t (*cudnn_rnn_train_func)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes) = NULL;
+cublasStatus_t (*cublas_sgemm_func)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc) = NULL;
+cublasStatus_t (*cublas_sgemm_strided_func)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount) = NULL;
+
+
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d], ", i);
@@ -95,12 +109,15 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	DEBUG_PRINT("[IDX %d] Caught cudaMalloc! allocate region of %ld bytes\n", idx, size);
 
 	cudaError_t err = cudaSuccess;
-	cudaError_t (*function)(void** devPtr, size_t size);
-	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMalloc");
+
+	if (malloc_func == NULL) {
+		*(void **)(&malloc_func) = dlsym (RTLD_NEXT, "cudaMalloc");
+		assert (malloc_func != NULL);
+	}
 
 	if (idx < 2) {
 
-		// wait for all kernels or memory operations to finish
+		//wait for all kernels or memory operations to finish
 		block(idx,  mutexes, kqueues);
 
 		malloc_record new_malloc_record = {devPtr, size};
@@ -118,8 +135,8 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	}
 
 	else {
-		CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-		err = (*function)(devPtr, size);
+		//CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+		err = (*malloc_func)(devPtr, size);
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
 		CHECK_CUDA_ERROR(err_all);
@@ -152,8 +169,11 @@ cudaError_t cudaFree(void* devPtr) {
 	DEBUG_PRINT("[IDX %d] Caught cudaFree! free up address of %p\n", idx, devPtr);
 
 	cudaError_t err = cudaSuccess;
-	cudaError_t (*function)(void* devPtr);
-	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaFree");
+
+	if (free_func == NULL) {
+		*(void **)(&free_func) = dlsym (RTLD_NEXT, "cudaFree");
+		assert (free_func != NULL);
+	}
 
 	if (idx < 2) {
 
@@ -171,7 +191,7 @@ cudaError_t cudaFree(void* devPtr) {
 
 	}
 	else {
-		err = (*function)(devPtr);
+		err = (*free_func)(devPtr);
 		CHECK_CUDA_ERROR(err);
 	}
 
@@ -187,9 +207,12 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 	assert (idx >= 0);
 	DEBUG_PRINT("[IDX: %d], Caught cudaMemcpy!\n", idx);
 
-	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
-	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpy");
 	cudaError_t err = cudaSuccess;
+
+	if (memcpy_func == NULL) {
+		*(void **)(&memcpy_func) = dlsym (RTLD_NEXT, "cudaMemcpy");
+		assert (memcpy_func != NULL);
+	}
 
 	if (idx < 2) {
 
@@ -210,7 +233,7 @@ cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, enum cudaMemcpy
 	}
 	else {
 
-		err = (*function)(dst, src, count, kind);
+		err = (*memcpy_func)(dst, src, count, kind);
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
 		CHECK_CUDA_ERROR(err_all);
@@ -229,17 +252,16 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 
 	DEBUG_PRINT("[IDX: %d] Caught cudaMemcpyAsync! src is %p, dst is %p, size is %d, stream is %d\n", idx, src, dst, count, stream);
 
-	cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
-	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpyAsync");
-
-	// cudaError_t (*function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);
-	// *(void **)(&function) = dlsym (RTLD_NEXT, "cudaMemcpy");
+	if (memcpy_async_func == NULL) {
+		*(void **)(&memcpy_async_func) = dlsym (RTLD_NEXT, "cudaMemcpyAsync");
+		assert (memcpy_async_func != NULL);
+	}
 
 	cudaError_t err = cudaSuccess;
 
 	if (idx < 2) {
 
-		// wait for all kernels or memory operations to finish
+		//wait for all kernels or memory operations to finish
 		block(idx,  mutexes, kqueues);
 
 		memcpy_record new_memcpy_record = {dst, src, count, kind, stream, true};
@@ -257,7 +279,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	}
 	else {
 		//CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-		err = (*function)(dst, src, count, kind, stream); // TODO: not sure about which stream to use here
+		err = (*memcpy_async_func)(dst, src, count, kind, stream); // TODO: not sure about which stream to use here
 		//err = (*function)(dst, src, count, kind);
 		CHECK_CUDA_ERROR(err);
 		//cudaError_t err_all = cudaDeviceSynchronize(); // although async, wait for debugging purposes
@@ -302,17 +324,20 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	assert (idx >= 0);
 
 	// TODO: remove this
-	if (idx < 2)
-		block(idx,  mutexes, kqueues);
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
-	if (idx < 2)
-		DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
+	//if (idx < 2)
+	//	DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH-%d] Captured a cudaLaunchKernel! function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	//print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
-	cudaError_t (*function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
-	*(void **)(&function) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
+	if (kernel_func == NULL) {
+		*(void **)(&kernel_func) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
+		assert (kernel_func != NULL);
+	}
+
 	cudaError_t err = cudaSuccess;
 	kernel_record new_kernel_record;
 	bool wait = false;
@@ -708,7 +733,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	else {
 		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
 
-		err = (*function)(func, gridDim, blockDim, args, sharedMem, stream);
+		err = (*kernel_func)(func, gridDim, blockDim, args, sharedMem, stream);
 		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
 

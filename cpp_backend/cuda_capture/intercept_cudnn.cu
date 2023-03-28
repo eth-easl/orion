@@ -25,10 +25,9 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
 
-	if (idx < 2)
-		block(idx,  mutexes, kqueues);
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
-	// create record
 	cudnnConvolutionForward_record new_conv_record = {
 		handle,
 		alpha,
@@ -59,11 +58,12 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	}
 	else {
 
-		cudnnStatus_t (*function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
-		assert(function != NULL);
+		if (cudnn_conv_func==NULL) {
+			*(void **)(&cudnn_conv_func) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
+			assert(cudnn_conv_func != NULL);
+		}
 
-		status = (*function)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
+		status = (*cudnn_conv_func)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
 		if (status != CUDNN_STATUS_SUCCESS)
 			printf("status is %d\n", status);
 		assert (status == CUDNN_STATUS_SUCCESS);
@@ -83,8 +83,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
 
-	if (idx < 2)
-		block(idx,  mutexes, kqueues);
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
 	// create record
 	cudnnBatchNormalizationForwardTrainingEx_record new_bn_record = {
@@ -131,17 +131,18 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 		block(idx,  mutexes, kqueues);
 	}
 	else {
-		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
 
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
-		assert(function != NULL);
+		if (cudnn_bnorm_func==NULL) {
+			*(void **)(&cudnn_bnorm_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
+			assert(cudnn_bnorm_func != NULL);
+		}
+		//printf("run func %p\n", cudnn_bnorm_function);
+		status = (*cudnn_bnorm_func)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+		// if (status != CUDNN_STATUS_SUCCESS)
+		// 	printf("status is %d\n", status);
+		// assert (status == CUDNN_STATUS_SUCCESS);
 
-		status = (*function)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
-		if (status != CUDNN_STATUS_SUCCESS)
-			printf("status is %d\n", status);
-		assert (status == CUDNN_STATUS_SUCCESS);
-
-		DEBUG_PRINT("BNORM submitted!!\n");
+		// DEBUG_PRINT("BNORM submitted!!\n");
 
 	}
 
@@ -159,8 +160,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
-	if (idx < 2)
-		block(idx,  mutexes, kqueues);
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
 
 	// create record
@@ -197,12 +198,12 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	}
 	else {
 
-		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
+		if (cudnn_bnorm_infer_func==NULL) {
+			*(void **)(&cudnn_bnorm_infer_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
+			assert(cudnn_bnorm_infer_func != NULL);
+		}
 
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
-		assert(function != NULL);
-
-		status = (*function)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
+		status = (*cudnn_bnorm_infer_func)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
 		assert (status == CUDNN_STATUS_SUCCESS);
 
 	}
@@ -268,13 +269,13 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 		block(idx,  mutexes, kqueues);
 	}
 	else {
-		cudnnStatus_t (*function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes);
 
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
-		assert(function != NULL);
+		if (cudnn_rnn_func==NULL) {
+			*(void **)(&cudnn_rnn_func) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
+			assert(cudnn_rnn_func != NULL);
+		}
 
-		status = (*function)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
-
+		status = (*cudnn_rnn_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
 
 		printf("------------------------- cudnn status is %d\n", status);
 		// TODO: not sure why this complains here in just one call!
@@ -368,11 +369,12 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	}
 	else {
 
-		cudnnStatus_t (*function)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
-		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnRNNForwardTraining");
-		assert(function != NULL);
+		if (cudnn_rnn_train_func==NULL) {
+			*(void **)(&cudnn_rnn_train_func) = dlsym(RTLD_NEXT, "cudnnRNNForwardTraining");
+			assert(cudnn_rnn_train_func != NULL);
+		}
 
-		status = (*function)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+		status = (*cudnn_rnn_train_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
 
 		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
 		// CHECK_CUDA_ERROR(err_all);
@@ -381,51 +383,6 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	return status;
 }
 
-// cudnnStatus_t cudnnGetBatchNormalizationTrainingExReserveSpaceSize(
-// 	cudnnHandle_t handle,
-// 	cudnnBatchNormMode_t mode,
-// 	cudnnBatchNormOps_t bnOps,
-// 	const cudnnActivationDescriptor_t activationDesc,
-// 	const cudnnTensorDescriptor_t xDesc,
-//     size_t *sizeInBytes
-// ) {
-
-// 	int idx = get_idx();
-// 	assert (idx >= 0);
-// 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnGetBatchNormalizationTrainingExReserveSpaceSize, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-
-
-// 	if (idx < 2) {
-
-// 		cudnnBatchNormReserve_record cr_record = {handle, mode, bnOps, activationDesc, xDesc, sizeInBytes};
-// 		union func_data new_func_data;
-// 		new_func_data.cudnnBNormResRecord = cr_record;
-// 		func_record new_record = {CUDNN_BNORM_RESERVE_RECORD, new_func_data};
-
-// 		pthread_mutex_lock(mutexes[idx]);
-// 		kqueues[idx]->push(new_record);
-// 		pthread_mutex_unlock(mutexes[idx]);
-
-// 		block(idx,  mutexes, kqueues);
-// 	}
-// 	else {
-// 		cudnnStatus_t (*function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t xDesc, size_t *sizeInBytes);
-// 		*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnGetBatchNormalizationTrainingExReserveSpaceSize");
-// 		assert(function != NULL);
-
-// 		status = (*function)(handle, mode, bnOps, activationDesc, xDesc, sizeInBytes);
-// 		if (status != CUDNN_STATUS_SUCCESS)
-// 			printf("status is %d\n", status);
-// 		assert (status == CUDNN_STATUS_SUCCESS);
-
-// 		//CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-// 	}
-
-// 	return status;
-
-// }
 
 cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {
 
@@ -460,73 +417,6 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc
 	return CUDNN_STATUS_SUCCESS;
 
 }
-
-
-
-// cudnnStatus_t cudnnCreate(cudnnHandle_t *handle) {
-
-// 	int idx = get_idx();
-// 	assert (idx >= 0);
-// 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-// 	printf("Caught a cudnnCreate!\n");
-
-// 	// cudnnCreate_record cr_record = {handle};
-// 	// union func_data new_func_data;
-// 	// new_func_data.cudnnCreateRecord = cr_record;
-// 	// func_record new_record = {CUDNN_CREATE_RECORD, new_func_data};
-
-// 	cudnnStatus_t (*function)(cudnnHandle_t *handle);
-// 	*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnCreate");
-// 	assert(function != NULL);
-
-// 	status = (*function)(handle);
-// 	assert (status == CUDNN_STATUS_SUCCESS);
-
-// 	status = cudnnSetStream(*handle, client_streams[idx]);
-// 	if (status != CUDNN_STATUS_SUCCESS)
-// 		printf("status is %d\n", status);
-// 	assert (status == CUDNN_STATUS_SUCCESS);
-
-// 	// if (idx < 2) {
-
-// 	// 	pthread_mutex_lock(mutexes[idx]);
-// 	// 	kqueues[idx]->push(new_record);
-// 	// 	pthread_mutex_unlock(mutexes[idx]);
-
-// 	// 	block(idx,  mutexes, kqueues);
-// 	// }
-// 	// else {
-// 	// 	cudnnStatus_t (*function)(cudnnHandle_t *handle);
-// 	// 	*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnCreate");
-// 	// 	assert(function != NULL);
-
-// 	// 	status = (*function)(handle);
-// 	// 	assert (status == CUDNN_STATUS_SUCCESS);
-// 	// }
-
-// 	return status;
-// }
-
-
-// cudnnStatus_t cudnnSetStream(cudnnHandle_t handle, cudaStream_t streamId) {
-// 	int idx = get_idx();
-// 	assert (idx >= 0);
-
-// 	//printf("Caught a cudnnSetStream from idx %d, stream is %d!\n", idx, streamId);
-
-// 	if (idx < 2)
-// 		return CUDNN_STATUS_SUCCESS;
-
-// 	cudnnStatus_t (*function)(cudnnHandle_t handle, cudaStream_t streamId);
-// 	*(void **)(&function) = dlsym(RTLD_NEXT, "cudnnSetStream");
-// 	assert(function != NULL);
-
-// 	cudnnStatus_t status = (*function)(handle, streamId);
-// 	//cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-// 	//CHECK_CUDA_ERROR(err_all);
-// 	return status;
-// }
 
 
 cudnnStatus_t cudnnDestroy(cudnnHandle_t handle) {
