@@ -1,0 +1,76 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1
+Conv,1,1,1000,1
+void at::native::vectorized_elementwise_kernel,-1,1,1,1
+BatchNorm,0,1,1,1

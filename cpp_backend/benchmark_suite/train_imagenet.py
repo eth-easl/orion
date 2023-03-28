@@ -24,7 +24,7 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
 
     # do only forward for now, experimental
     barriers[0].wait()
-    s = torch.cuda.default_stream()
+    ds = torch.cuda.default_stream()
 
     #barriers[0].wait()
 
@@ -43,8 +43,8 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
     print("Enter loop!")
 
     s = torch.cuda.Stream()
-    with torch.cuda.stream(s):
-    #if True:
+    #with torch.cuda.stream(s):
+    if True:
         timings=[]
         for i in range(10):
             print("Start epoch: ", i)
@@ -75,11 +75,10 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
                 # wait until all operations have been completed before starting the next iter
 
 
-            # barriers[0].wait()
+            #barriers[0].wait()
             if i < 9:
                 barriers[0].wait()
+                #barriers[0].wait()
             print(f"{tid}, Epoch done!")
 
         print("Finished! Ready to join!")
-
-#imagenet_loop('resnet50', 32, True, 0, None, 0)

@@ -22,6 +22,9 @@ sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/
 
 #from benchmark_suite.train_imagenet import imagenet_loop
 from benchmark_suite.train_imagenet import imagenet_loop
+from benchmark_suite.conv_trainer import conv_loop
+from benchmark_suite.bnorm_trainer import bnorm_loop
+from benchmark_suite.conv_bn_trainer import conv_bn_loop
 
 from scheduler_frontend import PyScheduler
 
@@ -30,6 +33,9 @@ function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
     "mobilenet_v2": imagenet_loop,
+    "conv": conv_loop,
+    "bnorm": bnorm_loop,
+    "conv_bnorm": conv_bn_loop,
     "bert": None, #bert_loop,
     "gnmt": None, #gnmt_loop,
     "transformer": transformer_loop,
@@ -47,7 +53,7 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list):
+def launch_jobs(config_dict_list, profile):
 
     print(config_dict_list)
     num_clients = len(config_dict_list)
@@ -56,7 +62,9 @@ def launch_jobs(config_dict_list):
     s = torch.cuda.Stream()
 
     # init
-    barriers = [threading.Barrier(num_clients+1) for i in range(num_clients)]
+
+    num_barriers = num_clients+1 if profile else 2
+    barriers = [threading.Barrier(num_barriers) for i in range(num_clients)]
     home_directory = os.path.expanduser( '~' )
     sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler.so")
     py_scheduler = PyScheduler(sched_lib, num_clients)
@@ -80,7 +88,10 @@ def launch_jobs(config_dict_list):
 
     print(tids)
 
-    sched_thread = threading.Thread(target=py_scheduler.run_scheduler, args=(barriers, tids, model_names, model_files, num_kernels, 10))
+    sched_thread = threading.Thread(
+        target=py_scheduler.run_scheduler,
+        args=(barriers, tids, model_names, model_files, num_kernels, 10, profile)
+    )
 
     sched_thread.start()
 
@@ -97,6 +108,7 @@ def launch_jobs(config_dict_list):
 if __name__ == "__main__":
     torch.cuda.set_device(0)
     config_file = sys.argv[1]
+    profile = True
     with open(config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict)
+    launch_jobs(config_dict, profile)
