@@ -76,4 +76,11 @@ for i,x in enumerate(processed_kernel_names):
 with open(output_file_name, 'w') as f:
     f.write("Name,Profile,Memory_footprint,SM_usage,Duration\n");
     for x in processed_kernel_names:
-        f.write(x[0] + ',1,1,1,1\n')
+        if 'Conv' in x[0]:
+            f.write(x[0] + ',1,1,1000,700\n')
+        elif 'BatchNorm' in x[0]:
+            f.write(x[0] + ',0,1,1,400\n')
+        else:
+            f.write(x[0] + ',-1,1,1,7\n')
+
+

@@ -48,7 +48,7 @@ class PyScheduler:
             if profile:
                 barriers[0].wait()
                 start = time.time()
-                self._sched_lib.schedule(self._scheduler, num_clients, True)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, i)
                 torch.cuda.synchronize()
 
             # or this

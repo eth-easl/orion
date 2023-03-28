@@ -142,6 +142,14 @@ void wait_for_stream(int idx, int current_prio, int prev_prio, cudaStream_t* sch
 }
 
 
+void wait_all_streams(int idx, cudaStream_t* sched_stream, cudaEvent_t** events, int num_events) {
+
+	for (int i=0; i<num_events; i++) {
+		if (i != idx)
+			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[i]), 0));
+	}
+}
+
 void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event, int* seen) {
 
 	//printf("Idx %d, sched stream %d\n", idx, *sched_stream);
@@ -345,8 +353,12 @@ void schedule_pair(
 	op_info op_info_0 = op_info_vector[0][seen[0]];
 	op_info op_info_1 = op_info_vector[1][seen[1]];
 
-	//printf("Inside colocate, idx_0: %d, prof0: %d, sms0: %d, idx_1: %d, prof1: %d, sms1: %d\n",
-	//		seen[0], op_info_0.profile, op_info_0.sm_used, seen[1], op_info_1.profile, op_info_1.sm_used);
+	wait_all_streams(0, sched_streams[0], events, num_events);
+	wait_all_streams(1, sched_streams[1], events, num_events);
+	wait_all_streams(num_events-1, sched_streams[num_events-1], events, num_events);
+
+	printf("Inside colocate, idx_0: %d, prof0: %d, sms0: %d, idx_1: %d, prof1: %d, sms1: %d\n",
+			seen[0], op_info_0.profile, op_info_0.sm_used, seen[1], op_info_1.profile, op_info_1.sm_used);
 
 	if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
@@ -356,7 +368,7 @@ void schedule_pair(
 	}
 	// different profiles
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
-		//printf("COLOCATE!\n");
+		printf("COLOCATE!\n");
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
 		wait_for_stream(1, 0, streams[1], sched_streams[1], events, num_events);
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
@@ -370,7 +382,7 @@ void schedule_pair(
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events);
 		wait_for_stream(1, 1, streams[1], sched_streams[num_events-1], events, num_events);
-		//printf("COLOCATE!\n");
+		printf("COLOCATE!\n");
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
 		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1], seen);
 		streams[0] = 0;
@@ -380,7 +392,7 @@ void schedule_pair(
 	}
 
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
-		//printf("COLOCATE!\n");
+		printf("COLOCATE!\n");
 		wait_for_stream(0, 1, streams[0], sched_streams[num_events-1], events, num_events);
 		wait_for_stream(1, 0, streams[1], sched_streams[1], events, num_events);
 		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1], seen);

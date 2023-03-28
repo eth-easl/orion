@@ -140,7 +140,7 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 	return NULL;
 }
 
-void* Scheduler::busy_wait_profile(int num_clients) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 
 	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
 	int start0 = 0;
@@ -160,9 +160,6 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 	}
 	if (1) {
 
-		func_record* f0;
-		func_record* f1;
-
 		while(1) {
 			vector<func_record*> frecords = {NULL, NULL};
 
@@ -170,18 +167,40 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 				if (seen[i] == num_client_kernels[i])
 					continue;
 
-				pthread_mutex_lock(client_mutexes[i]);
-				volatile int sz = client_buffers[i]->size();
-				if (sz > 0) {
-					frecords[i] = &(client_buffers[i]->front());
+				if (iter==0) {
+					pthread_mutex_lock(client_mutexes[i]);
+					volatile int sz = client_buffers[i]->size();
+					if (sz > 0) {
+						frecords[i] = &(client_buffers[i]->front());
+					}
+					pthread_mutex_unlock(client_mutexes[i]);
 				}
-				pthread_mutex_unlock(client_mutexes[i]);
+
+				else {
+					while(1) {
+						pthread_mutex_lock(client_mutexes[i]);
+						volatile int sz = client_buffers[i]->size();
+						if (sz > 0) {
+							frecords[i] = &(client_buffers[i]->front());
+							pthread_mutex_unlock(client_mutexes[i]);
+							break;
+						}
+						pthread_mutex_unlock(client_mutexes[i]);
+					}
+				}
 
 			}
 
-			// printf("frecords[0]=%p, frecords[1]=%p\n", frecords[0], frecords[1]);
+			printf("frecords[0]=%p, frecords[1]=%p\n", frecords[0], frecords[1]);
+
+			// auto start = std::chrono::high_resolution_clock::now();
+			// auto elapsed = std::chrono::high_resolution_clock::now() - start;
+			// long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+
+			// printf("Elapsed time is %ld\n", microseconds);
 
 			if ((frecords[0] != NULL) and (frecords[1] != NULL)) {
+				//printf("type0 is %d, type1 is %d\n", frecords[0]->type, frecords[1]->type);
 				schedule_pair(
 					frecords,
 					client_buffers,
@@ -198,7 +217,8 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 
 
 			else if (frecords[0] != NULL) {
-				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
+				//wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
+				wait_all_streams(0, sched_streams[0], events, num_clients+1);
 
 				//printf("record 0 is %d, have seen %d kernels\n", frecords[0]->type, seen[0]);
 				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
@@ -208,8 +228,8 @@ void* Scheduler::busy_wait_profile(int num_clients) {
 
 			else if (frecords[1] != NULL) {
 
-				wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
-
+				//wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
+				wait_all_streams(1, sched_streams[1], events, num_clients+1);
 				//printf("record 1 is %d, have seen %d kernels\n", frecords[1]->type, seen[1]);
 
 				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
@@ -353,11 +373,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients);
+			scheduler->busy_wait_profile(num_clients, iter);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");
