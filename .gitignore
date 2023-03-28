@@ -8,3 +8,6 @@
 *.svg
 *.png
 model_kernels/*
+.DS_Store
+.idea/
+__pycache__/
