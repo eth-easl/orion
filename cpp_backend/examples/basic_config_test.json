@@ -1,0 +1,24 @@
+[
+
+	{
+		"arch": "resnet50",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/scripts/test_conv_bn",
+		"num_kernels": 300,
+		"args": {
+			"model_name": "resnet50",
+			"batchsize": 32,
+			"train": true
+		}
+	},
+	{
+		"arch": "resnet50",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/scripts/test_conv_bn",
+		"num_kernels": 300,
+		"args": {
+			"model_name": "resnet50",
+			"batchsize": 32,
+			"train": true
+		}
+    }
+
+]

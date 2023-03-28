@@ -1,0 +1,460 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+void at::native::(anonymous namespace)::indexSelectLargeIndex,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::triu_tril_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+void (anonymous namespace)::elementwise_kernel_with_index,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::unrolled_elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+void (anonymous namespace)::softmax_warp_forward,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x64_nn,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x32_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_32x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::elementwise_kernel,1,1,1,1
+volta_sgemm_128x128_tn,1,1,1,1
+void at::native::vectorized_elementwise_kernel,1,1,1,1
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,1,1,1,1
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,1,1,1,1
