@@ -21,8 +21,9 @@ cudaEvent_t sched_event;
 
 // profile-globals
 cudaStream_t** sched_streams;
-cudaEvent_t** events;
+cudaEvent_t*** events;
 int* streams;
+int* event_ids;
 
 void  Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 
@@ -36,6 +37,8 @@ void  Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 	sched_stream = 0;
 	CHECK_CUDA_ERROR(cudaEventCreateWithFlags(&sched_event, cudaEventDisableTiming));
 	seen = (int*)calloc(num_clients,sizeof(int));
+	event_ids = (int*)calloc(num_clients+1, sizeof(int));
+
 
 }
 
@@ -60,7 +63,7 @@ void Scheduler::profile_prep(void** qbuffers, int num_clients) {
 	for (int i=0; i<=num_clients; i++)
 		sched_streams[i] = NULL;
 
-	events = (cudaEvent_t**)malloc((num_clients+1)*sizeof(cudaEvent_t*));
+	events = (cudaEvent_t***)malloc((num_clients+1)*sizeof(cudaEvent_t**));
 	for (int i=0; i<=num_clients; i++)
 		events[i] = NULL;
 
@@ -68,6 +71,7 @@ void Scheduler::profile_prep(void** qbuffers, int num_clients) {
 	create_events(events, num_clients+1);
 
 	seen = (int*)calloc(num_clients,sizeof(int));
+	event_ids = (int*)calloc(num_clients+1, sizeof(int));
 
 	streams = (int*)malloc(num_clients*sizeof(int));
 	for (int i=0; i<num_clients; i++)
@@ -87,7 +91,7 @@ void* Scheduler::busy_wait_fifo(int num_clients) {
 			volatile int sz = client_buffers[i]->size();
 			if (sz > 0) {
 				struct func_record frecord = client_buffers[i]->front();
-				schedule_kernel(frecord, &sched_stream, i, &sched_event, seen);
+				schedule_kernel(frecord, &sched_stream, i, &sched_event, seen, event_ids, 0);
 				client_buffers[i]->pop();
 			}
 			pthread_mutex_unlock(client_mutexes[i]);
@@ -125,7 +129,7 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 		volatile int sz = client_buffers[client_id]->size();
 		if (sz > 0) {
 			struct func_record frecord = client_buffers[client_id]->front();
-			schedule_kernel(frecord, &sched_stream, client_id, &sched_event, seen);
+			schedule_kernel(frecord, &sched_stream, client_id, &sched_event, seen, event_ids, 0);
 			client_buffers[client_id]->pop();
 		}
 		pthread_mutex_unlock(client_mutexes[client_id]);
@@ -167,7 +171,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 				if (seen[i] == num_client_kernels[i])
 					continue;
 
-				if (iter==0) {
+				if (iter>=0) {
 					pthread_mutex_lock(client_mutexes[i]);
 					volatile int sz = client_buffers[i]->size();
 					if (sz > 0) {
@@ -191,7 +195,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 
 			}
 
-			printf("frecords[0]=%p, frecords[1]=%p\n", frecords[0], frecords[1]);
+			//printf("frecords[0]=%p, frecords[1]=%p\n", frecords[0], frecords[1]);
 
 			// auto start = std::chrono::high_resolution_clock::now();
 			// auto elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -211,28 +215,29 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 					sched_streams,
 					streams,
 					events,
-					num_clients+1
+					num_clients+1,
+					event_ids
 				);
 			}
 
 
 			else if (frecords[0] != NULL) {
-				//wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1);
-				wait_all_streams(0, sched_streams[0], events, num_clients+1);
+				wait_for_stream(0, 0, streams[0], sched_streams[0],  events, num_clients+1, event_ids);
+				//wait_all_streams(0, sched_streams[0], events, num_clients+1, event_ids);
 
 				//printf("record 0 is %d, have seen %d kernels\n", frecords[0]->type, seen[0]);
-				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0], seen);
+				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 				pop_from_queue(client_buffers[0], client_mutexes[0]);
 				streams[0] = 0;
 			}
 
 			else if (frecords[1] != NULL) {
 
-				//wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1);
-				wait_all_streams(1, sched_streams[1], events, num_clients+1);
+				wait_for_stream(1, 0, streams[1], sched_streams[1],  events, num_clients+1, event_ids);
+				//wait_all_streams(1, sched_streams[1], events, num_clients+1, event_ids);
 				//printf("record 1 is %d, have seen %d kernels\n", frecords[1]->type, seen[1]);
 
-				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1], seen);
+				schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 				pop_from_queue(client_buffers[1], client_mutexes[1]);
 				streams[1] = 0;
 			}
@@ -255,7 +260,10 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			seen[i] = 0;
 			streams[i] = -1;
 			fidx[i] = 0;
+			event_ids[i] = 0;
 		}
+		event_ids[num_clients] = 0;
+		create_events(events, num_clients+1);
 		//printf("RESTART!\n");
 	}
 

@@ -22,6 +22,7 @@ class Model(torch.nn.Module):
         super().__init__()
         self.conv = torch.nn.Conv2d(3,64,kernel_size=7, stride=2, padding=3, bias=False)
         self.bn = torch.nn.BatchNorm2d(64)
+        #self.x = torch.rand([32, 64, 112, 112]).to(0)
 
     def forward(self, x):
         for i in range(25):
@@ -34,7 +35,7 @@ def conv_bn_loop(batchsize, train, local_rank, barriers, tid):
     print(batchsize, local_rank, barriers, tid)
     barriers[0].wait()
 
-    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank).contiguous()
+    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
     model = Model()
     model = model.to(0)
 
