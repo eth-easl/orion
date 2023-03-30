@@ -85,12 +85,12 @@ def launch_jobs(config_dict_list):
         end_barriers[0].wait()
         torch.cuda.synchronize()
         print(f"Part A took {time.time()-start}")
-        startB = time.time()
-        start_barriers[1].wait()
-        end_barriers[1].wait()
-        torch.cuda.synchronize()
+        # startB = time.time()
+        # start_barriers[1].wait()
+        # end_barriers[1].wait()
+        # torch.cuda.synchronize()
         total_time = time.time()-start
-        print(f"Part B took {time.time()-startB}")
+        #print(f"Part B took {time.time()-startB}")
         print(f"Iteration {i} took {total_time} sec")
         timings.append(total_time)
 

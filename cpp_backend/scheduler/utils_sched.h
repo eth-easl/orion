@@ -3,6 +3,7 @@
 
 #include "../system_utils.h"
 #include "../cuda_capture/intercept_temp.h"
+#include "sleep.h"
 
 extern cudaError_t (*kernel_function)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 extern cudaError_t (*memcpy_function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);

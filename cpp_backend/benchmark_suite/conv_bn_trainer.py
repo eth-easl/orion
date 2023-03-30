@@ -22,7 +22,7 @@ class Model(torch.nn.Module):
         super().__init__()
         self.conv = torch.nn.Conv2d(3,64,kernel_size=7, stride=2, padding=3, bias=False)
         self.bn = torch.nn.BatchNorm2d(64)
-        #self.x = torch.rand([32, 64, 112, 112]).to(0)
+        self.x = torch.rand([32, 64, 112, 112]).to(0)
 
     def forward(self, x):
         for i in range(25):

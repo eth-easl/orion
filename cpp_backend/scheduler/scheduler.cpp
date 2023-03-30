@@ -171,7 +171,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 				if (seen[i] == num_client_kernels[i])
 					continue;
 
-				if (iter>=0) {
+				if (iter==0) {
 					pthread_mutex_lock(client_mutexes[i]);
 					volatile int sz = client_buffers[i]->size();
 					if (sz > 0) {
