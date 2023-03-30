@@ -51,7 +51,7 @@ if __name__ == "__main__":
     model1_name = config['model1']
     policy = config['policy']
     logging.info(f'start training with {model0_name} and {model1_name} using {policy}')
-    for key, value in config['data_dir'].items():
+    for key, value in config['shared_config'].items():
         constants.__dict__[key] = value
 
     device = torch.device("cuda:0")
@@ -106,6 +106,8 @@ if __name__ == "__main__":
         sync_info.no_sync_control = True
         model0_train_wrapper(**model0_kwargs)
         model1_train_wrapper(**model1_kwargs)
+    if constants.enable_profiling:
+        torch.cuda.cudart().cudaProfilerStop()
     end_time = time.time()
     logging.info(f'It takes {end_time - start_time} seconds in total.')
     notifier.notify(

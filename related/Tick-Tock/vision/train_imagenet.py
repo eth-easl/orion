@@ -10,31 +10,65 @@ import utils.constants as constants
 
 
 def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
-    model, optimizer, train_loader, metric_fn = setup(model_config, device)
+    # model, optimizer, train_loader, metric_fn = setup(model_config, device)
+    torch.cuda.set_device(device)
+    arc = model_config['arc']
+    model = models.__dict__[arc](num_classes=1000)
+    model = model.to(device)
+    optimizer_func = getattr(torch.optim, model_config['optimizer'])
+    optimizer = optimizer_func(model.parameters(), lr=0.1)
+    batch_size = model_config['batch_size']
+    metric_fn = F.cross_entropy
+
     model.train()
-    loss_sum = 0
-    num_batches = len(train_loader)
-    logging.info('model is set up')
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
+    num_batches = 200  # len(train_loader)
+    logging.info(f'model is set up with num iterations {num_batches}')
+    # forward_time = 0
+    # backward_time = 0
+    # print_every = 10
+    warm_up_iters = 30
+
+    data = torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device)
+    target = torch.randint(high=1000, size=(batch_size,)).to(device)
+
+    with TrainingControl(sync_info=sync_info, device=device):
         start_time = time.time()
-        for epoch in range(num_epochs):
-            for batch_idx, batch in enumerate(train_loader):
-                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-                    data, target = batch[0].to(device), batch[1].to(device)
+        for batch_idx in range(num_batches):
+
+            if constants.enable_profiling and batch_idx == warm_up_iters - 3 and tid == 0:
+                torch.cuda.cudart().cudaProfilerStart()
+
+            with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+                # forward_start_time = time.time()
+                if constants.enable_profiling and batch_idx >= warm_up_iters:
+                    torch.cuda.nvtx.range_push(f'thread {tid} starts FORWARD {batch_idx}')
+                with torch.cuda.stream(my_stream):
                     output = model(data)
                     loss = metric_fn(output, target)
+                    del output
+            if constants.enable_profiling and batch_idx >= warm_up_iters:
+                torch.cuda.nvtx.range_pop()
+            # forward_time += time.time() - forward_start_time
 
-                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+                # backward_start_time = time.time()
+                if constants.enable_profiling and batch_idx >= warm_up_iters:
+                    torch.cuda.nvtx.range_push(f'thread {tid} starts BACKWARD {batch_idx}')
+                with torch.cuda.stream(my_stream):
                     loss.backward()
                     optimizer.step()
                     optimizer.zero_grad()
+                    del loss
+            if constants.enable_profiling and batch_idx >= warm_up_iters:
+                torch.cuda.nvtx.range_pop()
+            # backward_time += time.time() - backward_start_time
 
-                loss_sum += loss.item()
-                if batch_idx % constants.print_every == 0:
-                    logging.info(
-                        f'thread {tid} epoch {epoch}/{num_epochs} batch {batch_idx}/{num_batches} current loss: {loss_sum / constants.print_every}')
-                    loss_sum = 0
-        logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train imagenet')
+            # if batch_idx % print_every == 0:
+            #     logging.info(f'iters {batch_idx}: thread {tid} averaged forward time {forward_time / print_every}; averaged backward time {backward_time / print_every}')
+            #     forward_time = 0
+            #     backward_time = 0
+
+    logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train imagenet')
 
 
 def setup(model_config, device):

@@ -9,4 +9,5 @@ wmt16_en_de_root = None
 coco_root = None
 wikitext_103_dir = None
 print_every = 100
+enable_profiling = False
 

@@ -2,8 +2,8 @@
 policy: tick-tock # either "temporal" or "tick-tock"
 model0: vision # these two names should strictly correspond to the model names below
 model1: vision
-num_epochs: 2
-data_dir:
+num_epochs: 1
+shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
   cifar10_root: '/cluster/scratch/xianma/cifar10'
   squad_version1: '/cluster/scratch/xianma/bert/download/squad/v1.1/train-v1.1.json'
@@ -11,6 +11,8 @@ data_dir:
   wmt16_en_de_root: '/cluster/scratch/xianma/wmt16'
   coco_root: '/cluster/scratch/xianma/retinanet'
   wikitext_103_dir: '/cluster/scratch/xianma/transformer/wikitext-103'
+  print_every: 100
+  enable_profiling: false
 
 # configuration for each model
 nasnet:
