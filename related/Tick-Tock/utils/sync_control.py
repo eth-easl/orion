@@ -32,6 +32,8 @@ class ForwardControl:
         logging.debug(f"thread {self.thread_id} starts FORWARD {self.batch_idx}")
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        if self.sync_info.no_sync_control:
+            return exc_type is None
         # wait for all the submitted kernels in the stream to complete
         self.stream.synchronize()
         logging.debug(f"thread {self.thread_id} ends FORWARD {self.batch_idx}")
@@ -68,6 +70,8 @@ class BackwardControl:
         logging.debug(f"thread {self.thread_id} starts BACKWARD {self.batch_idx}")
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        if self.sync_info.no_sync_control:
+            return exc_type is None
         # wait for all the submitted kernels in the stream to complete
         self.stream.synchronize()
         logging.debug(f"thread {self.thread_id} ends BACKWARD {self.batch_idx}")

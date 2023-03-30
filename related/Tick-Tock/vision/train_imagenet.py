@@ -21,7 +21,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     metric_fn = F.cross_entropy
 
     model.train()
-    num_batches = 200  # len(train_loader)
+    num_batches = 300  # len(train_loader)
     logging.info(f'model is set up with num iterations {num_batches}')
     # forward_time = 0
     # backward_time = 0
@@ -67,7 +67,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
             #     logging.info(f'iters {batch_idx}: thread {tid} averaged forward time {forward_time / print_every}; averaged backward time {backward_time / print_every}')
             #     forward_time = 0
             #     backward_time = 0
-
+    torch.cuda.synchronize(device)
     logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train imagenet')
 
 
