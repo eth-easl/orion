@@ -21,7 +21,8 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         if batch_idx == warm_up_iters:
             # finish previous work
             torch.cuda.synchronize(device)
-            sync_info.barrier.wait()
+            if not sync_info.no_sync_control:
+                sync_info.barrier.wait()
             # start timer
             start_time = time.time()
 
