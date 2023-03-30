@@ -25,21 +25,22 @@ class ForwardControl:
             return
         if self.thread_id == 0:
             self.sync_info.eventf1.wait()
+            self.sync_info.event_cudaf1.wait(self.stream)
             self.sync_info.eventf1.clear()
         else:
             self.sync_info.eventf0.wait()
+            self.sync_info.event_cudaf0.wait(self.stream)
             self.sync_info.eventf0.clear()
-        logging.debug(f"thread {self.thread_id} starts FORWARD {self.batch_idx}")
+
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if self.sync_info.no_sync_control:
             return exc_type is None
-        # wait for all the submitted kernels in the stream to complete
-        self.stream.synchronize()
-        logging.debug(f"thread {self.thread_id} ends FORWARD {self.batch_idx}")
         if self.thread_id == 0:
+            self.sync_info.event_cudaf0.record(self.stream)
             self.sync_info.eventf0.set()
         else:
+            self.sync_info.event_cudaf1.record(self.stream)
             self.sync_info.eventf1.set()
         # raise the exception as is if there is any
         return exc_type is None
@@ -60,24 +61,23 @@ class BackwardControl:
     def __enter__(self) -> None:
         if self.sync_info.no_sync_control:
             return
-
         if self.thread_id == 0:
             self.sync_info.eventb1.wait()
+            self.sync_info.event_cudab1.wait(self.stream)
             self.sync_info.eventb1.clear()
         else:
             self.sync_info.eventb0.wait()
+            self.sync_info.event_cudab0.wait(self.stream)
             self.sync_info.eventb0.clear()
-        logging.debug(f"thread {self.thread_id} starts BACKWARD {self.batch_idx}")
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if self.sync_info.no_sync_control:
             return exc_type is None
-        # wait for all the submitted kernels in the stream to complete
-        self.stream.synchronize()
-        logging.debug(f"thread {self.thread_id} ends BACKWARD {self.batch_idx}")
         if self.thread_id == 0:
+            self.sync_info.event_cudab0.record(self.stream)
             self.sync_info.eventb0.set()
         else:
+            self.sync_info.event_cudab1.record(self.stream)
             self.sync_info.eventb1.set()
 
         # raise the exception as is if there is any

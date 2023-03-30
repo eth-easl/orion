@@ -10,4 +10,4 @@ coco_root = None
 wikitext_103_dir = None
 print_every = 100
 enable_profiling = False
-
+use_dummy_data = False
