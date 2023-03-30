@@ -36,7 +36,7 @@ void create_streams(cudaStream_t** sched_streams, int num) {
 
 	for (int i=0; i<num-1; i++) {
 		sched_streams[i] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, *hp+1);
+		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, *lp);
 	}
 
 	sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
@@ -254,7 +254,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnBatchNormalizationForwardInference_record record = frecord.data.cudnnBNormInfRecord;
 			//printf("Got a CUDNN operation from client %d, handle is %p\n", idx, record.handle);
 			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-			//status = cudnnSetStream(record.handle, *sched_stream);
+			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
 
 			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
@@ -376,14 +376,14 @@ void schedule_pair(
 		pop_from_queue(cbuffers[1], cmutexes[1]);
 	}
 	// // if kernel is very small, run alone
-	else if (op_info_0.duration < 10.0) {
+	else if (op_info_0.duration < 10000.0) {
 		wait_for_stream(0, 1, streams[0], sched_streams[num_events-1], events, num_events, event_ids);
 		//wait_all_streams(0, sched_streams[0], events, num_events);
 		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
 		streams[0] = 1;
 		pop_from_queue(cbuffers[0], cmutexes[0]);
 	}
-	else if (op_info_1.duration < 10.0) {
+	else if (op_info_1.duration < 10000.0) {
 		wait_for_stream(1, 1, streams[1], sched_streams[num_events-1], events, num_events, event_ids);
 		//wait_all_streams(0, sched_streams[0], events, num_events);
 		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
@@ -417,7 +417,7 @@ void schedule_pair(
 		wait_for_stream(0, 0, streams[0], sched_streams[0], events, num_events, event_ids);
 		wait_for_stream(1, 1, streams[1], sched_streams[num_events-1], events, num_events, event_ids);
 		printf("COLOCATE, 0 in lp, 1 in hp\n");
-		sleep_kernel(100000, *(sched_streams[num_events-1]));
+		//sleep_kernel(100000, *(sched_streams[num_events-1]));
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
 		streams[0] = 0;
@@ -431,7 +431,7 @@ void schedule_pair(
 		printf("COLOCATE,  0 in hp, 1 in lp\n");
 		wait_for_stream(0, 1, streams[0], sched_streams[num_events-1], events, num_events, event_ids);
 		wait_for_stream(1, 0, streams[1], sched_streams[1], events, num_events, event_ids);
-		sleep_kernel(100000, *(sched_streams[num_events-1]));
+		//sleep_kernel(100000, *(sched_streams[num_events-1]));
 		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		streams[0] = 1;
