@@ -1,5 +1,5 @@
 ---
-policy: temporal # either "temporal" or "tick-tock"
+policy: tick-tock # either "temporal" or "tick-tock"
 model0: vision # these two names should strictly correspond to the model names below
 model1: vision
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
@@ -22,9 +22,9 @@ nasnet:
   arc: mobile # either large or mobile
   num_workers: 2
 vision:
-  arc: resnet50
+  arc: mobilenet_v2
   optimizer: SGD
-  batch_size: 32
+  batch_size: 128
   num_workers: 2
   num_iterations: 300
   warm_up_iters: 50
