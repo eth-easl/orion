@@ -2,7 +2,7 @@ import yaml
 import itertools
 import logging
 import utils
-
+import os
 def generate_configs(default_config, **kwargs):
     for values in itertools.product(*kwargs.values()):
         for kw_id, kw in enumerate(kwargs.keys()):
@@ -16,10 +16,15 @@ def generate_configs(default_config, **kwargs):
 
 def run(config, combination_name):
 
-    file_name = f'gen_conf_{combination_name}.yaml'
-    logging.info(f'dump config to {file_name}')
-    with open(f'./{file_name}', 'w') as file:
+    config_file_name = f'gen_conf_{combination_name}.yaml'
+    log_file = f'log_{combination_name}.log'
+    logging.info(f'dump config to {config_file_name}')
+    with open(f'./{config_file_name}', 'w') as file:
         yaml.dump(config, file)
+    # run python main.py
+    logging.info('training with this config...')
+    os.system(f"python main.py --log ./{log_file} --config ./{config_file_name}")
+    logging.info('training finished.')
 
 if __name__ == "__main__":
     logging.basicConfig(

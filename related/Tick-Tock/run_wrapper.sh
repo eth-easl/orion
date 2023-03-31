@@ -1,2 +1,2 @@
-./run.sh > output.log 2>&1 &
+python run.py > output.log 2>&1 &
 disown
