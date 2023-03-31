@@ -52,7 +52,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
-
+    sync_info.no_sync_control = True
     torch.cuda.synchronize(device)
     logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train imagenet')
 
@@ -69,9 +69,10 @@ def setup(model_config, device):
 
     if constants.use_dummy_data:
         train_loader = utils.DummyDataLoader(
-            data=torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device),
-            target=torch.randint(high=1000, size=(batch_size,)).to(device),
-            iterations=model_config['num_iterations']
+            batch=(
+                torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device),
+                torch.randint(high=1000, size=(batch_size,)).to(device)
+            )
         )
     else:
         if arc == 'inception_v3':

@@ -34,6 +34,8 @@ parser.add_argument('--log', help='Path to the log file', type=str)
 def readable_model_name(model_name, model_config):
     if model_name == 'vision':
         readable_name = f"{model_config['arc']}-{model_config['batch_size']}"
+    elif model_name == 'bert':
+        readable_name = f"bert-{model_config['arch']}-{model_config['batch_size']}"
     else:
         readable_name = f"{model_name}-{model_config['batch_size']}"
 

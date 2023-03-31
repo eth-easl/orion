@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-
+import itertools
 
 def pretty_time():
     return datetime.now().strftime('%d-%m-%Y-%H-%M-%S')
@@ -11,12 +11,10 @@ def dict2pretty_str(dict_data):
 
 
 class DummyDataLoader:
-    def __init__(self, data, target, iterations):
-        self.data = data
-        self.target = target
-        self.iterations = iterations
+    def __init__(self, batch):
+        self.batch = batch
 
     def __iter__(self):
-        return ((self.data, self.target) for _ in range(self.iterations))
+        return itertools.repeat(self.batch)
 
 
