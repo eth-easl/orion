@@ -3,6 +3,9 @@ import itertools
 import logging
 import utils
 import os
+from utils import notifier
+
+
 def generate_configs(default_config, **kwargs):
     for values in itertools.product(*kwargs.values()):
         for kw_id, kw in enumerate(kwargs.keys()):
@@ -11,7 +14,7 @@ def generate_configs(default_config, **kwargs):
         logging.info(f"generated config: {utils.dict2pretty_str(default_config)}")
 
         unique_name = '-'.join(f'{key}-{value}' for key, value in zip(kwargs.keys(), values))
-        yield (default_config, unique_name)
+        yield default_config, unique_name
 
 
 def run(config, combination_name):
@@ -26,6 +29,7 @@ def run(config, combination_name):
     os.system(f"python main.py --log ./{log_file} --config ./{config_file_name}")
     logging.info('training finished.')
 
+
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
@@ -39,21 +43,25 @@ if __name__ == "__main__":
     with open('./config.yaml', 'r') as file:
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
+    # ----configuration region started----
     model0_names = ['vision']
-    model1_names = ['vision', 'nasnet']
+    model1_names = ['bert']
 
     model_to_kwargs = {
         'vision': {
-            'batch_size': [16, 32],
-            'arc': ['resnet50', 'resnet101']
+            'batch_size': [16, 32, 64],
+            'arc': ['mobilenet_v2'],
         },
-        'nasnet': {
-            'batch_size': [16],
-            'arc': ['large', 'mobile']
+        'bert': {
+            'batch_size': [4, 8, 16],
+            'arch': ['base']
         }
     }
 
     policies = ['tick-tock', 'temporal']
+    skip_identical_models = True
+    # ----configuration region ended----
+
     for policy in policies:
         logging.info(f'policy {policy}')
         default_full_config['policy'] = policy
@@ -66,6 +74,8 @@ if __name__ == "__main__":
                 default_full_config['model1'] = model1
                 model1_default_config = default_full_config[model1]
                 if model0 == model1:
+                    if skip_identical_models:
+                        continue
                     # only generate config once
                     for model_config, name in generate_configs(model0_default_config, **model_to_kwargs[model0]):
                         default_full_config[model0] = model_config
@@ -78,5 +88,15 @@ if __name__ == "__main__":
                             default_full_config[model1] = model1_config
                             combination_name = f'{model0}-{name0}-{model1}-{name1}-{policy}'
                             run(default_full_config, combination_name)
+
+    notifier.notify(
+        subject='A set of experiments have finished',
+        body=utils.dict2pretty_str({
+            'model0_names': model0_names,
+            'model1_names': model1_names,
+            'policies': policies,
+            'model_to_kwargs': model_to_kwargs
+        })
+    )
 
 

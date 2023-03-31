@@ -10,7 +10,7 @@ shared_config:
   squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
   wmt16_en_de_root: '/cluster/scratch/xianma/wmt16'
   coco_root: '/cluster/scratch/xianma/retinanet'
-  wikitext_103_dir: '/cluster/scratch/xianma/transformer/wikitext-103'
+  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   print_every: 100
   enable_profiling: false
   use_dummy_data: true
@@ -26,8 +26,8 @@ vision:
   optimizer: SGD
   batch_size: 128
   num_workers: 2
-  num_iterations: 300
-  warm_up_iters: 50
+  num_iterations: 200
+  warm_up_iters: 20
 dcgan:
   num_gen_filters: 64
   num_dis_filters: 64
