@@ -48,6 +48,8 @@ for i, row in df.iterrows():
             processed_kernel_names.append(["cublas_sgemm", row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
 
 '''
+conv_info = []
+
 for i, row in df.iterrows():
     x = row['Name']
     if ('memset' in x) or ('memcpy' in x):
@@ -60,10 +62,16 @@ for i, row in df.iterrows():
         if 'bn_fw' in x:
             processed_kernel_names.append(['BatchNorm', row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
         elif ('scudnn' in x) or ('implicit_convolve_sgemm' in x) or ('explicit_convolve_sgemm' in x):
-            processed_kernel_names.append(['Conv', row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
+            conv_info.append([row["SM_needed"], row["Duration"]])
+            dur_list = [x[1] for x in conv_info]
+            sms = [x[0] for x in conv_info]
+            sms_max = max(sms)
+            dur = sum(dur_list)
+            processed_kernel_names.append(['Conv', row['Profile'], row["Memory_footprint"], sms_max, dur])
+            conv_info=[]
         elif ('cudnn::winograd' in x) or ('cudnn::gemm' in x):
             # part of cudnn mm
-            pass
+            conv_info.append([row["SM_needed"], row["Duration"]])
         elif ('im2col4d_kernel' in x):
             # part of conv
             pass
