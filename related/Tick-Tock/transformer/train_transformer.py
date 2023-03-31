@@ -2,6 +2,7 @@ import functools
 import warnings
 
 import yaml
+import utils
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 import numpy as np
@@ -155,36 +156,68 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     model.train()
     train_iter = tr_iter.get_fixlen_iter()
+
     enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
     mem = None
     clip = 0.25
 
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for epoch in range(num_epochs):
-            for batch_idx, (data, target, seq_len, _) in enumerate(train_iter):
-                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream),\
-                        torch.cuda.amp.autocast(enable_autocast):
-                    loss, mem = model(data, target, mem)
-                    loss = loss.float().mean().type_as(loss)
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
+    if constants.use_dummy_data:
+        first_batch = next(train_iter)
+        for t in first_batch:
+            if torch.is_tensor(t):
+                logging.info(f'part of dummy data shape: {t.shape}')
+        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+    else:
+        virtual_loader = train_iter
 
-                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-                    if model_config['use_fp16']:
-                        if model_config['amp'] == 'pytorch':
-                            scaler.scale(loss).backward()
-                            scaler.unscale_(optimizer)
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
-                        elif model_config['amp'] == 'apex':
-                            with amp.scale_loss(loss, optimizer, delay_unscale=False) as scaled_loss:
-                                scaled_loss.backward()
-                            torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), clip)
-                    else:
-                        loss.backward()
-                        torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+    logging.info(f'transformer is set up with {num_iterations}')
 
-                    if model_config['use_fp16'] and model_config['amp'] == 'pytorch':
-                        scaler.step(optimizer)
-                        scaler.update()
-                    else:
-                        optimizer.step()
-                    model.zero_grad()
+    for batch_idx, (data, target, seq_len, _) in enumerate(virtual_loader):
+        if batch_idx == warm_up_iters:
+            # finish previous work
+            torch.cuda.synchronize(device)
+            if not sync_info.no_sync_control:
+                sync_info.barrier.wait()
+            # start timer
+            start_time = time.time()
+
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                # with torch.cuda.amp.autocast(enable_autocast):
+                loss, mem = model(data, target, mem)
+                loss = loss.float().mean().type_as(loss)
+
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                # if model_config['use_fp16']:
+                #     if model_config['amp'] == 'pytorch':
+                #         scaler.scale(loss).backward()
+                #         scaler.unscale_(optimizer)
+                #         torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                #     elif model_config['amp'] == 'apex':
+                #         with amp.scale_loss(loss, optimizer, delay_unscale=False) as scaled_loss:
+                #             scaled_loss.backward()
+                #         torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), clip)
+                # else:
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+
+                # if model_config['use_fp16'] and model_config['amp'] == 'pytorch':
+                #     scaler.step(optimizer)
+                #     scaler.update()
+                # else:
+                optimizer.step()
+                model.zero_grad()
+
+        if batch_idx == num_iterations - 1:
+            # reached the last iteration
+            break
+
+    sync_info.no_sync_control = True
+    torch.cuda.synchronize(device)
+    logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train transformer')
+
+
 

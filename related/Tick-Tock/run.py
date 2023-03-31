@@ -44,16 +44,20 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_names = ['vision']
+    model0_names = ['transformer']
     model1_names = ['bert']
 
     model_to_kwargs = {
+        'transformer': {
+            'arch': ['base'],
+            'batch_size': [8, 16]
+        },
         'vision': {
-            'batch_size': [16, 32, 64],
-            'arc': ['mobilenet_v2'],
+            'batch_size': [32, 64],
+            'arc': ['mobilenet_v2', 'resnet50'],
         },
         'bert': {
-            'batch_size': [4, 8, 16],
+            'batch_size': [8, 16],
             'arch': ['base']
         }
     }
