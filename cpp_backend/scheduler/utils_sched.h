@@ -47,5 +47,5 @@ void schedule_pair(
 void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex);
 void create_streams(cudaStream_t** sched_streams, int num);
 void create_events(cudaEvent_t*** events, int num);
-void wait_for_stream(int idx, int current_prio, int prev_prio, cudaStream_t* sched_stream, cudaEvent_t*** events, int num_events, int* event_ids);
+void wait_for_stream(int idx, int profile, int current_prio, int prev_prio, cudaStream_t* sched_stream, cudaEvent_t*** events, int num_events, int* event_ids);
 void wait_all_streams(int idx, cudaStream_t* sched_stream, cudaEvent_t*** events, int num_events, int* event_ids);
