@@ -154,6 +154,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 	int hp_running = -1;
 
 	int num_events = 2*num_clients+1;
+	bool inf_finished = false;
+	bool started = false;
+ 	std::chrono::time_point<std::chrono::system_clock> start_time;
 
 	cudaEvent_t** events0 = (cudaEvent_t**)malloc(num_client_kernels[0]*sizeof(cudaEvent_t));
 	cudaEvent_t** events1 = (cudaEvent_t**)malloc(num_client_kernels[1]*sizeof(cudaEvent_t));
@@ -225,6 +228,22 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			// 	);
 			// }
 
+			if ((frecords[0] != NULL || frecords[1] != NULL) && !started) {
+				start_time = std::chrono::system_clock::now();
+				printf("Workload started at %d\n", start_time);
+				started = true;
+			}
+
+			if (seen[1] == num_client_kernels[1] && !inf_finished) {
+				cudaError_t status = cudaEventQuery(*(events[2][event_ids[2]-1]));
+				if (status == cudaSuccess) {
+					auto now = std::chrono::system_clock::now();
+					std::chrono::duration<double> elapsed_seconds = now-start_time;
+					printf("Inference finished at %d. It took %f sec\n", now, elapsed_seconds.count());
+					inf_finished = true;
+				}
+			}
+
 			if (frecords[1] != NULL) {
 				op_info op_info_1 = op_info_vector[1][seen[1]];
 				// if (op_info_1.duration < 10000.0 || op_info_1.sm_used < max_sms) {
@@ -238,7 +257,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 					pop_from_queue(client_buffers[1], client_mutexes[1]);
 					streams[1]=0;
 				}
-				if (op_info_1.profile == 0) {
+				else if (op_info_1.profile == 0) {
 					wait_for_stream(1, 0, 0, streams[1], sched_streams[2],  events, num_events, event_ids);
 					schedule_kernel(*(frecords[1]), sched_streams[2], 1, events[2][event_ids[2]], seen, event_ids, 2);
 					pop_from_queue(client_buffers[1], client_mutexes[1]);
@@ -333,6 +352,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 		event_ids[2*num_clients] = 0;
 		prev_large = -1;
 		hp_running = -1;
+		inf_finished = false;
+		started = false;
 		//create_events(events, num_clients+1);
 		//printf("RESTART!\n");
 	}
