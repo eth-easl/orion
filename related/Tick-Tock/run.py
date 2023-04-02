@@ -44,8 +44,8 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_names = ['transformer']
-    model1_names = ['bert']
+    model0_names = ['retinanet']
+    model1_names = ['vision', 'transformer']
 
     model_to_kwargs = {
         'transformer': {
@@ -59,11 +59,14 @@ if __name__ == "__main__":
         'bert': {
             'batch_size': [8, 16],
             'arch': ['base']
+        },
+        'retinanet': {
+            'batch_size': [4, 8]
         }
     }
 
     policies = ['tick-tock', 'temporal']
-    skip_identical_models = True
+    skip_identical_models = False
     # ----configuration region ended----
 
     for policy in policies:
