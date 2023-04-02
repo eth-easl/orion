@@ -1,7 +1,7 @@
 ---
-policy: temporal # either "temporal" or "tick-tock"
-model0: transformer # these two names should strictly correspond to the model names below
-model1: transformer
+policy: tick-tock # either "temporal" or "tick-tock"
+model0: retinanet # these two names should strictly correspond to the model names below
+model1: retinanet
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -9,7 +9,7 @@ shared_config:
   squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
   squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
   wmt16_en_de_root: '/cluster/scratch/xianma/wmt16'
-  coco_root: '/cluster/scratch/xianma/retinanet'
+  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   print_every: 100
   enable_profiling: false
@@ -65,3 +65,5 @@ retinanet:
   use_amp: false
   num_workers: 2
   batch_size: 8
+  num_iterations: 200
+  warm_up_iters: 20
