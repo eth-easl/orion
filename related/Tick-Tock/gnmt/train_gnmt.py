@@ -6,7 +6,7 @@ import torch.optim
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 import utils.constants as constants
-
+import utils
 
 import gnmt.seq2seq.train.trainer as trainers
 import gnmt.seq2seq.data.config as config
@@ -114,11 +114,44 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     torch.set_grad_enabled(True)
     trainer.model.train()
 
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for epoch in range(num_epochs):
-            train_loader.sampler.set_epoch(epoch)
-            for batch_idx, (src, tgt) in enumerate(train_loader):
-                trainer.model.zero_grad()
-                trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream, batch_idx=batch_idx)
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
 
+    if constants.use_dummy_data:
+        logging.info('gnmt uses dummy data')
+        train_dataloader_iter = iter(train_loader)
+        src, tgt = next(train_dataloader_iter)
+        src_content, src_len = src
+        tgt_content, tgt_len = tgt
+        src_content = src_content.to(device)
+        tgt_content = tgt_content.to(device)
+        src_len = src_len.to(device)
+        tgt_len = tgt_len.to(device)
 
+        virtual_loader = utils.DummyDataLoader(batch=(
+            (src_content, src_len),
+            (tgt_content, tgt_len)
+        ))
+    else:
+        virtual_loader = train_loader
+    logging.info(f'gnmt is set up with {num_iterations}')
+    for batch_idx, (src, tgt) in enumerate(virtual_loader):
+        if batch_idx == warm_up_iters:
+            # finish previous work
+            torch.cuda.synchronize(device)
+            if not sync_info.no_sync_control:
+                sync_info.barrier.wait()
+            # start timer
+            start_time = time.time()
+
+        trainer.model.zero_grad()
+        trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream,
+                        batch_idx=batch_idx)
+
+        if batch_idx == num_iterations - 1:
+            # reached the last iteration
+            break
+
+    sync_info.no_sync_control = True
+    torch.cuda.synchronize(device)
+    logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train gnmt')

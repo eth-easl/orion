@@ -41,6 +41,8 @@ gnmt:
   math: fp32 # precision
   batch_size: 128
   num_workers: 2
+  num_iterations: 200
+  warm_up_iters: 20
 bert:
   use_fp16: false # true or false; please stick to false or revise code otherwise
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
