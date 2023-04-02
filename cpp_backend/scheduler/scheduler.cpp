@@ -53,22 +53,24 @@ void Scheduler::profile_reset(int num_clients) {
 
 void Scheduler::profile_prep(void** qbuffers, int num_clients) {
 
+	printf("Entered profile_prep!\n");
+
 	register_functions();
 	client_buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
 	//(queue<struct kernel_record>**)qbuffers;
 	for (int i=0; i<num_clients; i++)
 		client_buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	sched_streams = (cudaStream_t**)malloc((2*num_clients+1)*sizeof(cudaStream_t*));
-	for (int i=0; i<=num_clients; i++)
+	sched_streams = (cudaStream_t**)malloc((2*num_clients)*sizeof(cudaStream_t*));
+	for (int i=0; i<num_clients; i++)
 		sched_streams[i] = NULL;
 
-	events = (cudaEvent_t***)malloc((2*num_clients+1)*sizeof(cudaEvent_t**));
+	events = (cudaEvent_t***)malloc((2*num_clients)*sizeof(cudaEvent_t**));
 	for (int i=0; i<2*num_clients; i++)
 		events[i] = NULL;
 
-	create_streams(sched_streams, 2*num_clients+1);
-	create_events(events, 2*num_clients+1);
+	create_streams(sched_streams, 2*num_clients);
+	create_events(events, 2*num_clients);
 
 	seen = (int*)calloc(num_clients,sizeof(int));
 	event_ids = (int*)calloc(2*num_clients, sizeof(int));
@@ -78,6 +80,8 @@ void Scheduler::profile_prep(void** qbuffers, int num_clients) {
 		streams[i] = -1;
 
 	sched_stream = 0;
+
+	printf("Exited profile_prep!\n");
 
 }
 
@@ -153,23 +157,11 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 	int prev_large = -1;
 	int hp_running = -1;
 
-	int num_events = 2*num_clients+1;
+	int num_events = 2*num_clients;
 	bool inf_finished = false;
 	bool started = false;
  	std::chrono::time_point<std::chrono::system_clock> start_time;
 
-	cudaEvent_t** events0 = (cudaEvent_t**)malloc(num_client_kernels[0]*sizeof(cudaEvent_t));
-	cudaEvent_t** events1 = (cudaEvent_t**)malloc(num_client_kernels[1]*sizeof(cudaEvent_t));
-
-	for (int i=0; i<num_client_kernels[0]; i++) {
-		events0[i] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
-		CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events0[i], cudaEventDisableTiming));
-	}
-
-	for (int i=0; i<num_client_kernels[1]; i++) {
-		events1[i] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
-		CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events1[i], cudaEventDisableTiming));
-	}
 	if (1) {
 
 		while(1) {
@@ -203,6 +195,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 
 			}
 
+			//printf("%p, %p\n", frecords[0], frecords[1]);
+
 			// if (frecords[0] != NULL && ((frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == FREE_RECORD))) {
 			// 	printf("0, iter: %d, type: %d\n", iter, frecords[0]->type);
 			// }
@@ -228,21 +222,21 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			// 	);
 			// }
 
-			if ((frecords[0] != NULL || frecords[1] != NULL) && !started) {
-				start_time = std::chrono::system_clock::now();
-				printf("Workload started at %d\n", start_time);
-				started = true;
-			}
+			// if ((frecords[0] != NULL || frecords[1] != NULL) && !started) {
+			// 	start_time = std::chrono::system_clock::now();
+			// 	printf("Workload started at %d\n", start_time);
+			// 	started = true;
+			// }
 
-			if (seen[1] == num_client_kernels[1] && !inf_finished) {
-				cudaError_t status = cudaEventQuery(*(events[2][event_ids[2]-1]));
-				if (status == cudaSuccess) {
-					auto now = std::chrono::system_clock::now();
-					std::chrono::duration<double> elapsed_seconds = now-start_time;
-					printf("Inference finished at %d. It took %f sec\n", now, elapsed_seconds.count());
-					inf_finished = true;
-				}
-			}
+			// if (seen[1] == num_client_kernels[1] && !inf_finished) {
+			// 	cudaError_t status = cudaEventQuery(*(events[2][event_ids[2]-1]));
+			// 	if (status == cudaSuccess) {
+			// 		auto now = std::chrono::system_clock::now();
+			// 		std::chrono::duration<double> elapsed_seconds = now-start_time;
+			// 		printf("Inference finished at %d. It took %f sec\n", now, elapsed_seconds.count());
+			// 		inf_finished = true;
+			// 	}
+			// }
 
 			if (frecords[1] != NULL) {
 				op_info op_info_1 = op_info_vector[1][seen[1]];
@@ -264,6 +258,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 					streams[1]=0;
 				}
 				else {
+					//sleep_kernel(1000, *(sched_streams[3]));
 					wait_for_stream(1, 1, 0, streams[1], sched_streams[3],  events, num_events, event_ids);
 					schedule_kernel(*(frecords[1]), sched_streams[3], 1, events[3][event_ids[3]], seen, event_ids, 3);
 					pop_from_queue(client_buffers[1], client_mutexes[1]);
@@ -284,14 +279,13 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 					streams[0]=0;
 				}
 				else if (op_info_0.profile == 0) {
-					//sleep_kernel(10000, *(sched_streams[0]));
 					wait_for_stream(0, 0, 0, streams[0], sched_streams[0],  events, num_events, event_ids);
 					schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 					pop_from_queue(client_buffers[0], client_mutexes[0]);
 					streams[0]=0;
 				}
 				else {
-					if (event_ids[0] > 0 && seen[1] < num_client_kernels[1]) {
+					if (num_clients > 1 && event_ids[0] > 0 && seen[1] < num_client_kernels[1]) {
 						cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
 						if (status == cudaErrorNotReady)
 							continue;
@@ -349,7 +343,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			fidx[i] = 0;
 			event_ids[i] = 0;
 		}
-		event_ids[2*num_clients] = 0;
 		prev_large = -1;
 		hp_running = -1;
 		inf_finished = false;
