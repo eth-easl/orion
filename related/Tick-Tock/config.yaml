@@ -8,7 +8,7 @@ shared_config:
   cifar10_root: '/cluster/scratch/xianma/cifar10'
   squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
   squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
-  wmt16_en_de_root: '/cluster/scratch/xianma/wmt16'
+  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
   coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   print_every: 100
@@ -38,7 +38,7 @@ dcgan:
   dataset: imagenet # can be imagenet, cifar10, or mnist
   num_workers: 2
 gnmt:
-  math: fp16 # precision
+  math: fp32 # precision
   batch_size: 128
   num_workers: 2
 bert:

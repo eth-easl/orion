@@ -14,6 +14,7 @@ from gnmt.seq2seq.data.dataset import LazyParallelDataset
 from gnmt.seq2seq.data.tokenizer import Tokenizer
 from gnmt.seq2seq.models.gnmt import GNMT
 from gnmt.seq2seq.train.smoothing import LabelSmoothing
+from gnmt.seq2seq.utils import setup_seeds
 
 
 def pad_vocabulary(math):
@@ -70,8 +71,9 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     opt_config = {'optimizer': 'Adam', 'lr': 2.00e-3}
     # get data loaders
     batching_opt = {'shard_size': 80, 'num_buckets': 5}
+    _, shuffling_seeds = setup_seeds(master_seed=None, epochs=1, device=device)
     train_loader = train_data.get_loader(batch_size=model_config['batch_size'],
-                                         seeds=int(time.time()),
+                                         seeds=shuffling_seeds,
                                          batch_first=batch_first,
                                          shuffle=True,
                                          batching='bucketing',

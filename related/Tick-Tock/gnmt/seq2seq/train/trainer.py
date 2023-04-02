@@ -180,3 +180,5 @@ class Seq2SeqTrainer:
             # .step() includes zero_grad
             self.fp_optimizer.step(loss, self.optimizer, self.scheduler, update=True)
 
+        return loss_per_batch
+
