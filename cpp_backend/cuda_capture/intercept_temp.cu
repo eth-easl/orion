@@ -79,6 +79,70 @@ cudnnStatus_t (*cudnn_rnn_train_func)(cudnnHandle_t handle, const cudnnRNNDescri
 cublasStatus_t (*cublas_sgemm_func)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc) = NULL;
 cublasStatus_t (*cublas_sgemm_strided_func)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount) = NULL;
 
+cudnnStatus_t (*cudnn_bnorm_bw_func)(
+	cudnnHandle_t handle,
+	cudnnBatchNormMode_t mode,
+	cudnnBatchNormOps_t bnOps,
+	const void *alphaDataDiff,
+    const void *betaDataDiff,
+    const void *alphaParamDiff,
+    const void *betaParamDiff,
+    const cudnnTensorDescriptor_t xDesc,
+    const void *xData,
+    const cudnnTensorDescriptor_t yDesc,
+    const void *yData,
+    const cudnnTensorDescriptor_t dyDesc,
+    const void *dyData,
+    const cudnnTensorDescriptor_t dzDesc,
+    void *dzData,
+    const cudnnTensorDescriptor_t dxDesc,
+    void *dxData,
+    const cudnnTensorDescriptor_t dBnScaleBiasDesc,
+    const void *bnScaleData,
+    const void *bnBiasData,
+    void *dBnScaleData,
+    void *dBnBiasData,
+    double epsilon,
+    const void *savedMean,
+    const void *savedInvVariance,
+    const cudnnActivationDescriptor_t activationDesc,
+    void *workspace,
+    size_t workSpaceSizeInBytes,
+    void *reserveSpace,
+    size_t reserveSpaceSizeInBytes
+);
+
+cudnnStatus_t (*cudnn_conv_bw_data_func)(
+	cudnnHandle_t handle,
+    const void *alpha,
+    const cudnnFilterDescriptor_t wDesc,
+    const void *w,
+    const cudnnTensorDescriptor_t dyDesc,
+    const void *dy,
+    const cudnnConvolutionDescriptor_t convDesc,
+    cudnnConvolutionBwdDataAlgo_t algo,
+    void *workSpace,
+    size_t workSpaceSizeInBytes,
+    const void *beta,
+    const cudnnTensorDescriptor_t dxDesc,
+    void *dx
+);
+
+cudnnStatus_t (*cudnn_conv_bw_filter_func)(
+	cudnnHandle_t handle,
+    const void *alpha,
+    const cudnnTensorDescriptor_t xDesc,
+    const void *x,
+    const cudnnTensorDescriptor_t dyDesc,
+    const void *dy,
+    const cudnnConvolutionDescriptor_t convDesc,
+    cudnnConvolutionBwdFilterAlgo_t algo,
+    void *workSpace,
+    size_t workSpaceSizeInBytes,
+    const void *beta,
+    const cudnnFilterDescriptor_t dwDesc,
+    void *dw
+);
 
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
@@ -330,7 +394,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	//if (idx < 2)
 	//	DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH-%d] Captured a cudaLaunchKernel! function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
+	//DEBUG_PRINT("[INTERCEPTER-CATCH-%d] Captured a cudaLaunchKernel! function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
 	//print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 	if (kernel_func == NULL) {
@@ -349,8 +413,10 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		// TODO: get kernel name correctly here
 		char* kernel_name = func_names[idx]->at(func_indexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER] found a new kernel id %d, name is %s, func pointer is %p\n", func_indexes[idx], kernel_name, func);
+		print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
-		if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
+
+		/*if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
 
 			// NOTE: WE EXPECT AN ADDITIONAL ARGUMENT WITH THE NUMBER OF INPUT/OUTPUT TENSORS
 			// TODO: How to get this during runtime?
@@ -714,9 +780,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 			new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
 			wait = true;
-		}
+		}*/
 
-		//new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
+		new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
 		union func_data new_func_data;
 		new_func_data.krecord = new_kernel_record;
 		func_record new_record = {KERNEL_RECORD, new_func_data};
@@ -731,10 +797,10 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 	}
 	else {
-		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
+		//DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
 
 		err = (*kernel_func)(func, gridDim, blockDim, args, sharedMem, stream);
-		DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
+		//DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
 
 		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging

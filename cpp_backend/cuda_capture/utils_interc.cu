@@ -8,6 +8,7 @@ int get_idx() {
 	#error "SYS_gettid unavailable on this system"
 	#endif
 		//DEBUG_PRINT("------------------- tid is %d, %d, %d, %d\n", tid, thread_ids[0], thread_ids[1], thread_ids[2]);
+		//printf("tid is %d\n", tid);
 		if (tid == thread_ids[0])
 			return 0;
 		else if (tid == thread_ids[1])
@@ -15,7 +16,7 @@ int get_idx() {
 		else if (tid == thread_ids[2])
 			return 2;
 		else
-			return -1;
+			return 0;
 }
 
 void block(int idx, pthread_mutex_t** mutexes, queue<func_record>** kqueues) {

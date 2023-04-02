@@ -23,7 +23,8 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
@@ -81,7 +82,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
@@ -158,7 +160,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
@@ -218,8 +221,8 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 	printf("------------------------------------------------- IDX [%d], CX IS %p, CY IS %p\n", idx, cx, cy);
 
 	if (idx < 2) {
@@ -318,7 +321,8 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 
 	if (idx < 2) {
 
@@ -383,6 +387,193 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	return status;
 }
 
+
+// backward
+
+cudnnStatus_t cudnnBatchNormalizationBackwardEx (
+    cudnnHandle_t handle,
+    cudnnBatchNormMode_t mode,
+    cudnnBatchNormOps_t bnOps,
+    const void *alphaDataDiff,
+    const void *betaDataDiff,
+    const void *alphaParamDiff,
+    const void *betaParamDiff,
+    const cudnnTensorDescriptor_t xDesc,
+    const void *xData,
+    const cudnnTensorDescriptor_t yDesc,
+    const void *yData,
+    const cudnnTensorDescriptor_t dyDesc,
+    const void *dyData,
+    const cudnnTensorDescriptor_t dzDesc,
+    void *dzData,
+    const cudnnTensorDescriptor_t dxDesc,
+    void *dxData,
+    const cudnnTensorDescriptor_t dBnScaleBiasDesc,
+    const void *bnScaleData,
+    const void *bnBiasData,
+    void *dBnScaleData,
+    void *dBnBiasData,
+    double epsilon,
+    const void *savedMean,
+    const void *savedInvVariance,
+    const cudnnActivationDescriptor_t activationDesc,
+    void *workspace,
+    size_t workSpaceSizeInBytes,
+    void *reserveSpace,
+    size_t reserveSpaceSizeInBytes
+) {
+
+	int idx = get_idx();
+	assert (idx >= 0);
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!-index is %d\n", func_indexes[idx], idx);
+
+	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+
+	if (cudnn_bnorm_bw_func==NULL) {
+		*(void **)(&cudnn_bnorm_bw_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationBackwardEx");
+		assert(cudnn_bnorm_bw_func != NULL);
+	}
+
+	func_indexes[idx] += 1;
+	status = (*cudnn_bnorm_bw_func)(
+		handle,
+		mode,
+		bnOps,
+		alphaDataDiff,
+		betaDataDiff,
+		alphaParamDiff,
+		betaParamDiff,
+		xDesc,
+		xData,
+		yDesc,
+		yData,
+		dyDesc,
+		dyData,
+		dzDesc,
+		dzData,
+		dxDesc,
+		dxData,
+		dBnScaleBiasDesc,
+		bnScaleData,
+		bnBiasData,
+		dBnScaleData,
+		dBnBiasData,
+		epsilon,
+		savedMean,
+		savedInvVariance,
+		activationDesc,
+		workspace,
+		workSpaceSizeInBytes,
+		reserveSpace,
+		reserveSpaceSizeInBytes
+	);
+
+	return status;
+}
+
+cudnnStatus_t cudnnConvolutionBackwardData(
+    cudnnHandle_t handle,
+    const void *alpha,
+    const cudnnFilterDescriptor_t wDesc,
+    const void *w,
+    const cudnnTensorDescriptor_t dyDesc,
+    const void *dy,
+    const cudnnConvolutionDescriptor_t convDesc,
+    cudnnConvolutionBwdDataAlgo_t algo,
+    void *workSpace,
+    size_t workSpaceSizeInBytes,
+    const void *beta,
+    const cudnnTensorDescriptor_t dxDesc,
+    void *dx
+)
+{
+
+	int idx = get_idx();
+	assert (idx >= 0);
+
+	if (idx < 2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
+	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+
+	if (cudnn_conv_bw_data_func==NULL) {
+		*(void **)(&cudnn_conv_bw_data_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardData");
+		assert(cudnn_conv_bw_data_func != NULL);
+	}
+
+	func_indexes[idx] += 1;
+	status = (*cudnn_conv_bw_data_func)(
+		handle,
+		alpha,
+		wDesc,
+		w,
+		dyDesc,
+		dy,
+		convDesc,
+		algo,
+		workSpace,
+		workSpaceSizeInBytes,
+		beta,
+		dxDesc,
+		dx
+	);
+
+	return status;
+}
+
+cudnnStatus_t cudnnConvolutionBackwardFilter(
+    cudnnHandle_t handle,
+    const void *alpha,
+    const cudnnTensorDescriptor_t xDesc,
+    const void *x,
+    const cudnnTensorDescriptor_t dyDesc,
+    const void *dy,
+    const cudnnConvolutionDescriptor_t convDesc,
+    cudnnConvolutionBwdFilterAlgo_t algo,
+    void *workSpace,
+    size_t workSpaceSizeInBytes,
+    const void *beta,
+    const cudnnFilterDescriptor_t dwDesc,
+    void *dw
+) {
+
+	int idx = get_idx();
+	assert (idx >= 0);
+
+	if (idx<2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardFilter!Index is %d\n", func_indexes[idx], idx);
+
+	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+
+	if (cudnn_conv_bw_filter_func==NULL) {
+		*(void **)(&cudnn_conv_bw_filter_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardFilter");
+		assert(cudnn_conv_bw_filter_func != NULL);
+	}
+
+	func_indexes[idx] += 1;
+	status = (*cudnn_conv_bw_filter_func)(
+		handle,
+		alpha,
+		xDesc,
+		x,
+		dyDesc,
+		dy,
+		convDesc,
+		algo,
+		workSpace,
+		workSpaceSizeInBytes,
+		beta,
+		dwDesc,
+		dw
+	);
+
+	return status;
+}
+
+
+cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t activationDesc) {
+	return CUDNN_STATUS_SUCCESS;
+}
 
 cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {
 
