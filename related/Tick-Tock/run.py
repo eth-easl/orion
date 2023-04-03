@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     # ----configuration region started----
     model0_names = ['retinanet']
-    model1_names = ['vision', 'transformer']
+    model1_names = ['retinanet', 'vision', 'transformer', 'bert']
 
     model_to_kwargs = {
         'transformer': {
@@ -61,7 +61,10 @@ if __name__ == "__main__":
             'arch': ['base']
         },
         'retinanet': {
-            'batch_size': [4, 8]
+            'batch_size': [2, 4]
+        },
+        'gnmt': {
+            'batch_size': [64, 32]
         }
     }
 
@@ -69,17 +72,17 @@ if __name__ == "__main__":
     skip_identical_models = False
     # ----configuration region ended----
 
-    for policy in policies:
-        logging.info(f'policy {policy}')
-        default_full_config['policy'] = policy
-        for model0 in model0_names:
-            logging.info(f"model0 {model0}")
-            default_full_config['model0'] = model0
-            model0_default_config = default_full_config[model0]
-            for model1 in model1_names:
-                logging.info(f"model1 {model1}")
-                default_full_config['model1'] = model1
-                model1_default_config = default_full_config[model1]
+    for model0 in model0_names:
+        logging.info(f"model0 {model0}")
+        default_full_config['model0'] = model0
+        model0_default_config = default_full_config[model0]
+        for model1 in model1_names:
+            logging.info(f"model1 {model1}")
+            default_full_config['model1'] = model1
+            model1_default_config = default_full_config[model1]
+            for policy in policies:
+                logging.info(f'policy {policy}')
+                default_full_config['policy'] = policy
                 if model0 == model1:
                     if skip_identical_models:
                         continue
