@@ -14,7 +14,6 @@ import yaml
 import transformer.lamb as lamb
 from transformer.data_utils import *
 from transformer.mem_transformer import MemTransformerLM
-import utils.constants as constants
 import sys
 try:
     from apex import amp
@@ -81,7 +80,10 @@ def weights_init(m, model_consts):
         if hasattr(m, 'r_bias'):
             init_bias(m.r_bias)
 
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     # Before we do anything with models, we want to ensure that we get fp16
     # execution of torch.einsum in APEX AMP.
     # Otherwise it'll default to "promote" mode, and we'll get fp32 operations.
@@ -98,7 +100,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     np.random.seed(seed)
     torch.manual_seed(seed)
     batch_size = model_config['batch_size']
-    corpus = get_lm_corpus(datadir=constants.wikitext_103_dir, dataset='wt103', vocab=model_consts['vocab'])
+    corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
     ntokens = len(corpus.vocab)
 
     ext_len = 0
@@ -163,7 +165,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     num_iterations = model_config['num_iterations']
     warm_up_iters = model_config['warm_up_iters']
-    if constants.use_dummy_data:
+    if shared_config['use_dummy_data']:
         first_batch = next(train_iter)
         for t in first_batch:
             if torch.is_tensor(t):
@@ -178,8 +180,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         if batch_idx == warm_up_iters:
             # finish previous work
             torch.cuda.synchronize(device)
-            if not sync_info.no_sync_control:
-                sync_info.barrier.wait()
+            sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
 
@@ -217,7 +218,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     sync_info.no_sync_control = True
     torch.cuda.synchronize(device)
-
+    sync_info.post_measurement_prep(tid)
     duration = time.time() - start_time
     logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
     return duration

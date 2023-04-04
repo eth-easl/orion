@@ -3,9 +3,7 @@ import time
 
 import torch.nn as nn
 import torch.optim
-from utils.sync_info import SyncInfo
 from utils.sync_control import *
-import utils.constants as constants
 import utils
 
 import gnmt.seq2seq.train.trainer as trainers
@@ -33,12 +31,15 @@ def build_criterion(padding_idx, smoothing):
     return criterion
 
 
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     # build tokenizer
-    args_vocab = os.path.join(constants.wmt16_en_de_root, 'vocab.bpe.32000')
-    args_bpe_codes = os.path.join(constants.wmt16_en_de_root, 'bpe.32000')
-    args_train_src = os.path.join(constants.wmt16_en_de_root, 'train.tok.clean.bpe.32000.en')
-    args_train_tgt = os.path.join(constants.wmt16_en_de_root, 'train.tok.clean.bpe.32000.de')
+    wmt16_en_de_root = shared_config['wmt16_en_de_root']
+    args_vocab = os.path.join(wmt16_en_de_root, 'vocab.bpe.32000')
+    args_bpe_codes = os.path.join(wmt16_en_de_root, 'bpe.32000')
+    args_train_src = os.path.join(wmt16_en_de_root, 'train.tok.clean.bpe.32000.en')
+    args_train_tgt = os.path.join(wmt16_en_de_root, 'train.tok.clean.bpe.32000.de')
     args_lang = {'src': 'en', 'tgt': 'de'}
 
     pad_vocab = pad_vocabulary(model_config['math'])
@@ -80,7 +81,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
                                          batching_opt=batching_opt,
                                          num_workers=model_config['num_workers'])
 
-    total_train_iters = len(train_loader) // num_epochs
+    total_train_iters = len(train_loader)
 
     trainer_options = dict(
         model=model,
@@ -117,7 +118,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     num_iterations = model_config['num_iterations']
     warm_up_iters = model_config['warm_up_iters']
 
-    if constants.use_dummy_data:
+    if shared_config['use_dummy_data']:
         logging.info('gnmt uses dummy data')
         train_dataloader_iter = iter(train_loader)
         src, tgt = next(train_dataloader_iter)
@@ -139,8 +140,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         if batch_idx == warm_up_iters:
             # finish previous work
             torch.cuda.synchronize(device)
-            if not sync_info.no_sync_control:
-                sync_info.barrier.wait()
+            sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
 
@@ -154,7 +154,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     sync_info.no_sync_control = True
     torch.cuda.synchronize(device)
-
+    sync_info.post_measurement_prep(tid)
     duration = time.time() - start_time
     logging.info(f'tid {tid} it takes {duration} seconds to train gnmt')
     return duration

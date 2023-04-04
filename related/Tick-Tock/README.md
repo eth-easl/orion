@@ -53,3 +53,15 @@ if 'apex' in sys.modules:
 3. I didn't add the learning rate scheduler.
 4. They set `pin_memory` as `True` while we don't.
 
+## Guide to MPS
+
+1. migrate all train_wrapper's kwargs to what it looks like in `vision`.
+2. migrate all usage of `constants` to `shared_config`.
+3. Use pre and post measurement preps.
+3. Execute `./start_MPS_control_daemon.sh` in one shell session
+4. Exit that session and create a new one. Do
+```shell
+export CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps
+export CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-log
+```
+5. Then start python program normally.
