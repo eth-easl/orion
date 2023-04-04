@@ -16,11 +16,8 @@ import bert.modeling as modeling
 from bert.squad_example import *
 from bert.tokenization import BertTokenizer
 import os
-import utils.constants as constants
-from utils.sync_info import SyncInfo
 from utils.sync_control import *
 
-from apex.multi_tensor_apply import multi_tensor_applier
 
 
 # TODO: uncomment to enable fp16
@@ -62,20 +59,22 @@ def setup_model(model_config):
     return model
 
 
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     seed = int(time.time())
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     squad_version = model_config['squad_version']
-    squad_file = constants.squad_version1 if squad_version == 1 else constants.squad_version2
+    squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
     train_examples = read_squad_examples(
         input_file=squad_file,
         is_training=True,
         version_2_with_negative=squad_version == 2
     )
     batch_size = model_config['batch_size']
-    num_train_optimization_steps = int(len(train_examples) / batch_size) * num_epochs
+    num_train_optimization_steps = int(len(train_examples) / batch_size)
     model = setup_model(model_config)
     model = model.to(device)
 
@@ -147,7 +146,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     num_iterations = model_config['num_iterations']
     warm_up_iters = model_config['warm_up_iters']
-    if constants.use_dummy_data:
+    if shared_config['use_dummy_data']:
         # fetch a batch from real train_dataloader
         train_dataloader_iter = iter(train_dataloader)
         first_batch = next(train_dataloader_iter)
@@ -164,8 +163,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         if batch_idx == warm_up_iters:
             # finish previous work
             torch.cuda.synchronize(device)
-            if not sync_info.no_sync_control:
-                sync_info.barrier.wait()
+            sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
 
@@ -210,6 +208,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     sync_info.no_sync_control = True
     torch.cuda.synchronize(device)
+    sync_info.post_measurement_prep(tid)
     duration = time.time() - start_time
     logging.info(f'tid {tid} it takes {duration} seconds to train bert')
     return duration
