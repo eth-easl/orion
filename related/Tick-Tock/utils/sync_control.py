@@ -23,6 +23,7 @@ class ForwardControl:
     def __enter__(self) -> None:
         if self.sync_info.no_sync_control:
             return
+        logging.debug(f'thread {self.thread_id} starts FORWARD {self.batch_idx}')
         if self.thread_id == 0:
             self.sync_info.eventf1.wait()
             self.sync_info.event_cudaf1.wait(self.stream)
@@ -36,6 +37,7 @@ class ForwardControl:
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if self.sync_info.no_sync_control:
             return exc_type is None
+        logging.debug(f'thread {self.thread_id} ends FORWARD {self.batch_idx}')
         if self.thread_id == 0:
             self.sync_info.event_cudaf0.record(self.stream)
             self.sync_info.eventf0.set()
@@ -61,6 +63,7 @@ class BackwardControl:
     def __enter__(self) -> None:
         if self.sync_info.no_sync_control:
             return
+        logging.debug(f'thread {self.thread_id} starts BACKWARD {self.batch_idx}')
         if self.thread_id == 0:
             self.sync_info.eventb1.wait()
             self.sync_info.event_cudab1.wait(self.stream)
@@ -73,6 +76,7 @@ class BackwardControl:
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         if self.sync_info.no_sync_control:
             return exc_type is None
+        logging.debug(f'thread {self.thread_id} ends BACKWARD {self.batch_idx}')
         if self.thread_id == 0:
             self.sync_info.event_cudab0.record(self.stream)
             self.sync_info.eventb0.set()
