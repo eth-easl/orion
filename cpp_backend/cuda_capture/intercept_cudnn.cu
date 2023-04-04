@@ -426,17 +426,11 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 	int idx = get_idx();
 	assert (idx >= 0);
 	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!-index is %d\n", func_indexes[idx], idx);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!Index is %d\n", func_indexes[idx], idx);
 
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (cudnn_bnorm_bw_func==NULL) {
-		*(void **)(&cudnn_bnorm_bw_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationBackwardEx");
-		assert(cudnn_bnorm_bw_func != NULL);
-	}
-
-	func_indexes[idx] += 1;
-	status = (*cudnn_bnorm_bw_func)(
+	cudnnBatchNormalizationBackwardEx_record record = {
 		handle,
 		mode,
 		bnOps,
@@ -467,7 +461,71 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 		workSpaceSizeInBytes,
 		reserveSpace,
 		reserveSpaceSizeInBytes
-	);
+	};
+
+	union func_data new_func_data;
+	new_func_data.cudnnBNormBackRecord = record;
+	func_record new_record = {CUDNN_BNORM_BACKWARD_RECORD, new_func_data};
+
+	if (idx < 2) {
+
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+		block(idx, mutexes, kqueues);
+	}
+
+	else {
+
+		if (cudnn_bnorm_bw_func==NULL) {
+			*(void **)(&cudnn_bnorm_bw_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationBackwardEx");
+			assert(cudnn_bnorm_bw_func != NULL);
+		}
+
+
+		status = (*cudnn_bnorm_bw_func)(
+			handle,
+			mode,
+			bnOps,
+			alphaDataDiff,
+			betaDataDiff,
+			alphaParamDiff,
+			betaParamDiff,
+			xDesc,
+			xData,
+			yDesc,
+			yData,
+			dyDesc,
+			dyData,
+			dzDesc,
+			dzData,
+			dxDesc,
+			dxData,
+			dBnScaleBiasDesc,
+			bnScaleData,
+			bnBiasData,
+			dBnScaleData,
+			dBnBiasData,
+			epsilon,
+			savedMean,
+			savedInvVariance,
+			activationDesc,
+			workspace,
+			workSpaceSizeInBytes,
+			reserveSpace,
+			reserveSpaceSizeInBytes
+		);
+
+		printf("status is %d\n", status);
+		if (status != CUDNN_STATUS_SUCCESS)
+			printf("status is %d\n", status);
+		assert (status == CUDNN_STATUS_SUCCESS);
+
+		DEBUG_PRINT("BNORM BACKWARD submitted!!\n");
+
+	}
 
 	return status;
 }
@@ -492,31 +550,62 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	if (idx < 2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
+	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (cudnn_conv_bw_data_func==NULL) {
-		*(void **)(&cudnn_conv_bw_data_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardData");
-		assert(cudnn_conv_bw_data_func != NULL);
-	}
+	if (idx < 2) {
+		cudnnConvolutionBackwardData_record record = {
+			handle,
+			alpha,
+			wDesc,
+			w,
+			dyDesc,
+			dy,
+			convDesc,
+			algo,
+			workSpace,
+			workSpaceSizeInBytes,
+			beta,
+			dxDesc,
+			dx
+		};
 
-	func_indexes[idx] += 1;
-	status = (*cudnn_conv_bw_data_func)(
-		handle,
-		alpha,
-		wDesc,
-		w,
-		dyDesc,
-		dy,
-		convDesc,
-		algo,
-		workSpace,
-		workSpaceSizeInBytes,
-		beta,
-		dxDesc,
-		dx
-	);
+		union func_data new_func_data;
+		new_func_data.cudnnConvBackDataRecord = record;
+		func_record new_record = {CUDNN_CONV_DATA_RECORD, new_func_data};
+
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+		block(idx,  mutexes, kqueues);
+	}
+	else {
+		DEBUG_PRINT("hello!\n");
+
+		if (cudnn_conv_bw_data_func==NULL) {
+			*(void **)(&cudnn_conv_bw_data_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardData");
+			assert(cudnn_conv_bw_data_func != NULL);
+		}
+		DEBUG_PRINT("run!\n");
+		status = (*cudnn_conv_bw_data_func)(
+			handle,
+			alpha,
+			wDesc,
+			w,
+			dyDesc,
+			dy,
+			convDesc,
+			algo,
+			workSpace,
+			workSpaceSizeInBytes,
+			beta,
+			dxDesc,
+			dx
+		);
+		assert (status == CUDNN_STATUS_SUCCESS);
+	}
 
 	return status;
 }
@@ -545,13 +634,7 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (cudnn_conv_bw_filter_func==NULL) {
-		*(void **)(&cudnn_conv_bw_filter_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardFilter");
-		assert(cudnn_conv_bw_filter_func != NULL);
-	}
-
-	func_indexes[idx] += 1;
-	status = (*cudnn_conv_bw_filter_func)(
+	cudnnConvolutionBackwardFilter_record new_conv_record = {
 		handle,
 		alpha,
 		xDesc,
@@ -565,7 +648,48 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 		beta,
 		dwDesc,
 		dw
-	);
+	};
+
+	union func_data new_func_data;
+	new_func_data.cudnnConvBackFilterRecord = new_conv_record;
+	func_record new_record = {CUDNN_CONV_FILTER_RECORD, new_func_data};
+
+	if (idx < 2) {
+
+		pthread_mutex_lock(mutexes[idx]);
+		kqueues[idx]->push(new_record);
+		pthread_mutex_unlock(mutexes[idx]);
+
+		func_indexes[idx] += 1;
+		block(idx,  mutexes, kqueues);
+
+	}
+	else {
+
+		if (cudnn_conv_bw_filter_func==NULL) {
+			*(void **)(&cudnn_conv_bw_filter_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardFilter");
+			assert(cudnn_conv_bw_filter_func != NULL);
+		}
+
+		status = (*cudnn_conv_bw_filter_func)(
+			handle,
+			alpha,
+			xDesc,
+			x,
+			dyDesc,
+			dy,
+			convDesc,
+			algo,
+			workSpace,
+			workSpaceSizeInBytes,
+			beta,
+			dwDesc,
+			dw
+		);
+
+		assert (status == CUDNN_STATUS_SUCCESS);
+
+	}
 
 	return status;
 }

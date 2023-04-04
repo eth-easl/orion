@@ -433,7 +433,7 @@ typedef struct cudnnBatchNormalizationBackwardEx_record {
 		bnOps = bnOps_arg;
 		alphaDataDiff = alphaDataDiff_arg;
 		betaDataDiff = betaDataDiff_arg;
-		alphaParamDiff = alphaDataDiff_arg;
+		alphaParamDiff = alphaParamDiff_arg;
 		betaParamDiff = betaParamDiff_arg;
 		xDesc = xDesc_arg;
 		xData = xData_arg;
@@ -443,7 +443,7 @@ typedef struct cudnnBatchNormalizationBackwardEx_record {
 		dyData = dyData_arg;
 		dzDesc = dzDesc_arg;
 		dzData = dzData_arg;
-		dxDesc = dzDesc_arg;
+		dxDesc = dxDesc_arg;
 		dxData = dxData_arg;
 		dBnScaleBiasDesc = dBnScaleBiasDesc_arg;
 		bnScaleData = bnScaleData_arg;
