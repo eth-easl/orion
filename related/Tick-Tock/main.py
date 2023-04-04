@@ -74,15 +74,14 @@ if __name__ == "__main__":
     logging.info(f'start training with {model0_name} and {model1_name} using {policy}')
     shared_config = config['shared_config']
 
-
-
+    experiment_data_json_file = f'process_{args.log}.json'
     if policy == 'MPS':
         sync_info = MPSSyncInfo(
-            process_log_file=f'process_{args.log}',
+            experiment_data_json_file=experiment_data_json_file,
             barrier=multiprocessing.Barrier(2)
         )
     else:
-        sync_info = SyncInfo(barrier=threading.Barrier(2))
+        sync_info = SyncInfo(experiment_data_json_file=experiment_data_json_file, barrier=threading.Barrier(2))
 
     model0_train_wrapper = model_to_train_wrapper[model0_name]
     model1_train_wrapper = model_to_train_wrapper[model1_name]
@@ -122,6 +121,12 @@ if __name__ == "__main__":
         duration0 = model0_train_wrapper(**model0_kwargs)
         duration1 = model1_train_wrapper(**model1_kwargs)
         logging.info(f'For temporal sharing, training two models takes {duration0 + duration1} seconds in total')
+        with open(experiment_data_json_file, 'w') as f:
+            json.dump({
+                'duration': duration0 + duration1,
+                'duration0': duration0,
+                'duration1': duration1
+            }, f, indent=4)
     # if shared_config['use_dummy_data'].enable_profiling:
     #     torch.cuda.cudart().cudaProfilerStop()
     end_time = time.time()

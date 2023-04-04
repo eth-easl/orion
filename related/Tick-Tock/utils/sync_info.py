@@ -3,11 +3,12 @@ import threading
 from threading import Event
 import torch
 import time
+import json
 
 class SyncInfo:
 
     def __init__(
-            self, barrier, no_sync_control: bool = False
+            self, barrier, experiment_data_json_file, no_sync_control: bool = False
     ) -> None:
         # thread events - for thread synchronization
         eventf0 = threading.Event()
@@ -35,19 +36,30 @@ class SyncInfo:
         self.event_cudab1 = event_cudab1
         self.barrier = barrier
         self.no_sync_control = no_sync_control
+        self.experiment_data_json_file = experiment_data_json_file
+        self.start_time = None
 
     def pre_measurement_prep(self, tid):
         if not self.no_sync_control:
             self.barrier.wait()
+        if tid == 0:
+            self.start_time = time.time()
 
     def post_measurement_prep(self, tid):
-        return
+        if self.no_sync_control:
+            return
+
+        self.barrier.wait()
+        if tid == 0:
+            duration = time.time() - self.start_time
+            with open(self.experiment_data_json_file, 'w') as f:
+                json.dump({'duration': duration}, f, indent=4)
 
 class MPSSyncInfo():
-    def __init__(self, process_log_file, barrier):
+    def __init__(self, experiment_data_json_file, barrier):
         # so that the tick-tock related code won't work
         self.no_sync_control = True
-        self.process_log_file = process_log_file
+        self.experiment_data_json_file = experiment_data_json_file
         self.barrier = barrier
         self.start_time = None
 
@@ -60,6 +72,6 @@ class MPSSyncInfo():
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
-            with open(self.process_log_file, 'w') as f:
-                f.write(f'it takes {duration} seconds to train both.\n')
+            with open(self.experiment_data_json_file, 'w') as f:
+                json.dump({'duration': duration}, f, indent=4)
 

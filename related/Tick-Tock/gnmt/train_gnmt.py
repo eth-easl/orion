@@ -151,8 +151,6 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
-
-    sync_info.no_sync_control = True
     torch.cuda.synchronize(device)
     sync_info.post_measurement_prep(tid)
     duration = time.time() - start_time
