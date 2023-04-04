@@ -13,7 +13,7 @@ shared_config:
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   print_every: 100
   enable_profiling: false
-  use_dummy_data: true
+  use_dummy_data: false
 
 # configuration for each model
 nasnet:

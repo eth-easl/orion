@@ -44,8 +44,8 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_names = ['retinanet']
-    model1_names = ['retinanet', 'vision', 'transformer', 'bert']
+    model0_names = ['transformer']
+    model1_names = ['vision']
 
     model_to_kwargs = {
         'transformer': {
@@ -70,8 +70,10 @@ if __name__ == "__main__":
 
     policies = ['tick-tock', 'temporal']
     skip_identical_models = False
+    use_dummy_data = False
     # ----configuration region ended----
 
+    default_full_config['use_dummy_data'] = use_dummy_data
     for model0 in model0_names:
         logging.info(f"model0 {model0}")
         default_full_config['model0'] = model0
@@ -89,14 +91,14 @@ if __name__ == "__main__":
                     # only generate config once
                     for model_config, name in generate_configs(model0_default_config, **model_to_kwargs[model0]):
                         default_full_config[model0] = model_config
-                        combination_name = f'{model0}-{model1}-{name}-{policy}'
+                        combination_name = f'{model0}-{model1}-{name}-{policy}-{use_dummy_data}'
                         run(default_full_config, combination_name)
                 else:
                     for model0_config, name0 in generate_configs(model0_default_config, **model_to_kwargs[model0]):
                         for model1_config, name1 in generate_configs(model1_default_config, **model_to_kwargs[model1]):
                             default_full_config[model0] = model0_config
                             default_full_config[model1] = model1_config
-                            combination_name = f'{model0}-{name0}-{model1}-{name1}-{policy}'
+                            combination_name = f'{model0}-{name0}-{model1}-{name1}-{policy}-{use_dummy_data}'
                             run(default_full_config, combination_name)
 
     notifier.notify(

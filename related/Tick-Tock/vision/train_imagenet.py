@@ -54,7 +54,9 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
             break
     sync_info.no_sync_control = True
     torch.cuda.synchronize(device)
-    logging.info(f'tid {tid} it takes {time.time() - start_time} seconds to train imagenet')
+    duration = time.time() - start_time
+    logging.info(f'tid {tid} it takes {duration} seconds to train imagenet')
+    return duration
 
 
 def setup(model_config, device):

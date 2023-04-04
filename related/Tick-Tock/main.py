@@ -132,8 +132,9 @@ if __name__ == "__main__":
 
     elif config['policy'] == "temporal":
         sync_info.no_sync_control = True
-        model0_train_wrapper(**model0_kwargs)
-        model1_train_wrapper(**model1_kwargs)
+        duration0 = model0_train_wrapper(**model0_kwargs)
+        duration1 = model1_train_wrapper(**model1_kwargs)
+        logging.info(f'For temporal sharing, training two models takes {duration0 + duration1} seconds in total')
     # if constants.enable_profiling:
     #     torch.cuda.cudart().cudaProfilerStop()
     end_time = time.time()
