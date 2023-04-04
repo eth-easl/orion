@@ -1,7 +1,7 @@
 ---
-policy: tick-tock # either "temporal" or "tick-tock"
-model0: retinanet # these two names should strictly correspond to the model names below
-model1: retinanet
+policy: MPS # "temporal", "tick-tock", or "MPS"
+model0: vision # these two names should strictly correspond to the model names below
+model1: vision
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -13,7 +13,7 @@ shared_config:
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   print_every: 100
   enable_profiling: false
-  use_dummy_data: false
+  use_dummy_data: true
 
 # configuration for each model
 nasnet:
@@ -24,7 +24,7 @@ nasnet:
 vision:
   arc: mobilenet_v2
   optimizer: SGD
-  batch_size: 128
+  batch_size: 32
   num_workers: 2
   num_iterations: 200
   warm_up_iters: 20

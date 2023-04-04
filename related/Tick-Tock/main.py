@@ -1,12 +1,13 @@
 import torch
 import threading
+import multiprocessing
 import logging
 import yaml
 import time
 import argparse
 import utils
-from utils.sync_info import SyncInfo
-import utils.constants as constants
+from utils.sync_info import *
+
 from utils import notifier
 from vision.train_imagenet import train_wrapper as vision_train_wrapper
 from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
@@ -15,7 +16,6 @@ from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper
 from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper
 from transformer.train_transformer import train_wrapper as transformer_train_wrapper
 from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
-
 
 model_to_train_wrapper = {
     'nasnet': nasnet_train_wrapper,
@@ -43,6 +43,7 @@ def readable_model_name(model_name, model_config):
 
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method('spawn')
     args = parser.parse_args()
     with open(args.config, 'r') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
@@ -71,57 +72,44 @@ if __name__ == "__main__":
 
 
     logging.info(f'start training with {model0_name} and {model1_name} using {policy}')
-    for key, value in config['shared_config'].items():
-        constants.__dict__[key] = value
+    shared_config = config['shared_config']
 
-    device = torch.device("cuda:0")
 
-    stream0 = torch.cuda.Stream(device=device)
-    stream1 = torch.cuda.Stream(device=device)
 
-    eventf0 = threading.Event()
-    eventb0 = threading.Event()
-
-    eventf1 = threading.Event()
-    eventb1 = threading.Event()
-
-    event_cudaf0 = torch.cuda.Event()
-    event_cudab0 = torch.cuda.Event()
-
-    event_cudaf1 = torch.cuda.Event()
-    event_cudab1 = torch.cuda.Event()
-
-    eventf1.set()  # t0 starts
-    eventb1.set()
-
-    num_epochs = config['num_epochs']
-    logging.info(f'number of epochs: {num_epochs}')
-    sync_info = SyncInfo(eventf0, eventb0, eventf1, eventb1,
-                         event_cudaf0, event_cudab0, event_cudaf1, event_cudab1,
-                         barrier=threading.Barrier(2))
+    if policy == 'MPS':
+        sync_info = MPSSyncInfo(
+            process_log_file=f'process_{args.log}',
+            barrier=multiprocessing.Barrier(2)
+        )
+    else:
+        sync_info = SyncInfo(barrier=threading.Barrier(2))
 
     model0_train_wrapper = model_to_train_wrapper[model0_name]
     model1_train_wrapper = model_to_train_wrapper[model1_name]
 
     model0_kwargs = {
-        'my_stream': stream0,
         'sync_info': sync_info,
         'tid': 0,
-        'num_epochs': num_epochs,
-        'device': device,
-        'model_config': model0_config
+        'model_config': model0_config,
+        'shared_config': shared_config
     }
     model1_kwargs = {
-        'my_stream': stream1,
         'sync_info': sync_info,
         'tid': 1,
-        'num_epochs': num_epochs,
-        'device': device,
-        'model_config': model1_config
+        'model_config': model1_config,
+        'shared_config': shared_config
     }
 
     start_time = time.time()
-    if policy == "tick-tock":
+    if policy == "MPS":
+        process0 = multiprocessing.Process(target=model0_train_wrapper, kwargs=model0_kwargs)
+        process1 = multiprocessing.Process(target=model1_train_wrapper, kwargs=model1_kwargs)
+        process0.start()
+        process1.start()
+
+        process0.join()
+        process1.join()
+    elif policy == "tick-tock":
         thread0 = threading.Thread(target=model0_train_wrapper, kwargs=model0_kwargs)
         thread1 = threading.Thread(target=model1_train_wrapper, kwargs=model1_kwargs)
         thread0.start()
@@ -129,13 +117,12 @@ if __name__ == "__main__":
 
         thread0.join()
         thread1.join()
-
     elif config['policy'] == "temporal":
         sync_info.no_sync_control = True
         duration0 = model0_train_wrapper(**model0_kwargs)
         duration1 = model1_train_wrapper(**model1_kwargs)
         logging.info(f'For temporal sharing, training two models takes {duration0 + duration1} seconds in total')
-    # if constants.enable_profiling:
+    # if shared_config['use_dummy_data'].enable_profiling:
     #     torch.cuda.cudart().cudaProfilerStop()
     end_time = time.time()
     logging.info(f'It takes {end_time - start_time} seconds in total.')
