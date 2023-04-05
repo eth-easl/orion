@@ -3,10 +3,8 @@ import time
 
 import torch.nn as nn
 import torch.optim
-from utils.sync_info import SyncInfo
 from utils.sync_control import *
-import utils.constants as constants
-
+import utils
 
 import gnmt.seq2seq.train.trainer as trainers
 import gnmt.seq2seq.data.config as config
@@ -14,6 +12,7 @@ from gnmt.seq2seq.data.dataset import LazyParallelDataset
 from gnmt.seq2seq.data.tokenizer import Tokenizer
 from gnmt.seq2seq.models.gnmt import GNMT
 from gnmt.seq2seq.train.smoothing import LabelSmoothing
+from gnmt.seq2seq.utils import setup_seeds
 
 
 def pad_vocabulary(math):
@@ -32,12 +31,15 @@ def build_criterion(padding_idx, smoothing):
     return criterion
 
 
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     # build tokenizer
-    args_vocab = os.path.join(constants.wmt16_en_de_root, 'vocab.bpe.32000')
-    args_bpe_codes = os.path.join(constants.wmt16_en_de_root, 'bpe.32000')
-    args_train_src = os.path.join(constants.wmt16_en_de_root, 'train.tok.clean.bpe.32000.en')
-    args_train_tgt = os.path.join(constants.wmt16_en_de_root, 'train.tok.clean.bpe.32000.de')
+    wmt16_en_de_root = shared_config['wmt16_en_de_root']
+    args_vocab = os.path.join(wmt16_en_de_root, 'vocab.bpe.32000')
+    args_bpe_codes = os.path.join(wmt16_en_de_root, 'bpe.32000')
+    args_train_src = os.path.join(wmt16_en_de_root, 'train.tok.clean.bpe.32000.en')
+    args_train_tgt = os.path.join(wmt16_en_de_root, 'train.tok.clean.bpe.32000.de')
     args_lang = {'src': 'en', 'tgt': 'de'}
 
     pad_vocab = pad_vocabulary(model_config['math'])
@@ -70,15 +72,16 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     opt_config = {'optimizer': 'Adam', 'lr': 2.00e-3}
     # get data loaders
     batching_opt = {'shard_size': 80, 'num_buckets': 5}
+    _, shuffling_seeds = setup_seeds(master_seed=None, epochs=1, device=device)
     train_loader = train_data.get_loader(batch_size=model_config['batch_size'],
-                                         seeds=int(time.time()),
+                                         seeds=shuffling_seeds,
                                          batch_first=batch_first,
                                          shuffle=True,
                                          batching='bucketing',
                                          batching_opt=batching_opt,
                                          num_workers=model_config['num_workers'])
 
-    total_train_iters = len(train_loader) // num_epochs
+    total_train_iters = len(train_loader)
 
     trainer_options = dict(
         model=model,
@@ -112,11 +115,46 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     torch.set_grad_enabled(True)
     trainer.model.train()
 
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for epoch in range(num_epochs):
-            train_loader.sampler.set_epoch(epoch)
-            for batch_idx, (src, tgt) in enumerate(train_loader):
-                trainer.model.zero_grad()
-                trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream, batch_idx=batch_idx)
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
 
+    if shared_config['use_dummy_data']:
+        logging.info('gnmt uses dummy data')
+        train_dataloader_iter = iter(train_loader)
+        src, tgt = next(train_dataloader_iter)
+        src_content, src_len = src
+        tgt_content, tgt_len = tgt
+        src_content = src_content.to(device)
+        tgt_content = tgt_content.to(device)
+        src_len = src_len.to(device)
+        tgt_len = tgt_len.to(device)
 
+        virtual_loader = utils.DummyDataLoader(batch=(
+            (src_content, src_len),
+            (tgt_content, tgt_len)
+        ))
+    else:
+        virtual_loader = train_loader
+    logging.info(f'gnmt is set up with {num_iterations}')
+    for batch_idx, (src, tgt) in enumerate(virtual_loader):
+        if batch_idx == warm_up_iters:
+            # finish previous work
+            torch.cuda.synchronize(device)
+            sync_info.pre_measurement_prep(tid)
+            # start timer
+            start_time = time.time()
+
+        trainer.model.zero_grad()
+        trainer.iterate(src, tgt, thread_id=tid, sync_info=sync_info, my_stream=my_stream,
+                        batch_idx=batch_idx)
+
+        if batch_idx == num_iterations - 1:
+            # reached the last iteration
+            break
+
+    sync_info.no_sync_control = True
+    torch.cuda.synchronize(device)
+    sync_info.post_measurement_prep(tid)
+    duration = time.time() - start_time
+    logging.info(f'tid {tid} it takes {duration} seconds to train gnmt')
+    return duration

@@ -157,26 +157,30 @@ class Seq2SeqTrainer:
             self.model = DistributedDataParallel(self.model)
 
     def iterate(self, src, tgt, thread_id: int, sync_info, my_stream, batch_idx):
+        src, src_length = src
+        tgt, tgt_length = tgt
+        src = src.to(self.device)
+        tgt = tgt.to(self.device)
+        src_length = src_length.to(self.device)
         with ForwardControl(thread_id=thread_id, sync_info=sync_info, batch_idx=batch_idx, stream=my_stream):
-            src, src_length = src
-            tgt, tgt_length = tgt
-            src = src.to(self.device)
-            tgt = tgt.to(self.device)
-            src_length = src_length.to(self.device)
-            if self.batch_first:
-                output = self.model(src, src_length, tgt[:, :-1])
-                tgt_labels = tgt[:, 1:]
-                T, B = output.size(1), output.size(0)
-            else:
+            with torch.cuda.stream(my_stream):
+                # if self.batch_first:
+                #     output = self.model(src, src_length, tgt[:, :-1])
+                #     tgt_labels = tgt[:, 1:]
+                #     T, B = output.size(1), output.size(0)
+                # else:
                 output = self.model(src, src_length, tgt[:-1])
                 tgt_labels = tgt[1:]
                 T, B = output.size(0), output.size(1)
 
         with BackwardControl(thread_id=thread_id, sync_info=sync_info, batch_idx=batch_idx, stream=my_stream):
-            loss = self.criterion(output.view(T * B, -1),
-                                  tgt_labels.contiguous().view(-1))
-            loss_per_batch = loss.item()
-            loss /= (B * self.iter_size)
-            # .step() includes zero_grad
-            self.fp_optimizer.step(loss, self.optimizer, self.scheduler, update=True)
+            with torch.cuda.stream(my_stream):
+                loss = self.criterion(output.view(T * B, -1),
+                                      tgt_labels.contiguous().view(-1))
+                loss_per_batch = loss.item()
+                loss /= (B * self.iter_size)
+                # .step() includes zero_grad
+                self.fp_optimizer.step(loss, self.optimizer, self.scheduler, update=True)
+
+        return loss_per_batch
 

@@ -1,3 +1,4 @@
+import logging
 import pickle
 import time
 
@@ -7,18 +8,18 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, TensorDataset
 import random
 import numpy as np
+
+import utils
 from bert.schedulers import LinearWarmUpScheduler
 from bert.optimization import BertAdam
 import bert.modeling as modeling
 from bert.squad_example import *
 from bert.tokenization import BertTokenizer
 import os
-import utils.constants as constants
-from utils.sync_info import SyncInfo
 from utils.sync_control import *
 
 
-from apex.multi_tensor_apply import multi_tensor_applier
+
 # TODO: uncomment to enable fp16
 # class GradientClipper:
 #     """
@@ -58,21 +59,22 @@ def setup_model(model_config):
     return model
 
 
-
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     seed = int(time.time())
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     squad_version = model_config['squad_version']
-    squad_file = constants.squad_version1 if squad_version == 1 else constants.squad_version2
+    squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
     train_examples = read_squad_examples(
         input_file=squad_file,
         is_training=True,
         version_2_with_negative=squad_version == 2
     )
     batch_size = model_config['batch_size']
-    num_train_optimization_steps = int(len(train_examples) / batch_size) * num_epochs
+    num_train_optimization_steps = int(len(train_examples) / batch_size)
     model = setup_model(model_config)
     model = model.to(device)
 
@@ -114,7 +116,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
         with open(cache_features_file, 'rb') as reader:
             train_features = pickle.load(reader)
     except:
-        print(f'no cache file detected as {cache_features_file}; building features from squad examples...')
+        logging.info(f'no cache file detected as {cache_features_file}; building features from squad examples...')
         train_features = convert_examples_to_features(
             examples=train_examples,
             tokenizer=tokenizer,
@@ -123,7 +125,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
             max_query_length=64,
             is_training=True
         )
-        print(f'saving features to {cache_features_file}')
+        logging.info(f'saving features to {cache_features_file}')
         with open(cache_features_file, 'wb') as writer:
             pickle.dump(train_features, writer)
 
@@ -135,43 +137,78 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
                                all_start_positions, all_end_positions)
     train_sampler = RandomSampler(train_data)
-    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size, num_workers=model_config['num_workers'])
+    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
+                                  num_workers=model_config['num_workers'])
     model.train()
+
     # TODO: this requires amp_C package which isn't avaiable for a pure python apex
     # gradClipper = GradientClipper(max_grad_norm=1.0)
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for _ in range(num_epochs):
-            for batch_idx, batch in enumerate(train_dataloader):
-                with ForwardControl(tid, batch_idx, sync_info, my_stream):
-                    batch = tuple(t.to(device) for t in batch)
-                    input_ids, input_mask, segment_ids, start_positions, end_positions = batch
-                    start_logits, end_logits = model(input_ids, segment_ids, input_mask)
-                    if len(start_positions.size()) > 1:
-                        start_positions = start_positions.squeeze(-1)
-                    if len(end_positions.size()) > 1:
-                        end_positions = end_positions.squeeze(-1)
-                    # sometimes the start/end positions are outside our model inputs, we ignore these terms
-                    ignored_index = start_logits.size(1)
-                    start_positions.clamp_(0, ignored_index)
-                    end_positions.clamp_(0, ignored_index)
 
-                with BackwardControl(tid, batch_idx, sync_info, my_stream):
-                    loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
-                    start_loss = loss_fct(start_logits, start_positions)
-                    end_loss = loss_fct(end_logits, end_positions)
-                    loss = (start_loss + end_loss) / 2
-                    if model_config['use_fp16']:
-                        with amp.scale_loss(loss, optimizer) as scaled_loss:
-                            scaled_loss.backward()
-                    else:
-                        loss.backward()
-                    # gradient clipping
-                    # TODO: uncomment to enable amp_C
-                    # gradClipper.step(amp.master_params(optimizer))
-                    if model_config['use_fp16']:
-                        # modify learning rate with special warm up for BERT which FusedAdam doesn't do
-                        scheduler.step()
-                    optimizer.step()
-                    optimizer.zero_grad()
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
+    if shared_config['use_dummy_data']:
+        # fetch a batch from real train_dataloader
+        train_dataloader_iter = iter(train_dataloader)
+        first_batch = next(train_dataloader_iter)
+        for t in first_batch:
+            logging.info(f'part of dummy data shape: {t.shape}')
+        first_batch = tuple(t.to(device) for t in first_batch)
 
+        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+    else:
+        virtual_loader = train_dataloader
 
+    logging.info(f'bert model is set up with {num_iterations}')
+    for batch_idx, batch in enumerate(virtual_loader):
+        if batch_idx == warm_up_iters:
+            # finish previous work
+            torch.cuda.synchronize(device)
+            sync_info.pre_measurement_prep(tid)
+            # start timer
+            start_time = time.time()
+
+        batch = tuple(t.to(device) for t in batch)
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                input_ids, input_mask, segment_ids, start_positions, end_positions = batch
+                start_logits, end_logits = model(input_ids, segment_ids, input_mask)
+                if len(start_positions.size()) > 1:
+                    start_positions = start_positions.squeeze(-1)
+                if len(end_positions.size()) > 1:
+                    end_positions = end_positions.squeeze(-1)
+                # sometimes the start/end positions are outside our model inputs, we ignore these terms
+                ignored_index = start_logits.size(1)
+                start_positions.clamp_(0, ignored_index)
+                end_positions.clamp_(0, ignored_index)
+
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
+                start_loss = loss_fct(start_logits, start_positions)
+                end_loss = loss_fct(end_logits, end_positions)
+                loss = (start_loss + end_loss) / 2
+                # TODO: comment to enable use_fp16
+                # if model_config['use_fp16']:
+                #     with amp.scale_loss(loss, optimizer) as scaled_loss:
+                #         scaled_loss.backward()
+                # else:
+                loss.backward()
+                # gradient clipping
+                # TODO: uncomment to enable amp_C
+                # gradClipper.step(amp.master_params(optimizer))
+                # if model_config['use_fp16']:
+                #     # modify learning rate with special warm up for BERT which FusedAdam doesn't do
+                #     scheduler.step()
+                optimizer.step()
+                optimizer.zero_grad()
+
+        if batch_idx == num_iterations - 1:
+            # reached the last iteration
+            break
+
+    sync_info.no_sync_control = True
+    torch.cuda.synchronize(device)
+    sync_info.post_measurement_prep(tid)
+    duration = time.time() - start_time
+    logging.info(f'tid {tid} it takes {duration} seconds to train bert')
+    return duration

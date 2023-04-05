@@ -2,6 +2,7 @@ import functools
 import warnings
 
 import yaml
+import utils
 from utils.sync_info import SyncInfo
 from utils.sync_control import *
 import numpy as np
@@ -13,7 +14,6 @@ import yaml
 import transformer.lamb as lamb
 from transformer.data_utils import *
 from transformer.mem_transformer import MemTransformerLM
-import utils.constants as constants
 import sys
 try:
     from apex import amp
@@ -80,7 +80,10 @@ def weights_init(m, model_consts):
         if hasattr(m, 'r_bias'):
             init_bias(m.r_bias)
 
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     # Before we do anything with models, we want to ensure that we get fp16
     # execution of torch.einsum in APEX AMP.
     # Otherwise it'll default to "promote" mode, and we'll get fp32 operations.
@@ -97,7 +100,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     np.random.seed(seed)
     torch.manual_seed(seed)
     batch_size = model_config['batch_size']
-    corpus = get_lm_corpus(datadir=constants.wikitext_103_dir, dataset='wt103', vocab=model_consts['vocab'])
+    corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
     ntokens = len(corpus.vocab)
 
     ext_len = 0
@@ -155,36 +158,70 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     model.train()
     train_iter = tr_iter.get_fixlen_iter()
+
     enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
     mem = None
     clip = 0.25
 
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for epoch in range(num_epochs):
-            for batch_idx, (data, target, seq_len, _) in enumerate(train_iter):
-                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream),\
-                        torch.cuda.amp.autocast(enable_autocast):
-                    loss, mem = model(data, target, mem)
-                    loss = loss.float().mean().type_as(loss)
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
+    if shared_config['use_dummy_data']:
+        first_batch = next(train_iter)
+        for t in first_batch:
+            if torch.is_tensor(t):
+                logging.info(f'part of dummy data shape: {t.shape}')
+        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+    else:
+        virtual_loader = train_iter
 
-                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-                    if model_config['use_fp16']:
-                        if model_config['amp'] == 'pytorch':
-                            scaler.scale(loss).backward()
-                            scaler.unscale_(optimizer)
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
-                        elif model_config['amp'] == 'apex':
-                            with amp.scale_loss(loss, optimizer, delay_unscale=False) as scaled_loss:
-                                scaled_loss.backward()
-                            torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), clip)
-                    else:
-                        loss.backward()
-                        torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+    logging.info(f'transformer is set up with {num_iterations}')
 
-                    if model_config['use_fp16'] and model_config['amp'] == 'pytorch':
-                        scaler.step(optimizer)
-                        scaler.update()
-                    else:
-                        optimizer.step()
-                    model.zero_grad()
+    for batch_idx, (data, target, seq_len, _) in enumerate(virtual_loader):
+        if batch_idx == warm_up_iters:
+            # finish previous work
+            torch.cuda.synchronize(device)
+            sync_info.pre_measurement_prep(tid)
+            # start timer
+            start_time = time.time()
+
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                # with torch.cuda.amp.autocast(enable_autocast):
+                loss, mem = model(data, target, mem)
+                loss = loss.float().mean().type_as(loss)
+
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                # if model_config['use_fp16']:
+                #     if model_config['amp'] == 'pytorch':
+                #         scaler.scale(loss).backward()
+                #         scaler.unscale_(optimizer)
+                #         torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                #     elif model_config['amp'] == 'apex':
+                #         with amp.scale_loss(loss, optimizer, delay_unscale=False) as scaled_loss:
+                #             scaled_loss.backward()
+                #         torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), clip)
+                # else:
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+
+                # if model_config['use_fp16'] and model_config['amp'] == 'pytorch':
+                #     scaler.step(optimizer)
+                #     scaler.update()
+                # else:
+                optimizer.step()
+                model.zero_grad()
+
+        if batch_idx == num_iterations - 1:
+            # reached the last iteration
+            break
+
+    sync_info.no_sync_control = True
+    torch.cuda.synchronize(device)
+    sync_info.post_measurement_prep(tid)
+    duration = time.time() - start_time
+    logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
+    return duration
+
+
 

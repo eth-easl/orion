@@ -1,16 +1,19 @@
 ---
-policy: temporal # either "temporal" or "tick-tock"
-model0: transformer # these two names should strictly correspond to the model names below
+policy: MPS # "temporal", "tick-tock", or "MPS"
+model0: vision # these two names should strictly correspond to the model names below
 model1: vision
-num_epochs: 5
-data_dir:
-  imagenet_root: '/cluster/scratch/xianma/vision/train'
+num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
+shared_config:
+  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
   cifar10_root: '/cluster/scratch/xianma/cifar10'
-  squad_version1: '/cluster/scratch/xianma/bert/download/squad/v1.1/train-v1.1.json'
-  squad_version2: '/cluster/scratch/xianma/bert/download/squad/v2.0/train-v2.0.json'
-  wmt16_en_de_root: '/cluster/scratch/xianma/wmt16'
-  coco_root: '/cluster/scratch/xianma/retinanet'
-  wikitext_103_dir: '/cluster/scratch/xianma/transformer/wikitext-103'
+  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
+  squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
+  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
+  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
+  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
+  print_every: 100
+  enable_profiling: false
+  use_dummy_data: true
 
 # configuration for each model
 nasnet:
@@ -23,6 +26,8 @@ vision:
   optimizer: SGD
   batch_size: 32
   num_workers: 2
+  num_iterations: 200
+  warm_up_iters: 20
 dcgan:
   num_gen_filters: 64
   num_dis_filters: 64
@@ -33,26 +38,34 @@ dcgan:
   dataset: imagenet # can be imagenet, cifar10, or mnist
   num_workers: 2
 gnmt:
-  math: fp16 # precision
+  math: fp32 # precision
   batch_size: 128
   num_workers: 2
+  num_iterations: 200
+  warm_up_iters: 20
 bert:
-  use_fp16: false # true or false
+  use_fp16: false # true or false; please stick to false or revise code otherwise
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
-  squad_version: 1 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 32
+  squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
+  batch_size: 16
   num_workers: 2
   arch: base # either base or large
-  large_model_dir: '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
-  base_model_dir: '/cluster/scratch/xianma/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+  num_iterations: 200
+  warm_up_iters: 20
+  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
 transformer:
   arch: base # either base or large
   use_fp16: false
   amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
   apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
-  batch_size: 8
+  batch_size: 16
+  num_iterations: 200
+  warm_up_iters: 20
 retinanet:
   dataset_name: coco # coco, openimages, or openimages-mlperf
   use_amp: false
   num_workers: 2
   batch_size: 8
+  num_iterations: 200
+  warm_up_iters: 20

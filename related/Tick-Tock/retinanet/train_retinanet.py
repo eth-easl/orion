@@ -8,7 +8,7 @@ from utils.sync_control import *
 from retinanet.model.retinanet import retinanet_from_backbone
 from retinanet.coco_utils import get_openimages, get_coco
 import utils.constants as constants
-
+import utils
 
 def get_dataset_fn(name):
     paths = {
@@ -31,7 +31,6 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
     seed = int(time.time())
     torch.manual_seed(seed)
     np.random.seed(seed=seed)
-    print("Getting dataset information")
 
     dataset_fn, num_classes, data_path = get_dataset_fn(name=model_config['dataset_name'])
     data_layout = "channels_last"
@@ -64,19 +63,49 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     model.train()
 
-    with TrainingControl(sync_info=sync_info, device=device), torch.cuda.stream(my_stream):
-        for epoch in range(num_epochs):
-            for batch_idx, (images, targets) in enumerate(data_loader):
-                with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-                    images = list(image.to(device) for image in images)
-                    targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
+    if constants.use_dummy_data:
+        train_dataloader_iter = iter(data_loader)
+        images, targets = next(train_dataloader_iter)
+        images = list(image.to(device) for image in images)
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        virtual_loader = utils.DummyDataLoader(batch=(images, targets))
+    else:
+        virtual_loader = data_loader
 
-                    with torch.cuda.amp.autocast(enabled=model_config['use_amp']):
-                        loss_dict = model(images, targets)
-                        losses = sum(loss for loss in loss_dict.values())
+    logging.info(f'retinat is set up with {num_iterations}')
 
-                with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-                    scaler.scale(losses).backward()
-                    scaler.step(optimizer)
-                    scaler.update()
-                    optimizer.zero_grad()
+    for batch_idx, (images, targets) in enumerate(virtual_loader):
+        if batch_idx == warm_up_iters:
+            # finish previous work
+            torch.cuda.synchronize(device)
+            if not sync_info.no_sync_control:
+                sync_info.barrier.wait()
+            # start timer
+            start_time = time.time()
+
+        images = list(image.to(device) for image in images)
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                loss_dict = model(images, targets)
+                losses = sum(loss for loss in loss_dict.values())
+
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+            with torch.cuda.stream(my_stream):
+                scaler.scale(losses).backward()
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
+
+        if batch_idx == num_iterations - 1:
+            # reached the last iteration
+            break
+
+    sync_info.no_sync_control = True
+    torch.cuda.synchronize(device)
+
+    duration = time.time() - start_time
+    logging.info(f'tid {tid} it takes {duration} seconds to train retinanet')
+    return duration
