@@ -28,6 +28,13 @@ vision:
   num_workers: 2
   num_iterations: 200
   warm_up_iters: 20
+vision1:
+  arc: mobilenet_v2
+  optimizer: SGD
+  batch_size: 32
+  num_workers: 2
+  num_iterations: 200
+  warm_up_iters: 20
 dcgan:
   num_gen_filters: 64
   num_dis_filters: 64

@@ -49,6 +49,10 @@ if __name__ == "__main__":
         config = yaml.load(file, Loader=yaml.FullLoader)
     model0_name = config['model0']
     model1_name = config['model1']
+    if model0_name == 'vision1':
+        model0_name = 'vision'
+    if model1_name == 'vision1':
+        model1_name = 'vision'
     model0_config = config[model0_name]
     model1_config = config[model1_name]
     readable_model0_name = readable_model_name(model0_name, model0_config)
@@ -74,14 +78,17 @@ if __name__ == "__main__":
     logging.info(f'start training with {model0_name} and {model1_name} using {policy}')
     shared_config = config['shared_config']
 
-    experiment_data_json_file = f'process_{args.log}.json'
+    experiment_data_json_file = f'{args.log}.json'
     if policy == 'MPS':
         sync_info = MPSSyncInfo(
             experiment_data_json_file=experiment_data_json_file,
             barrier=multiprocessing.Barrier(2)
         )
     else:
-        sync_info = SyncInfo(experiment_data_json_file=experiment_data_json_file, barrier=threading.Barrier(2))
+        sync_info = SyncInfo(
+            experiment_data_json_file=experiment_data_json_file,
+            barrier=threading.Barrier(2)
+        )
 
     model0_train_wrapper = model_to_train_wrapper[model0_name]
     model1_train_wrapper = model_to_train_wrapper[model1_name]
