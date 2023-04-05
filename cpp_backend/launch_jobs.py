@@ -73,7 +73,10 @@ def launch_jobs(config_dict_list, profile):
 
     model_names = [config_dict['arch'] for config_dict in config_dict_list]
     model_files = [config_dict['kernel_file'] for config_dict in config_dict_list]
+
+    additional_model_files = [config_dict['additional_kernel_file'] if 'additional_kernel_file' in config_dict else None for config_dict in config_dict_list]
     num_kernels = [config_dict['num_kernels'] for config_dict in config_dict_list]
+    additional_num_kernels = [config_dict['additional_num_kernels'] if 'additional_num_kernels' in config_dict else None  for config_dict in config_dict_list]
     tids = []
     threads = []
     for i, config_dict in enumerate(config_dict_list):
@@ -90,7 +93,7 @@ def launch_jobs(config_dict_list, profile):
 
     sched_thread = threading.Thread(
         target=py_scheduler.run_scheduler,
-        args=(barriers, tids, model_names, model_files, num_kernels, 10, profile)
+        args=(barriers, tids, model_names, model_files, additional_model_files, num_kernels, additional_num_kernels, 30, profile)
     )
 
     sched_thread.start()

@@ -550,7 +550,8 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
+	if (idx < 2)
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
 	if (idx < 2) {

@@ -2,11 +2,13 @@
 
 	{
 		"arch": "resnet50",
-		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_64_fwd",
-		"num_kernels": 205,
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/resnet50_32_bwd_new",
+		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/resnet50_32_bwd",
+		"num_kernels": 624,
+		"additional_num_kernels": 785,
 		"args": {
-			"model_name": "mobilenet_v2",
-			"batchsize": 64,
+			"model_name": "resnet50",
+			"batchsize": 32,
 			"train": true
 		}
 	}

@@ -14,7 +14,18 @@ class PyScheduler:
         self._sched_lib = sched_lib
         self._num_clients = num_clients
 
-    def run_scheduler(self, barriers, tids, model_names, kernel_files, num_kernels, iters, profile):
+    def run_scheduler(
+        self,
+        barriers,
+        tids,
+        model_names,
+        kernel_files,
+        additional_kernel_files,
+        num_kernels,
+        additional_num_kernels,
+        iters,
+        profile
+    ):
 
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
         lib_names = [x.encode('utf-8') for x in kernel_files]
@@ -45,9 +56,18 @@ class PyScheduler:
 
         for i in range(iters):
 
+            print(f"Start {i} iteration")
             if profile:
                 barriers[0].wait()
+                # needed for backward
+                if (i==1):
+                    for j in range(num_clients):
+                        if (additional_kernel_files[j] is not None):
+                            new_kernel_file = additional_kernel_files[0].encode('utf-8')
+                            self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
+
                 start = time.time()
+                print("call schedule")
                 self._sched_lib.schedule(self._scheduler, num_clients, True, i)
                 torch.cuda.synchronize()
 
@@ -63,5 +83,5 @@ class PyScheduler:
             print(f"Iteration {i} took {total_time} sec")
             timings.append(total_time)
         torch.cuda.profiler.cudart().cudaProfilerStop()
-        timings = timings[2:]
-        print(f"Avg is {np.median(np.asarray(timings))} sec")
+        timings = timings[3:]
+        print(f"Avg is {np.median(np.asarray(timings))}, Min is {min(timings)} sec")

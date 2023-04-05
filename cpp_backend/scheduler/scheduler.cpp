@@ -155,6 +155,8 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 
 void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 
+	printf("here!\n");
+
 	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
 	int start0 = 0;
 	int start1 = 0;
@@ -375,6 +377,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			}
 
 		}
+		printf("All clients finished!\n");
 		for (int i=0; i<num_clients; i++) {
 			seen[i] = 0;
 			streams[i] = -1;
@@ -387,6 +390,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 		inf_finished = false;
 		started = false;
 		status = -1;
+
 		//create_events(events, num_clients+1);
 		//printf("RESTART!\n");
 	}
@@ -437,6 +441,16 @@ extern "C" {
 
 	}
 
+	void setup_change(Scheduler* scheduler, int client_id, char* file, int num_kernels) {
+
+		// needed for backward
+		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
+		(*func_names_all[client_id]).clear();
+		op_info_vector[client_id].clear();
+		populate_kernel_info(func_names_all[client_id], file, op_info_vector[client_id]);
+		num_client_kernels[client_id] = num_kernels;
+
+	}
 
 	void setup(Scheduler* scheduler, int num_clients, int* tids, char** models, char** files, int* num_kernels) {
 
