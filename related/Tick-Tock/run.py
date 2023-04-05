@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     # ----configuration region started----
     model0_names = ['vision']
-    model1_names = ['vision1']
+    model1_names = ['vision']
 
     model_to_kwargs = {
         'transformer': {
@@ -54,11 +54,11 @@ if __name__ == "__main__":
         },
         'vision': {
             'batch_size': [32, 64],
-            'arc': ['mobilenet_v2'],
+            'arc': ['resnet50', 'mobilenet_v2'],
         },
         'vision1': {
             'batch_size': [32, 64],
-            'arc': ['resnet50'],
+            'arc': ['resnet50', 'mobilenet_v2'],
         },
         'bert': {
             'batch_size': [8, 16],
@@ -72,8 +72,9 @@ if __name__ == "__main__":
         }
     }
 
-    policies = ['tick-tock', 'temporal']
+    policies = ['MPS-process']
     skip_identical_models = False
+    skip_heterogeneous_models = True
     use_dummy_data = True
     # ----configuration region ended----
 
@@ -98,6 +99,8 @@ if __name__ == "__main__":
                         combination_name = f'{model0}-{model1}-{name}-{policy}-dummy-{use_dummy_data}'
                         run(default_full_config, combination_name)
                 else:
+                    if skip_heterogeneous_models:
+                        continue
                     for model0_config, name0 in generate_configs(model0_default_config, **model_to_kwargs[model0]):
                         for model1_config, name1 in generate_configs(model1_default_config, **model_to_kwargs[model1]):
                             default_full_config[model0] = model0_config

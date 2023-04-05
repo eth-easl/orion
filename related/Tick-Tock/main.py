@@ -79,7 +79,7 @@ if __name__ == "__main__":
     shared_config = config['shared_config']
 
     experiment_data_json_file = f'{args.log}.json'
-    if policy == 'MPS':
+    if policy == 'MPS-process':
         sync_info = MPSSyncInfo(
             experiment_data_json_file=experiment_data_json_file,
             barrier=multiprocessing.Barrier(2)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     }
 
     start_time = time.time()
-    if policy == "MPS":
+    if policy == "MPS-process":
         process0 = multiprocessing.Process(target=model0_train_wrapper, kwargs=model0_kwargs)
         process1 = multiprocessing.Process(target=model1_train_wrapper, kwargs=model1_kwargs)
         process0.start()

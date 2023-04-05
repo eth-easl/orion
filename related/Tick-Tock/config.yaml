@@ -1,5 +1,5 @@
 ---
-policy: MPS # "temporal", "tick-tock", or "MPS"
+policy: MPS-process # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
 model0: vision # these two names should strictly correspond to the model names below
 model1: vision
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
