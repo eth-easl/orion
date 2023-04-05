@@ -2,17 +2,15 @@ import torch
 import torch.utils.data
 import numpy as np
 import retinanet.presets as presets
-from utils.sync_info import SyncInfo
 import time
 from utils.sync_control import *
 from retinanet.model.retinanet import retinanet_from_backbone
 from retinanet.coco_utils import get_openimages, get_coco
-import utils.constants as constants
 import utils
 
-def get_dataset_fn(name):
+def get_dataset_fn(name, shared_config):
     paths = {
-        "coco": (get_coco, 91, constants.coco_root),
+        "coco": (get_coco, 91, shared_config['coco_root']),
         "openimages": (get_openimages, 601, None),  # Full openimages dataset
         "openimages-mlperf": (get_openimages, None),  # L0 classes with more than 1000 samples
     }
@@ -27,12 +25,14 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, device, model_config):
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
     seed = int(time.time())
     torch.manual_seed(seed)
     np.random.seed(seed=seed)
 
-    dataset_fn, num_classes, data_path = get_dataset_fn(name=model_config['dataset_name'])
+    dataset_fn, num_classes, data_path = get_dataset_fn(model_config['dataset_name'], shared_config)
     data_layout = "channels_last"
     batch_size = model_config['batch_size']
     model = retinanet_from_backbone(backbone='resnext50_32x4d',
@@ -65,7 +65,7 @@ def train_wrapper(my_stream, sync_info: SyncInfo, tid: int, num_epochs: int, dev
 
     num_iterations = model_config['num_iterations']
     warm_up_iters = model_config['warm_up_iters']
-    if constants.use_dummy_data:
+    if shared_config['use_dummy_data']:
         train_dataloader_iter = iter(data_loader)
         images, targets = next(train_dataloader_iter)
         images = list(image.to(device) for image in images)
