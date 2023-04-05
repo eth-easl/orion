@@ -82,13 +82,21 @@ if __name__ == "__main__":
     if policy == 'MPS-process':
         sync_info = MPSSyncInfo(
             experiment_data_json_file=experiment_data_json_file,
-            barrier=multiprocessing.Barrier(2)
+            isolation_level='process'
         )
-    else:
-        sync_info = SyncInfo(
+    elif policy == 'tick-tock':
+        sync_info = TickTockSyncInfo(
+            experiment_data_json_file=experiment_data_json_file
+        )
+    elif policy == 'MPS-thread':
+        sync_info = MPSSyncInfo(
             experiment_data_json_file=experiment_data_json_file,
-            barrier=threading.Barrier(2)
+            isolation_level='thread'
         )
+    elif policy == 'temporal':
+        sync_info = BasicSyncInfo(no_sync_control=True)
+    else:
+        raise NotImplementedError(f"unsupported policy {policy}")
 
     model0_train_wrapper = model_to_train_wrapper[model0_name]
     model1_train_wrapper = model_to_train_wrapper[model1_name]
@@ -115,6 +123,14 @@ if __name__ == "__main__":
 
         process0.join()
         process1.join()
+    elif policy == "MPS-thread":
+        thread0 = threading.Thread(target=model0_train_wrapper, kwargs=model0_kwargs)
+        thread1 = threading.Thread(target=model1_train_wrapper, kwargs=model1_kwargs)
+        thread0.start()
+        thread1.start()
+
+        thread0.join()
+        thread1.join()
     elif policy == "tick-tock":
         thread0 = threading.Thread(target=model0_train_wrapper, kwargs=model0_kwargs)
         thread1 = threading.Thread(target=model1_train_wrapper, kwargs=model1_kwargs)
@@ -134,6 +150,8 @@ if __name__ == "__main__":
                 'duration0': duration0,
                 'duration1': duration1
             }, f, indent=4)
+    else:
+        raise NotImplementedError(f'unsupported policy {policy}')
     # if shared_config['use_dummy_data'].enable_profiling:
     #     torch.cuda.cudart().cudaProfilerStop()
     end_time = time.time()

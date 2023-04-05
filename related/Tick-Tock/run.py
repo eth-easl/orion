@@ -44,13 +44,13 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_names = ['vision']
-    model1_names = ['vision']
+    model0_names = ['vision', 'bert', 'transformer', 'gnmt']
+    model1_names = ['vision', 'bert', 'transformer', 'gnmt']
 
     model_to_kwargs = {
         'transformer': {
             'arch': ['base'],
-            'batch_size': [8, 16]
+            'batch_size': [8]
         },
         'vision': {
             'batch_size': [32, 64],
@@ -61,18 +61,18 @@ if __name__ == "__main__":
             'arc': ['resnet50', 'mobilenet_v2'],
         },
         'bert': {
-            'batch_size': [8, 16],
+            'batch_size': [8],
             'arch': ['base']
         },
         'retinanet': {
             'batch_size': [2, 4]
         },
         'gnmt': {
-            'batch_size': [64, 32]
+            'batch_size': [32, 64]
         }
     }
 
-    policies = ['MPS-process']
+    policies = ['MPS-thread']
     skip_identical_models = False
     skip_heterogeneous_models = True
     use_dummy_data = True

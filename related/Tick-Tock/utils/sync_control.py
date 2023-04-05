@@ -1,6 +1,6 @@
 import logging
 
-from utils.sync_info import SyncInfo
+from utils.sync_info import TickTockSyncInfo
 import torch
 import logging
 
@@ -10,7 +10,7 @@ import logging
 
 class ForwardControl:
 
-    def __init__(self, thread_id: int, batch_idx: int, sync_info: SyncInfo, stream: torch.cuda.Stream) -> None:
+    def __init__(self, thread_id: int, batch_idx: int, sync_info: TickTockSyncInfo, stream: torch.cuda.Stream) -> None:
         # we assume thread 0 starts first
         if thread_id not in {0, 1}:
             raise ValueError("thread_id can be either zero or one")
@@ -50,7 +50,7 @@ class ForwardControl:
 
 class BackwardControl:
 
-    def __init__(self, thread_id: int, batch_idx: int, sync_info: SyncInfo, stream: torch.cuda.Stream) -> None:
+    def __init__(self, thread_id: int, batch_idx: int, sync_info: TickTockSyncInfo, stream: torch.cuda.Stream) -> None:
         # we assume thread 0 starts first
         if thread_id not in {0, 1}:
             raise ValueError("thread_id can be either zero or one")
@@ -89,7 +89,7 @@ class BackwardControl:
 
 
 class TrainingControl:
-    def __init__(self, sync_info: SyncInfo, device):
+    def __init__(self, sync_info: TickTockSyncInfo, device):
         self.sync_info = sync_info
         self.device = device
 

@@ -3,7 +3,6 @@ import warnings
 
 import yaml
 import utils
-from utils.sync_info import SyncInfo
 from utils.sync_control import *
 import numpy as np
 import torch
