@@ -475,6 +475,8 @@ extern "C" {
 		for (int i=0; i<num_clients; i++)
 			thread_ids_all[i] = tids[i];
 		thread_ids_all[2] = mytid; // TODO: make this configurable
+		thread_ids_all[3] = 0;
+		thread_ids_all[4] = 0;
 
 		DEBUG_PRINT("Scheduler setup the thread ids to be %d, %d, %d\n", thread_ids_all[0], thread_ids_all[1], thread_ids_all[2]);
 
