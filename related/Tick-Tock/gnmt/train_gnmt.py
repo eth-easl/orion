@@ -73,7 +73,8 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     # get data loaders
     batching_opt = {'shard_size': 80, 'num_buckets': 5}
     _, shuffling_seeds = setup_seeds(master_seed=None, epochs=1, device=device)
-    train_loader = train_data.get_loader(batch_size=model_config['batch_size'],
+    batch_size = model_config['batch_size']
+    train_loader = train_data.get_loader(batch_size=batch_size,
                                          seeds=shuffling_seeds,
                                          batch_first=batch_first,
                                          shuffle=True,
@@ -120,10 +121,20 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
 
     if shared_config['use_dummy_data']:
         logging.info('gnmt uses dummy data')
-        train_dataloader_iter = iter(train_loader)
-        src, tgt = next(train_dataloader_iter)
-        src_content, src_len = src
-        tgt_content, tgt_len = tgt
+        try:
+            datum = torch.load(model_config['dummy_datum_path'])
+            src_single_content, src_single_len, tgt_single_content, tgt_single_len = datum
+            src_content = torch.stack([src_single_content for _ in range(batch_size)], dim=1)
+            tgt_content = torch.stack([tgt_single_content for _ in range(batch_size)], dim=1)
+            src_len = torch.full((batch_size,), src_single_len)
+            tgt_len = torch.full((batch_size,), tgt_single_len)
+        except:
+            logging.info("Can't load dummy_datum_path; build dummy data on the fly")
+            train_dataloader_iter = iter(train_loader)
+            src, tgt = next(train_dataloader_iter)
+            src_content, src_len = src
+            tgt_content, tgt_len = tgt
+
         src_content = src_content.to(device)
         tgt_content = tgt_content.to(device)
         src_len = src_len.to(device)
