@@ -1,7 +1,11 @@
 ---
 policy: MPS-process # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
-model0: vision # these two names should strictly correspond to the model names below
-model1: vision
+model0:
+  mode: eval # train or eval
+  name: vision # these two names should strictly correspond to the model names below
+model1:
+  mode: train # train or eval
+  name: vision
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -14,6 +18,13 @@ shared_config:
   print_every: 100
   enable_profiling: false
   use_dummy_data: true
+  num_requests: 200
+  num_warm_up_reqs: 20
+  mean_arrival_time: 0.1 # measured in seconds
+  percentile_positions:
+    - 90
+    - 95
+    - 99
 
 # configuration for each model
 nasnet:

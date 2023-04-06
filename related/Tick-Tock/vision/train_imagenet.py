@@ -5,9 +5,26 @@ import logging
 import utils
 from utils.sync_info import BasicSyncInfo
 import time
+
 from utils.sync_control import *
 
 
+def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
+    model.eval()
+
+    num_requests = shared_config['num_requests']
+    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+
+    batch_size = model_config['batch_size']
+
+    def eval():
+        input_data = torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device)
+        model(input_data)
+
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
