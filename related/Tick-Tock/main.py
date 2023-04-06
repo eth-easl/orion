@@ -7,7 +7,7 @@ import time
 import argparse
 import utils
 from utils.sync_info import *
-
+from utils.data_writer import DataWriter
 from utils import notifier
 from vision.train_imagenet import train_wrapper as vision_train_wrapper
 from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
@@ -78,23 +78,24 @@ if __name__ == "__main__":
     logging.info(f'start training with {model0_name} and {model1_name} using {policy}')
     shared_config = config['shared_config']
 
-    experiment_data_json_file = f'{args.log}.json'
+    data_writer = DataWriter(f'{args.log}.json')
+
     if policy == 'MPS-process':
         sync_info = MPSSyncInfo(
-            experiment_data_json_file=experiment_data_json_file,
+            data_writer=data_writer,
             isolation_level='process'
         )
     elif policy == 'tick-tock':
         sync_info = TickTockSyncInfo(
-            experiment_data_json_file=experiment_data_json_file
+            data_writer=data_writer
         )
     elif policy == 'MPS-thread':
         sync_info = MPSSyncInfo(
-            experiment_data_json_file=experiment_data_json_file,
+            data_writer=data_writer,
             isolation_level='thread'
         )
     elif policy == 'temporal':
-        sync_info = BasicSyncInfo(no_sync_control=True)
+        sync_info = BasicSyncInfo(data_writer, no_sync_control=True)
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
@@ -140,16 +141,10 @@ if __name__ == "__main__":
         thread0.join()
         thread1.join()
     elif config['policy'] == "temporal":
-        sync_info.no_sync_control = True
         duration0 = model0_train_wrapper(**model0_kwargs)
         duration1 = model1_train_wrapper(**model1_kwargs)
         logging.info(f'For temporal sharing, training two models takes {duration0 + duration1} seconds in total')
-        with open(experiment_data_json_file, 'w') as f:
-            json.dump({
-                'duration': duration0 + duration1,
-                'duration0': duration0,
-                'duration1': duration1
-            }, f, indent=4)
+        data_writer.write_kv('duration', duration0+duration1)
     else:
         raise NotImplementedError(f'unsupported policy {policy}')
     # if shared_config['use_dummy_data'].enable_profiling:

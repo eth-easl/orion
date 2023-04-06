@@ -1,14 +1,13 @@
-import os
 import threading
 import torch
 import multiprocessing
 import time
-import json
-
+from utils.data_writer import DataWriter
 
 class BasicSyncInfo:
-    def __init__(self, no_sync_control: bool):
+    def __init__(self, data_writer: DataWriter, no_sync_control: bool):
         self.no_sync_control = no_sync_control
+        self.data_writer = data_writer
 
     def pre_measurement_prep(self, tid):
         return
@@ -16,13 +15,16 @@ class BasicSyncInfo:
     def post_measurement_prep(self, tid):
         return
 
+    def write_kv(self, key, value):
+        self.data_writer.write_kv(key, value)
+
 
 class TickTockSyncInfo(BasicSyncInfo):
 
-    def __init__(self, experiment_data_json_file) -> None:
-        super().__init__(no_sync_control=False)
+    def __init__(self, data_writer: DataWriter) -> None:
+        super().__init__(data_writer, no_sync_control=False)
         self.barrier = threading.Barrier(2)
-
+        self.lock = threading.Lock()
         # thread events - for thread synchronization
         eventf0 = threading.Event()
         eventb0 = threading.Event()
@@ -47,7 +49,6 @@ class TickTockSyncInfo(BasicSyncInfo):
         self.event_cudab0 = event_cudab0
         self.event_cudaf1 = event_cudaf1
         self.event_cudab1 = event_cudab1
-        self.experiment_data_json_file = experiment_data_json_file
         self.start_time = None
 
     def pre_measurement_prep(self, tid):
@@ -60,19 +61,22 @@ class TickTockSyncInfo(BasicSyncInfo):
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
-            with open(self.experiment_data_json_file, 'w') as f:
-                json.dump({'duration': duration}, f, indent=4)
+            self.write_kv('duration', duration)
 
+    def write_kv(self, key, value):
+        with self.lock:
+            super().write_kv(key, value)
 
 class MPSSyncInfo(BasicSyncInfo):
-    def __init__(self, experiment_data_json_file, isolation_level):
-        super().__init__(no_sync_control=True)
+    def __init__(self, data_writer: DataWriter, isolation_level):
+        super().__init__(data_writer, no_sync_control=True)
         assert isolation_level in ['thread', 'process']
-        self.experiment_data_json_file = experiment_data_json_file
         if isolation_level == 'thread':
             self.barrier = threading.Barrier(2)
+            self.lock = threading.Lock()
         else:
             self.barrier = multiprocessing.Barrier(2)
+            self.lock = multiprocessing.Lock()
         self.start_time = None
 
     def pre_measurement_prep(self, tid):
@@ -84,8 +88,11 @@ class MPSSyncInfo(BasicSyncInfo):
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
-            with open(self.experiment_data_json_file, 'w') as f:
-                json.dump({'duration': duration}, f, indent=4)
+            self.write_kv("duration", duration)
+
+    def write_kv(self, key, value):
+        with self.lock:
+            super().write_kv(key, value)
 
 
 
