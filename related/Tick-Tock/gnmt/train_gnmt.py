@@ -150,7 +150,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     for batch_idx, (src, tgt) in enumerate(virtual_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            torch.cuda.synchronize(device)
+            my_stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
@@ -162,8 +162,9 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
-    torch.cuda.synchronize(device)
-    sync_info.post_measurement_prep(tid)
+    my_stream.synchronize()
     duration = time.time() - start_time
+    sync_info.post_measurement_prep(tid)
+    sync_info.write_kv(f'duration{tid}', duration)
     logging.info(f'tid {tid} it takes {duration} seconds to train gnmt')
     return duration

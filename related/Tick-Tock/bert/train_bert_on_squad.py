@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, TensorDataset
 import random
 import numpy as np
-
+from utils.sync_info import BasicSyncInfo
 import utils
 from bert.schedulers import LinearWarmUpScheduler
 from bert.optimization import BertAdam
@@ -59,7 +59,7 @@ def setup_model(model_config):
     return model
 
 
-def train_wrapper(sync_info, tid: int, model_config, shared_config):
+def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
     my_stream = torch.cuda.Stream(device=device)
     seed = int(time.time())
@@ -162,7 +162,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     for batch_idx, batch in enumerate(virtual_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            torch.cuda.synchronize(device)
+            my_stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
@@ -206,8 +206,9 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
             # reached the last iteration
             break
 
-    torch.cuda.synchronize(device)
-    sync_info.post_measurement_prep(tid)
+    my_stream.synchronize()
     duration = time.time() - start_time
+    sync_info.post_measurement_prep(tid)
+    sync_info.write_kv(f'duration{tid}', duration)
     logging.info(f'tid {tid} it takes {duration} seconds to train bert')
     return duration
