@@ -583,13 +583,11 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 		block(idx,  mutexes, kqueues);
 	}
 	else {
-		DEBUG_PRINT("hello!\n");
 
 		if (cudnn_conv_bw_data_func==NULL) {
 			*(void **)(&cudnn_conv_bw_data_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardData");
 			assert(cudnn_conv_bw_data_func != NULL);
 		}
-		DEBUG_PRINT("run!\n");
 		status = (*cudnn_conv_bw_data_func)(
 			handle,
 			alpha,

@@ -65,6 +65,7 @@ class PyScheduler:
                         if (additional_kernel_files[j] is not None):
                             new_kernel_file = additional_kernel_files[0].encode('utf-8')
                             self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
+                            barriers[0].wait() #FIXME
 
                 start = time.time()
                 print("call schedule")

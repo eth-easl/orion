@@ -5,6 +5,9 @@ cudaError_t (*memcpy_function)(void* dst, const void* src, size_t count, enum cu
 cudaError_t (*memcpy_async_function)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
 cudaError_t (*malloc_function)(void** devPtr, size_t size);
 cudaError_t (*free_function)(void* devPtr);
+cudaError_t (*memset_function)(void* devPtr, int  value, size_t count);
+cudaError_t (*memset_async_function)(void* devPtr, int  value, size_t count, cudaStream_t stream);
+
 cudnnStatus_t (*cudnn_create_function)(cudnnHandle_t *handle);
 cudnnStatus_t (*cudnn_bnorm_reserve_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t xDesc, size_t *sizeInBytes);
 cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
@@ -141,8 +144,8 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 void create_events(cudaEvent_t*** events, int num) {
 
 	for (int i=0; i<num; i++) {
-		events[i] = (cudaEvent_t**)malloc(1000*sizeof(cudaEvent_t*));
-		for (int j=0; j<1000; j++) {
+		events[i] = (cudaEvent_t**)malloc(10000*sizeof(cudaEvent_t*));
+		for (int j=0; j<10000; j++) {
 			//printf("create %d, %d\n", i, j);
 			events[i][j] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
 			CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events[i][j], cudaEventDisableTiming));
@@ -171,6 +174,14 @@ void register_functions() {
 	// for free
 	*(void **)(&free_function) = dlsym (RTLD_DEFAULT, "cudaFree");
 	assert(free_function != NULL);
+
+	// for memset
+	*(void **)(&memset_function) = dlsym (RTLD_DEFAULT, "cudaMemset");
+	assert (memset_function != NULL);
+
+	// for memset_async
+	*(void **)(&memset_async_function) = dlsym (RTLD_DEFAULT, "cudaMemsetAsync");
+	assert (memset_async_function != NULL);
 
 	// for cudnn create
 	*(void **)(&cudnn_create_function) = dlsym(RTLD_DEFAULT, "cudnnCreate");
@@ -324,6 +335,18 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			DEBUG_PRINT("found a new FREE record from idx %d!\n", idx);
 			free_record record = frecord.data.frecord;
 			//(*free_function)(record.devPtr);
+			break;
+		}
+		case MEMSET_RECORD: {
+			memset_record record = frecord.data.msetrecord;
+			if (record.async) {
+				DEBUG_PRINT("found a new MEMSET-ASYNC record from idx %d!\n", idx);
+				(*memset_async_function)(record.devPtr, record.value, record.count, *sched_stream);
+			}
+			else {
+				DEBUG_PRINT("found a new MEMSET-ASYNC record from idx %d!\n", idx);
+				(*memset_function)(record.devPtr, record.value, record.count);
+			}
 			break;
 		}
 		case CUDNN_CONV_RECORD: {

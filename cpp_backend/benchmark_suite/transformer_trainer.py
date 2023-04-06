@@ -3,10 +3,12 @@ import threading
 import time
 
 from mem_transformer import MemTransformerLM
+import lamb
+import numpy as np
 
-def transformer_loop(batchsize, train, local_rank, barrier, tid):
+def transformer_loop(batchsize, train, local_rank, barriers, tid):
 
-    barrier.wait()
+    barriers[0].wait()
 
     model_config = {
         'n_token': 267735,
@@ -33,9 +35,9 @@ def transformer_loop(batchsize, train, local_rank, barrier, tid):
         'sample_softmax': -1
     }
 
-    data = torch.ones((192, 32)).to(torch.int64).cuda()
-    target = torch.ones((192, 32)).to(torch.int64).cuda()
-    mems = torch.ones((16, 192, 32, 512)).to(torch.int64).cuda()
+    data = torch.ones((192, batchsize)).to(torch.int64).cuda()
+    target = torch.ones((192, batchsize)).to(torch.int64).cuda()
+    mems = torch.ones((16, 192, batchsize, 512)).to(torch.int64).cuda()
 
     torch.cuda.profiler.cudart().cudaProfilerStart()
 
@@ -43,11 +45,12 @@ def transformer_loop(batchsize, train, local_rank, barrier, tid):
 
     if train:
         model.train()
+        optimizer = lamb.Lamb(model.parameters(), lr=0.1)
     else:
         model.eval()
 
     timings=[]
-    for i in range(10):
+    for i in range(1):
         print("Start epoch: ", i)
 
         start = time.time()
@@ -55,20 +58,30 @@ def transformer_loop(batchsize, train, local_rank, barrier, tid):
         batch_idx = 0
         torch.cuda.synchronize()
 
-        while batch_idx < 1:
+        while batch_idx < 30:
             print(f"submit!, batch_idx is {batch_idx}")
             if train:
                 loss, output = model(data, target, mems)
+                loss = loss.float().mean().type_as(loss)
+                loss.backward()
+                optimizer.step()
             else:
                 with torch.no_grad():
                     output = model(data, target, mems)
 
             batch_idx += 1
 
+            print("sent everything!")
+
+            if (batch_idx == 1) and train: # for backward
+                barriers[0].wait()
+
+            if batch_idx < 30:
+                    barriers[0].wait()
+
         torch.cuda.synchronize()
         epoch_time = time.time()-start
         timings.append(epoch_time)
         print("Epoch took: ",epoch_time)
 
-    timings = timings[2:]
-    print(f"Avg is {np.median(np.asarray(timings))} sec")
+    print("Finished! Ready to join!")

@@ -7,8 +7,8 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
 
-	if (idx < 2)
-		block(idx,  mutexes, kqueues);
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemm_record blassgemm_record = {
 		handle,
@@ -52,6 +52,9 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
 
+		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
+
 	}
 
 	return status;
@@ -64,6 +67,9 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemmStridedBatched_record record = {
 		handle,
@@ -112,6 +118,9 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 		status = (*cublas_sgemm_strided_func)(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
+
+		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
 	}
 
 	return status;

@@ -24,6 +24,10 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
 
     # do only forward for now, experimental
     barriers[0].wait()
+
+    if tid==1:
+        time.sleep(5)
+
     ds = torch.cuda.default_stream()
 
     #barriers[0].wait()
@@ -31,22 +35,27 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
     print("-------------- thread id:  ", threading.get_native_id())
 
     data = torch.rand([batchsize, 3, 224, 224]).to(local_rank).contiguous()
+    target = torch.ones([batchsize]).to(torch.long).to(local_rank)
     #data = torch.rand([batchsize, 2048]).to(local_rank)
     model = models.__dict__[model_name](num_classes=1000)
     model = model.to(0)
 
     if train:
         model.train()
+        optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
+        criterion =  torch.nn.CrossEntropyLoss().to(local_rank)
     else:
         model.eval()
+
 
     print("Enter loop!")
 
     s = torch.cuda.Stream()
+
     #with torch.cuda.stream(s):
     if True:
         timings=[]
-        for i in range(10):
+        for i in range(1):
             print("Start epoch: ", i)
 
             start = time.time()
@@ -54,17 +63,19 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
 
             batch_idx = 0
 
-            while batch_idx < 1:
+            while batch_idx < 30:
 
                 print(f"submit!, batch_idx is {batch_idx}")
                 #torch.cuda.profiler.cudart().cudaProfilerStart()
 
                 if train:
                     output = model(data)
+                    loss = criterion(output, target)
+                    loss.backward()
+                    optimizer.step()
                 else:
                     with torch.no_grad():
                         output = model(data)
-
                 #torch.cuda.profiler.cudart().cudaProfilerStop()
 
                 batch_idx += 1
@@ -74,11 +85,12 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
                 #torch.cuda.synchronize()
                 # wait until all operations have been completed before starting the next iter
 
+                print("sent everything!")
 
-            #barriers[0].wait()
-            if i < 9:
-                barriers[0].wait()
                 #barriers[0].wait()
-            print(f"{tid}, Epoch done!")
+                if batch_idx < 30:
+                    barriers[0].wait()
+                    #barriers[0].wait()
+                print(f"{tid}, Epoch done!")
 
         print("Finished! Ready to join!")

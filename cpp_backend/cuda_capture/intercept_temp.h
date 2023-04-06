@@ -86,6 +86,15 @@ typedef struct free_record {
 
 } free_record;
 
+typedef struct memset_record {
+
+	void* devPtr;
+	int value;
+	size_t count;
+	cudaStream_t stream;
+	bool async;
+
+} memset_record;
 
 // CUDNN
 
@@ -669,6 +678,7 @@ enum func_type {
 	MEMCPY_RECORD,
 	MALLOC_RECORD,
 	FREE_RECORD,
+	MEMSET_RECORD,
 	CUDNN_CREATE_RECORD,
 	CUDNN_CONV_RECORD,
 	CUDNN_BNORM_RECORD,
@@ -701,6 +711,7 @@ union func_data {
 	memcpy_record mrecord;
 	malloc_record malrecord;
 	free_record frecord;
+	memset_record msetrecord;
 
 	 func_data() {}
 	 ~func_data() {};
@@ -722,7 +733,7 @@ extern pthread_mutex_t mutex1;
 
 extern vector<char*> fnames0;
 extern vector<char*> fnames1;
-extern volatile pid_t thread_ids[3]; // N threads + scheduler
+extern volatile pid_t thread_ids[5]; // 2*N threads + scheduler
 
 extern queue<func_record>* kqueues[2];
 extern pthread_mutex_t* mutexes[2];
@@ -739,6 +750,9 @@ extern cudaError_t (*memcpy_func)(void* dst, const void* src, size_t count, enum
 extern cudaError_t (*memcpy_async_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream);
 extern cudaError_t (*malloc_func)(void** devPtr, size_t size);
 extern cudaError_t (*free_func)(void* devPtr);
+extern cudaError_t (*memset_func)(void* devPtr, int  value, size_t count);
+extern cudaError_t (*memset_async_func)(void* devPtr, int  value, size_t count, cudaStream_t stream);
+
 extern cudnnStatus_t (*cudnn_conv_func)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 extern cudnnStatus_t (*cudnn_bnorm_func)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
 extern cudnnStatus_t (*cudnn_bnorm_infer_func)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon);
