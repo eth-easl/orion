@@ -508,7 +508,6 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 			reserveSpaceSizeInBytes
 		);
 
-		printf("status is %d\n", status);
 		if (status != CUDNN_STATUS_SUCCESS)
 			printf("status is %d\n", status);
 		assert (status == CUDNN_STATUS_SUCCESS);

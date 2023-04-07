@@ -21,7 +21,7 @@ class Scheduler {
 		void profile_prep(void** qbuffers, int num_clients);
 		void profile_reset(int num_clients);
 		void* busy_wait_fifo(int num_clients);
-		void* busy_wait_profile(int num_clients, int iter);
+		void* busy_wait_profile(int num_clients, int iter, bool warmup);
 		void* busy_wait_single_client(int client_id);
 };
 

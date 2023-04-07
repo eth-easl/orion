@@ -59,9 +59,23 @@ class PyScheduler:
         if run_eval:
             if profile:
                 barriers[0].wait()
+                # run once to warm-up and setup
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True)
+                torch.cuda.synchronize()
+
+                for j in range(num_clients):
+                    if (additional_kernel_files[j] is not None):
+                        new_kernel_file = additional_kernel_files[0].encode('utf-8')
+                        self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
+
+                print("wait here")
+                barriers[0].wait() #FIXME
+                print("done!")
+
+
                 start = time.time()
                 print("call schedule")
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False)
                 torch.cuda.synchronize()
                 print(f"Total time is {time.time()-start}")
 
@@ -95,6 +109,7 @@ class PyScheduler:
                 total_time = time.time()-start
                 print(f"Iteration {i} took {total_time} sec")
                 timings.append(total_time)
-            torch.cuda.profiler.cudart().cudaProfilerStop()
             timings = timings[3:]
             print(f"Avg is {np.median(np.asarray(timings))}, Min is {min(timings)} sec")
+
+        torch.cuda.profiler.cudart().cudaProfilerStop()

@@ -160,7 +160,7 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 	return NULL;
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup) {
 
 	printf("here!\n");
 
@@ -311,7 +311,10 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 		bool finished = true;
 		for (int i=0; i<num_clients; i++) {
 			//printf("%d, %d, %d, %d, %d\n", i, seen[i], num_client_kernels[i], num_client_cur_iters[i], num_client_max_iters[i]);
-			if (num_client_cur_iters[i] == num_client_max_iters[i])
+			if (
+				(num_client_cur_iters[i] == num_client_max_iters[i])
+				|| (warmup && (num_client_cur_iters[i]==1))
+			)
 				finished &= true;
 			else if (seen[i] == num_client_kernels[i]) {
 				// check if GPU work for this client has finished
@@ -339,7 +342,11 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 
 				}
 
-				if (num_client_cur_iters[i] == num_client_max_iters[i])
+
+				if (
+					(num_client_cur_iters[i] == num_client_max_iters[i])
+					|| (warmup && (num_client_cur_iters[i]==1))
+				)
 					finished &= true;
 				else
 					finished &= false;
@@ -352,7 +359,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			break;
 
 	}
-	process_eval(client_durations);
+	if (!warmup)
+		process_eval(client_durations);
 
 	// printf("All clients finished!\n");
 	// for (int i=0; i<num_clients; i++) {
@@ -428,7 +436,15 @@ extern "C" {
 
 	}
 
-	void setup(Scheduler* scheduler, int num_clients, int* tids, char** models, char** files, int* num_kernels, int* num_iters) {
+	void setup(
+		Scheduler* scheduler,
+		int num_clients,
+		int* tids,
+		char** models,
+		char** files,
+		int* num_kernels,
+		int* num_iters
+	) {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
@@ -504,11 +520,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter);
+			scheduler->busy_wait_profile(num_clients, iter, warmup);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");
