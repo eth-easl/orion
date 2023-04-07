@@ -111,11 +111,11 @@ void process_eval(vector<vector<float>> &client_durations) {
 
 
 void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, int idx) {
-	if (seen[idx] < num_client_kernels[idx])
-		pthread_mutex_lock(client_mutex);
+	//if (seen[idx] < num_client_kernels[idx])
+	pthread_mutex_lock(client_mutex);
 	client_queue->pop();
-	if (seen[idx] < num_client_kernels[idx])
-		pthread_mutex_unlock(client_mutex);
+	//if (seen[idx] < num_client_kernels[idx])
+	pthread_mutex_unlock(client_mutex);
 	//printf("exit pop!\n");
 }
 

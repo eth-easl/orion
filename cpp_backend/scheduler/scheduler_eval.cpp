@@ -9,6 +9,7 @@ int* fidx;
 int* num_client_kernels;
 int* num_client_max_iters;
 int* num_client_cur_iters;
+bool* locked;
 
 std::chrono::time_point<std::chrono::high_resolution_clock>* client_starts;
 vector<vector<float>> client_durations;
@@ -189,8 +190,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 				// if last one for that client, left locked
 				if (seen[i] == 0)
 					client_starts[i] = std::chrono::high_resolution_clock::now();
-				if (seen[i] == num_client_kernels[i]-1)
-					continue;
+				//if (seen[i] == num_client_kernels[i]-1)
+				//	continue;
 			}
 			pthread_mutex_unlock(client_mutexes[i]);
 		}
@@ -309,9 +310,15 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 
 		bool finished = true;
 		for (int i=0; i<num_clients; i++) {
-			DEBUG_PRINT("%d, %d\n", seen[i], num_client_kernels[i]);
-			if (seen[i] == num_client_kernels[i]) {
+			//printf("%d, %d, %d, %d, %d\n", i, seen[i], num_client_kernels[i], num_client_cur_iters[i], num_client_max_iters[i]);
+			if (num_client_cur_iters[i] == num_client_max_iters[i])
+				finished &= true;
+			else if (seen[i] == num_client_kernels[i]) {
 				// check if GPU work for this client has finished
+				if (!locked[i]) {
+					pthread_mutex_lock(client_mutexes[i]);
+					locked[i] = true;
+				}
 				cudaError_t status = cudaEventQuery(*(events[i][event_ids[i]-1]));
 				//printf("check if finished, status is %d!!\n", status);
 				if (status == cudaSuccess) {
@@ -322,6 +329,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 					fidx[i] = 0;
 					pthread_mutex_unlock(client_mutexes[i]);
 					num_client_cur_iters[i] += 1;
+					locked[i] = false;
 
 					auto end = std::chrono::high_resolution_clock::now();
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
@@ -468,6 +476,7 @@ extern "C" {
 		num_client_max_iters = num_iters;
 
 		num_client_cur_iters = (int*)calloc(num_clients, sizeof(int));
+		locked = (bool*)calloc(num_clients, sizeof(bool));
 
 		// to get measurements
 		client_starts = (std::chrono::time_point<std::chrono::high_resolution_clock>*)malloc(num_clients*sizeof(std::chrono::time_point<std::chrono::high_resolution_clock>));
