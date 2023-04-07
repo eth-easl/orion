@@ -10,13 +10,13 @@ import torch
 
 # sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
 # from benchmark_suite.gnmt_trainer import gnmt_loop
-# sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
-# from benchmark_suite.bert_trainer import bert_loop
-sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
-sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
-from benchmark_suite.transformer_trainer import transformer_loop
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
+from bert_trainer import bert_loop
+#sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
+#sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
+#from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
-#from benchmark_suite.retinanet_trainer import retinanet_loop
+from benchmark_suite.retinanet_trainer import retinanet_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
 #from benchmark_suite.dlrm_trainer import dlrm_loop
 
@@ -27,6 +27,7 @@ from benchmark_suite.bnorm_trainer import bnorm_loop
 from benchmark_suite.conv_bn_trainer import conv_bn_loop
 
 from scheduler_frontend import PyScheduler
+torch.set_num_threads(2)
 
 
 function_dict = {
@@ -36,11 +37,10 @@ function_dict = {
     "conv": conv_loop,
     "bnorm": bnorm_loop,
     "conv_bnorm": conv_bn_loop,
-    "bert": None, #bert_loop,
+    "bert": bert_loop,
     "gnmt": None, #gnmt_loop,
-    "transformer": transformer_loop,
-    "retinanet": None, #retinanet_loop,
-    "dlrm": None, #dlrm_loop
+    "transformer": None, #transformer_loop,
+    "retinanet": retinanet_loop,
 }
 
 def seed_everything(seed: int):
@@ -93,7 +93,17 @@ def launch_jobs(config_dict_list, profile):
 
     sched_thread = threading.Thread(
         target=py_scheduler.run_scheduler,
-        args=(barriers, tids, model_names, model_files, additional_model_files, num_kernels, additional_num_kernels, 30, profile)
+        args=(
+            barriers,
+            tids,
+            model_names,
+            model_files,
+            additional_model_files,
+            num_kernels,
+            additional_num_kernels,
+            10,
+            profile
+        )
     )
 
     sched_thread.start()
