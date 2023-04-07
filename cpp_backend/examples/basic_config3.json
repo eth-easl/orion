@@ -1,0 +1,24 @@
+[
+
+	{
+		"arch": "mobilenet_v2",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_32_fwd",
+		"num_kernels": 205,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 32,
+			"train": true
+		}
+	},
+	{
+		"arch": "mobilenet_v2",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_32_fwd",
+		"num_kernels": 205,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 32,
+			"train": true
+		}
+    }
+
+]

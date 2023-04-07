@@ -1,0 +1,51 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1
+void at::native::vectorized_elementwise_kernel,0,1,1,1
+BatchNorm,0,1,1,1

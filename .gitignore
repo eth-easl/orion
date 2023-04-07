@@ -1,3 +1,13 @@
+*.csv
+*.sqlite
+*.qdrep
+*.pyc
+*.so
+*.o
+*.ncu-rep
+*.svg
+*.png
+model_kernels/*
 .DS_Store
 .idea/
 __pycache__/
