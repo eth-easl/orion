@@ -18,7 +18,7 @@ import argparse
 import threading
 
 
-def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
+def imagenet_loop(model_name, batchsize, train, num_iters, sleep_time, local_rank, barriers, tid):
 
     print(model_name, batchsize, local_rank, barriers, tid)
 
@@ -63,12 +63,13 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
 
             batch_idx = 0
 
-            while batch_idx < 30:
+            while batch_idx < num_iters:
 
                 print(f"submit!, batch_idx is {batch_idx}")
                 #torch.cuda.profiler.cudart().cudaProfilerStart()
 
                 if train:
+                    optimizer.zero_grad()
                     output = model(data)
                     loss = criterion(output, target)
                     loss.backward()
@@ -82,15 +83,14 @@ def imagenet_loop(model_name, batchsize, train, local_rank, barriers, tid):
 
                 start_iter = time.time()
 
-                #torch.cuda.synchronize()
-                # wait until all operations have been completed before starting the next iter
+                # if (batch_idx == 1) and train: # for backward
+                #     barriers[0].wait()
 
-                print("sent everything!")
+                print(f"{batch_idx} submitted! sent everything!")
 
-                #barriers[0].wait()
-                if batch_idx < 30:
-                    barriers[0].wait()
-                    #barriers[0].wait()
-                print(f"{tid}, Epoch done!")
+                # if batch_idx < num_iters:
+                #     barriers[0].wait()
+
+                time.sleep(sleep_time)
 
         print("Finished! Ready to join!")

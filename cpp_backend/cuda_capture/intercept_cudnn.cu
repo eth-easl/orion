@@ -23,9 +23,6 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
-
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
 
@@ -51,10 +48,12 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	// push or run
 	if (idx < 2) {
 		 pthread_mutex_lock(mutexes[idx]);
+
+		 DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
 		 kqueues[idx]->push(new_record);
+		 func_indexes[idx] += 1;
 		 pthread_mutex_unlock(mutexes[idx]);
 
-		 func_indexes[idx] += 1;
 		 block(idx, mutexes, kqueues);
 	}
 	else {
@@ -81,9 +80,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
@@ -126,10 +122,12 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	if (idx < 2) {
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
+
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 	}
 	else {
@@ -159,10 +157,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
 
@@ -192,10 +186,12 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	if (idx < 2) {
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
+
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 
 	}
@@ -220,10 +216,6 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-	printf("------------------------------------------------- IDX [%d], CX IS %p, CY IS %p\n", idx, cx, cy);
 
 	if (idx < 2) {
 
@@ -265,10 +257,11 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 		func_record new_record = {CUDNN_RNN_INF_RECORD, new_func_data};
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 	}
 	else {
@@ -321,9 +314,6 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-
 	if (idx < 2) {
 
 		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
@@ -365,10 +355,11 @@ cudnnStatus_t cudnnRNNForwardTraining(
 		func_record new_record = {CUDNN_RNN_TRAIN_RECORD, new_func_data};
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 	}
 	else {
@@ -425,8 +416,6 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 
 	int idx = get_idx();
 	assert (idx >= 0);
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!Index is %d\n", func_indexes[idx], idx);
 
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
@@ -470,10 +459,11 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 	if (idx < 2) {
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!Index is %d\n", func_indexes[idx], idx);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx, mutexes, kqueues);
 	}
 
@@ -549,9 +539,6 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 
 	int idx = get_idx();
 	assert (idx >= 0);
-
-	if (idx < 2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
 	if (idx < 2) {
@@ -576,10 +563,11 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 		func_record new_record = {CUDNN_CONV_DATA_RECORD, new_func_data};
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 	}
 	else {
@@ -628,9 +616,6 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	if (idx<2)
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardFilter!Index is %d\n", func_indexes[idx], idx);
-
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
 	cudnnConvolutionBackwardFilter_record new_conv_record = {
@@ -656,10 +641,11 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 	if (idx < 2) {
 
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardFilter!Index is %d\n", func_indexes[idx], idx);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 
 	}

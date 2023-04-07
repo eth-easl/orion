@@ -23,8 +23,9 @@ class PyScheduler:
         additional_kernel_files,
         num_kernels,
         additional_num_kernels,
-        iters,
-        profile
+        num_iters,
+        profile,
+        run_eval
     ):
 
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
@@ -34,6 +35,7 @@ class PyScheduler:
         IntAr = ctypes.c_int * self._num_clients
         tids_ar = IntAr(*tids)
         num_kernels_ar = IntAr(*num_kernels)
+        num_iters_ar = IntAr(*num_iters)
 
         CharAr = ctypes.c_char_p * self._num_clients
         model_names_ctypes_ar = CharAr(*model_names_ctypes)
@@ -43,7 +45,7 @@ class PyScheduler:
 
         print(model_names, lib_names, tids)
 
-        self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar)
+        self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar, num_iters_ar)
 
         num_clients = len(tids)
         print(f"Num clients is {num_clients}")
@@ -54,35 +56,45 @@ class PyScheduler:
         timings=[]
         torch.cuda.profiler.cudart().cudaProfilerStart()
 
-        for i in range(iters):
-
-            print(f"Start {i} iteration")
+        if run_eval:
             if profile:
                 barriers[0].wait()
-                # needed for backward
-                if (i==1):
-                    for j in range(num_clients):
-                        if (additional_kernel_files[j] is not None):
-                            new_kernel_file = additional_kernel_files[0].encode('utf-8')
-                            self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
-                            barriers[0].wait() #FIXME
-
                 start = time.time()
                 print("call schedule")
-                self._sched_lib.schedule(self._scheduler, num_clients, True, i)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0)
                 torch.cuda.synchronize()
+                print(f"Total time is {time.time()-start}")
 
-            # or this
-            else:
-                start = time.time()
-                for j in range(num_clients):
-                    barriers[j].wait()
-                    self._sched_lib.schedule_one(self._scheduler, j)
+        else:
+            for i in range(num_iters[0]):
+
+                print(f"Start {i} iteration")
+                if profile:
+                    barriers[0].wait()
+                    # needed for backward
+                    if (i==1):
+                        for j in range(num_clients):
+                            if (additional_kernel_files[j] is not None):
+                                new_kernel_file = additional_kernel_files[0].encode('utf-8')
+                                self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
+                                barriers[0].wait() #FIXME
+
+                    start = time.time()
+                    print("call schedule")
+                    self._sched_lib.schedule(self._scheduler, num_clients, True, i)
                     torch.cuda.synchronize()
 
-            total_time = time.time()-start
-            print(f"Iteration {i} took {total_time} sec")
-            timings.append(total_time)
-        torch.cuda.profiler.cudart().cudaProfilerStop()
-        timings = timings[3:]
-        print(f"Avg is {np.median(np.asarray(timings))}, Min is {min(timings)} sec")
+                # or this
+                else:
+                    start = time.time()
+                    for j in range(num_clients):
+                        barriers[j].wait()
+                        self._sched_lib.schedule_one(self._scheduler, j)
+                        torch.cuda.synchronize()
+
+                total_time = time.time()-start
+                print(f"Iteration {i} took {total_time} sec")
+                timings.append(total_time)
+            torch.cuda.profiler.cudart().cudaProfilerStop()
+            timings = timings[3:]
+            print(f"Avg is {np.median(np.asarray(timings))}, Min is {min(timings)} sec")

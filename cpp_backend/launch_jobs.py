@@ -34,6 +34,7 @@ function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
     "mobilenet_v2": imagenet_loop,
+    "efficientnet": imagenet_loop,
     "conv": conv_loop,
     "bnorm": bnorm_loop,
     "conv_bnorm": conv_bn_loop,
@@ -53,7 +54,7 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list, profile):
+def launch_jobs(config_dict_list, profile, num_iters, run_eval):
 
     print(config_dict_list)
     num_clients = len(config_dict_list)
@@ -66,7 +67,10 @@ def launch_jobs(config_dict_list, profile):
     num_barriers = num_clients+1 if profile else 2
     barriers = [threading.Barrier(num_barriers) for i in range(num_clients)]
     home_directory = os.path.expanduser( '~' )
-    sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler.so")
+    if run_eval:
+        sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler_eval.so")
+    else:
+        sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler.so")
     py_scheduler = PyScheduler(sched_lib, num_clients)
 
     print(torch.__version__)
@@ -76,13 +80,15 @@ def launch_jobs(config_dict_list, profile):
 
     additional_model_files = [config_dict['additional_kernel_file'] if 'additional_kernel_file' in config_dict else None for config_dict in config_dict_list]
     num_kernels = [config_dict['num_kernels'] for config_dict in config_dict_list]
+    num_iters = [config_dict['num_iters'] for config_dict in config_dict_list]
+
     additional_num_kernels = [config_dict['additional_num_kernels'] if 'additional_num_kernels' in config_dict else None  for config_dict in config_dict_list]
     tids = []
     threads = []
     for i, config_dict in enumerate(config_dict_list):
         func = function_dict[config_dict['arch']]
         model_args = config_dict['args']
-        model_args.update({"local_rank": 0, "barriers": barriers, "tid": i})
+        model_args.update({"num_iters":num_iters[i], "local_rank": 0, "barriers": barriers, "tid": i})
 
         thread = threading.Thread(target=func, kwargs=model_args)
         thread.start()
@@ -101,8 +107,9 @@ def launch_jobs(config_dict_list, profile):
             additional_model_files,
             num_kernels,
             additional_num_kernels,
-            10,
-            profile
+            num_iters,
+            profile,
+            run_eval
         )
     )
 
@@ -121,7 +128,8 @@ def launch_jobs(config_dict_list, profile):
 if __name__ == "__main__":
     torch.cuda.set_device(0)
     config_file = sys.argv[1]
+    num_iters = int(sys.argv[2])
     profile = True
     with open(config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict, profile)
+    launch_jobs(config_dict, profile, num_iters, True)

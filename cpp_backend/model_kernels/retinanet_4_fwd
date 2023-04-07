@@ -1,0 +1,1216 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::max_pool_forward_nhwc,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_nearest2d_nhwc_out_frame,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::upsample_nearest2d_nhwc_out_frame,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void (anonymous namespace)::elementwise_kernel_with_index,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::(anonymous namespace)::CatArrayBatchedCopy,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceReduceSingleTileKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceCompactInitKernel,-1,1,1,7
+void at_cuda_detail::cub::DeviceSelectSweepKernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7

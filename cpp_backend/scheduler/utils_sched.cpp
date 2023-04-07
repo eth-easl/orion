@@ -88,12 +88,15 @@ extern cudnnHandle_t* global_handle0;
 extern cudnnHandle_t* global_handle1;
 
 extern int status;
+extern int* seen;
+extern int* num_client_kernels;
 
-void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex) {
-	//printf("enter pop!\n");
-	pthread_mutex_lock(client_mutex);
+void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, int idx) {
+	if (seen[idx] < num_client_kernels[idx])
+		pthread_mutex_lock(client_mutex);
 	client_queue->pop();
-	pthread_mutex_unlock(client_mutex);
+	if (seen[idx] < num_client_kernels[idx])
+		pthread_mutex_unlock(client_mutex);
 	//printf("exit pop!\n");
 }
 
@@ -561,6 +564,8 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			break;
 		}
 		case CUBLAS_SGEMM_RECORD: {
+			DEBUG_PRINT("found a new cublas sgemm record from idx %d!\n", idx);
+
 			cublasSgemm_record record = frecord.data.cublasSgemmRecord;
 			cublasSetStream_v2(record.handle, *sched_stream);
 			(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
@@ -571,6 +576,8 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			break;
 		}
 		case CUBLAS_SGEMM_STRIDED_RECORD: {
+			DEBUG_PRINT("found a new cublas sgemm strided record from idx %d!\n", idx);
+
 			cublasSgemmStridedBatched_record record = frecord.data.cublasSgemmStridedRecord;
 			cublasSetStream_v2(record.handle, *sched_stream);
 			(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
@@ -620,25 +627,25 @@ void schedule_pair_kernel_padding(
 	if ((frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == FREE_RECORD)) {
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 		//cudaStreamSynchronize(*(sched_streams[0]));
 	}
 	else if ((frecords[1]->type == MALLOC_RECORD) || (frecords[1]->type == MEMCPY_RECORD) || (frecords[1]->type == FREE_RECORD)) {
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		streams[1] = 0;
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 		//cudaStreamSynchronize(*(sched_streams[1]));
 	}
 	else if (op_info_1.duration > op_info_0.duration || op_info_0.sm_used >= max_sms) {
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 		//cudaStreamSynchronize(*(sched_streams[0]));
 	}
 	else if (op_info_1.sm_used < op_info_0.sm_used) {
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 		//cudaStreamSynchronize(*(sched_streams[0]));
 	}
 	else {
@@ -646,11 +653,11 @@ void schedule_pair_kernel_padding(
 		//printf("COLOCATE!\n");
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		streams[1] = 0;
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 
 		//cudaStreamSynchronize(*(sched_streams[0]));
 		//cudaStreamSynchronize(*(sched_streams[1]));
@@ -688,12 +695,12 @@ void schedule_pair(
 	if ((frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == FREE_RECORD)) {
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 	}
 	else if ((frecords[1]->type == MALLOC_RECORD) || (frecords[1]->type == MEMCPY_RECORD) || (frecords[1]->type == FREE_RECORD)) {
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		streams[1] = 0;
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 	}
 	// // if kernel is very small, run alone
 	else if (op_info_0.duration < 10000.0) {
@@ -703,7 +710,7 @@ void schedule_pair(
 		status = 0;
 		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
 		streams[0] = 1;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
 	}
 	else if (op_info_1.duration < 10000.0) {
@@ -713,7 +720,7 @@ void schedule_pair(
 		status = 1;
 		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
 		streams[1] = 1;
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
 
 	}
@@ -730,8 +737,8 @@ void schedule_pair(
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		streams[0] = 0;
 		streams[1] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 		//cudaStreamSynchronize(*(sched_streams[0]));
 		//cudaStreamSynchronize(*(sched_streams[1]));
 	}
@@ -742,7 +749,7 @@ void schedule_pair(
 		status = 0;
 		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
 		//cudaStreamSynchronize(*(sched_streams[0]));
 	}
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
@@ -759,8 +766,8 @@ void schedule_pair(
 		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
 		streams[0] = 0;
 		streams[1] = 1;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 		//cudaStreamSynchronize(*(sched_streams[0]));
 		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
 	}
@@ -779,8 +786,8 @@ void schedule_pair(
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		streams[0] = 1;
 		streams[1] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
 		//cudaStreamSynchronize(*(sched_streams[0]));
 	}
@@ -798,7 +805,7 @@ void schedule_pair(
 
 		streams[0] = 0;
 		streams[1] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0]);
-		pop_from_queue(cbuffers[1], cmutexes[1]);
+		pop_from_queue(cbuffers[0], cmutexes[0], 0);
+		pop_from_queue(cbuffers[1], cmutexes[1], 1);
 	}
 }

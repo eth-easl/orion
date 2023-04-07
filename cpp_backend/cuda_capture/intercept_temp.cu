@@ -851,9 +851,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		func_record new_record = {KERNEL_RECORD, new_func_data};
 
 		kqueues[idx]->push(new_record);
-		pthread_mutex_unlock(mutexes[idx]);
-
 		func_indexes[idx] += 1;
+
+		pthread_mutex_unlock(mutexes[idx]);
 
 		//if (wait)
 		block(idx,  mutexes, kqueues);

@@ -124,7 +124,7 @@ void schedule_pair_kernel_padding(
 	int num_events,
 	int* event_ids
 );
-void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex);
+void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, int idx);
 void create_streams(cudaStream_t** sched_streams, int num, bool reef);
 void create_events(cudaEvent_t*** events, int num);
 void wait_for_stream(int idx, int profile, int current_prio, int prev_prio, cudaStream_t* sched_stream, cudaEvent_t*** events, int num_events, int* event_ids);
