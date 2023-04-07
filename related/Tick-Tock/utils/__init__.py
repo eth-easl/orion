@@ -32,6 +32,8 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
     mean_arrival_time = shared_config['mean_arrival_time']
     percentile_positions = shared_config['percentile_positions']
     latency_history = []
+    seed = int(time.time())
+    np.random.seed(seed)
     with torch.no_grad():
         for iter in range(num_requests):
             if iter == num_warm_up_reqs:

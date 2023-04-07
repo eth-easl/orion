@@ -59,9 +59,7 @@ def setup_model(model_config):
     return model
 
 
-def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
-    device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+def setup(model_config, shared_config, device):
     seed = int(time.time())
     random.seed(seed)
     np.random.seed(seed)
@@ -139,13 +137,7 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
                                   num_workers=model_config['num_workers'])
-    model.train()
 
-    # TODO: this requires amp_C package which isn't avaiable for a pure python apex
-    # gradClipper = GradientClipper(max_grad_norm=1.0)
-
-    num_iterations = model_config['num_iterations']
-    warm_up_iters = model_config['warm_up_iters']
     if shared_config['use_dummy_data']:
         # fetch a batch from real train_dataloader
         train_dataloader_iter = iter(train_dataloader)
@@ -158,8 +150,43 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     else:
         virtual_loader = train_dataloader
 
+    return model, virtual_loader, optimizer
+
+def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    model, data_loader, _ = setup(model_config, shared_config, device)
+    model.eval()
+    num_requests = shared_config['num_requests']
+    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+
+    loader_iterator = iter(data_loader)
+
+    def eval():
+        batch = next(loader_iterator)
+        input_ids, input_mask, segment_ids, _, _ = batch
+        input_ids = input_ids.to(device)
+        input_mask = input_mask.to(device)
+        segment_ids = segment_ids.to(device)
+        model(input_ids, segment_ids, input_mask)
+
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+
+def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    model, dataloader, optimizer = setup(model_config, shared_config, device)
+    model.train()
+
+    # TODO: this requires amp_C package which isn't avaiable for a pure python apex
+    # gradClipper = GradientClipper(max_grad_norm=1.0)
+
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
+
+
     logging.info(f'bert model is set up with {num_iterations}')
-    for batch_idx, batch in enumerate(virtual_loader):
+    for batch_idx, batch in enumerate(dataloader):
         if batch_idx == warm_up_iters:
             # finish previous work
             my_stream.synchronize()

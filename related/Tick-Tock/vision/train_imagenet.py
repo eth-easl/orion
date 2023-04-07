@@ -18,11 +18,13 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     num_requests = shared_config['num_requests']
     num_warm_up_reqs = shared_config['num_warm_up_reqs']
 
-    batch_size = model_config['batch_size']
+
+    train_loader_iter = iter(train_loader)
 
     def eval():
-        input_data = torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device)
-        model(input_data)
+        data, _ = next(train_loader_iter)
+        data = data.to(device)
+        model(data)
 
     utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
 

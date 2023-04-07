@@ -12,9 +12,9 @@ from utils import notifier
 from vision.train_imagenet import train_wrapper as vision_train_wrapper, eval_wrapper as vision_eval_wrapper
 from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
 from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
-from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper
-from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper
-from transformer.train_transformer import train_wrapper as transformer_train_wrapper
+from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
+from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
+from transformer.train_transformer import train_wrapper as transformer_train_wrapper, eval_wrapper as transformer_eval_wrapper
 from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
 
 model_to_wrapper = {
@@ -32,15 +32,15 @@ model_to_wrapper = {
     },
     'gnmt': {
         'train': gnmt_train_wrapper,
-        'eval': None,
+        'eval': gnmt_eval_wrapper,
     },
     'bert': {
         'train': bert_train_wrapper,
-        'eval': None,
+        'eval': bert_eval_wrapper,
     },
     'transformer': {
         'train': transformer_train_wrapper,
-        'eval': None,
+        'eval': transformer_eval_wrapper,
     },
     'retinanet': {
         'train': retinanet_train_wrapper,
