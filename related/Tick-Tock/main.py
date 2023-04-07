@@ -18,16 +18,34 @@ from transformer.train_transformer import train_wrapper as transformer_train_wra
 from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
 
 model_to_wrapper = {
-    'nasnet': nasnet_train_wrapper,
+    'nasnet': {
+        'train': nasnet_train_wrapper,
+        'eval': None,
+    },
     'vision': {
         'train': vision_train_wrapper,
         'eval': vision_eval_wrapper,
     },
-    'dcgan': dcgan_train_wrapper,
-    'gnmt': gnmt_train_wrapper,
-    'bert': bert_train_wrapper,
-    'transformer': transformer_train_wrapper,
-    'retinanet': retinanet_train_wrapper,
+    'dcgan': {
+        'train': dcgan_train_wrapper,
+        'eval': None,
+    },
+    'gnmt': {
+        'train': gnmt_train_wrapper,
+        'eval': None,
+    },
+    'bert': {
+        'train': bert_train_wrapper,
+        'eval': None,
+    },
+    'transformer': {
+        'train': transformer_train_wrapper,
+        'eval': None,
+    },
+    'retinanet': {
+        'train': retinanet_train_wrapper,
+        'eval': None,
+    }
 }
 
 parser = argparse.ArgumentParser()
@@ -54,14 +72,14 @@ if __name__ == "__main__":
     model1_name = config['model1']['name']
     model0_mode = config['model0']['mode']
     model1_mode = config['model1']['mode']
-    if model0_name == 'vision1':
-        model0_name = 'vision'
-    if model1_name == 'vision1':
-        model1_name = 'vision'
     model0_config = config[model0_name]
     model1_config = config[model1_name]
     readable_model0_name = readable_model_name(model0_name, model0_config)
     readable_model1_name = readable_model_name(model1_name, model1_config)
+    if model0_name == 'vision1':
+        model0_name = 'vision'
+    if model1_name == 'vision1':
+        model1_name = 'vision'
     policy = config['policy']
 
     if args.log is None:

@@ -81,6 +81,7 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
 def setup(model_config, shared_config, device):
     torch.cuda.set_device(device)
     arc = model_config['arc']
+    logging.info(f'vision model with arc {arc}')
     model = models.__dict__[arc](num_classes=1000)
     model = model.to(device)
     optimizer_func = getattr(torch.optim, model_config['optimizer'])
