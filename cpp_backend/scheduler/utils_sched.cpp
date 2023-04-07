@@ -91,6 +91,25 @@ extern int status;
 extern int* seen;
 extern int* num_client_kernels;
 
+void process_eval(vector<vector<float>> &client_durations) {
+
+	int num_clients = client_durations.size();
+	for (int i=0; i<num_clients; i++) {
+		vector<float> client_stats = client_durations[i];
+		// remove first two iters
+		client_stats.erase(client_stats.begin());
+		client_stats.erase(client_stats.begin());
+
+		sort(client_stats.begin(), client_stats.end());
+		int client_len = client_stats.size();
+		float p50 = client_stats[client_len/2];
+		float p95 = client_stats[(client_len*95/100)];
+		float p99 = client_stats[(client_len*99/100)];
+		printf("Client %d, p50=%f, p95=%f, p99=%f\n", i, p50, p95, p99);
+	}
+}
+
+
 void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, int idx) {
 	if (seen[idx] < num_client_kernels[idx])
 		pthread_mutex_lock(client_mutex);

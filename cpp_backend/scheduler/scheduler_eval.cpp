@@ -10,6 +10,9 @@ int* num_client_kernels;
 int* num_client_max_iters;
 int* num_client_cur_iters;
 
+std::chrono::time_point<std::chrono::high_resolution_clock>* client_starts;
+vector<vector<float>> client_durations;
+
 int max_sms = 80;
 queue<struct func_record>** client_buffers;
 pthread_mutex_t** client_mutexes;
@@ -184,6 +187,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			if (sz > 0) {
 				frecords[i] = &(client_buffers[i]->front());
 				// if last one for that client, left locked
+				if (seen[i] == 0)
+					client_starts[i] = std::chrono::high_resolution_clock::now();
 				if (seen[i] == num_client_kernels[i]-1)
 					continue;
 			}
@@ -308,16 +313,22 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			if (seen[i] == num_client_kernels[i]) {
 				// check if GPU work for this client has finished
 				cudaError_t status = cudaEventQuery(*(events[i][event_ids[i]-1]));
-				printf("check if finished, status is %d!!\n", status);
+				//printf("check if finished, status is %d!!\n", status);
 				if (status == cudaSuccess) {
 					// if yes, reset meta-structures for this client, and let it continue
-					printf("Client %d finished iteration %d\n", i, num_client_cur_iters[i]);
 					seen[i] = 0;
 					event_ids[i] = 0;
 					streams[i] = -1;
 					fidx[i] = 0;
 					pthread_mutex_unlock(client_mutexes[i]);
 					num_client_cur_iters[i] += 1;
+
+					auto end = std::chrono::high_resolution_clock::now();
+					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
+					duration /= 1000.0;
+					client_durations[i].push_back(duration);
+					printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
+
 				}
 
 				if (num_client_cur_iters[i] == num_client_max_iters[i])
@@ -333,6 +344,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter) {
 			break;
 
 	}
+	process_eval(client_durations);
 
 	// printf("All clients finished!\n");
 	// for (int i=0; i<num_clients; i++) {
@@ -445,6 +457,7 @@ extern "C" {
 
 		for (int i=0; i<num_clients; i++) {
 			op_info_vector.push_back({});
+			client_durations.push_back({});
 			printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[i], func_names_all[i]);
 			populate_kernel_info(func_names_all[i], files[i], op_info_vector[i]);
 			printf("----------- SIZE: %d\n", op_info_vector[i].size());
@@ -455,6 +468,9 @@ extern "C" {
 		num_client_max_iters = num_iters;
 
 		num_client_cur_iters = (int*)calloc(num_clients, sizeof(int));
+
+		// to get measurements
+		client_starts = (std::chrono::time_point<std::chrono::high_resolution_clock>*)malloc(num_clients*sizeof(std::chrono::time_point<std::chrono::high_resolution_clock>));
 	}
 
 	void* sched_setup(Scheduler* scheduler, int num_clients, bool profile_mode) {
