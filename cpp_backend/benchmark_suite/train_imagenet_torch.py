@@ -17,16 +17,23 @@ import os
 import argparse
 import threading
 
-def imagenet_loop(model_name, batchsize, train, local_rank, start_barriers, end_barriers, tid):
+def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, start_barriers, end_barriers, tid):
 
-    # do only forward for now, experimental
+
+    if rps > 0:
+        sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    else:
+        sleep_times = [0]*num_iters
+
     s = torch.cuda.Stream()
+    timings = []
     start_barriers[tid].wait()
+
     if True:
         print("-------------- thread id:  ", threading.get_native_id())
-
         data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
         target = torch.ones([batchsize]).to(torch.long).to(local_rank)
+
         #data = torch.rand([batchsize, 2048]).to(local_rank)
         model = models.__dict__[model_name](num_classes=1000)
         model = model.to(0)
@@ -41,21 +48,18 @@ def imagenet_loop(model_name, batchsize, train, local_rank, start_barriers, end_
 
         timings=[]
         with torch.cuda.stream(s):
-        #if True:
-            for i in range(10):
+            for i in range(1):
                 print("Start epoch: ", i)
-
-                start = time.time()
-                start_iter = time.time()
 
                 batch_idx = 0
 
-                while batch_idx < 1:
+                while batch_idx < num_iters:
 
                     print(f"submit!, batch_idx is {batch_idx}")
-                    torch.cuda.profiler.cudart().cudaProfilerStart()
+                    start = time.time()
 
                     if train:
+                        optimizer.zero_grad()
                         output = model(data)
                         loss = criterion(output, target)
                         loss.backward()
@@ -64,19 +68,22 @@ def imagenet_loop(model_name, batchsize, train, local_rank, start_barriers, end_
                         with torch.no_grad():
                             output = model(data)
 
-                    torch.cuda.profiler.cudart().cudaProfilerStop()
+                    s.synchronize()
+                    iter_time = time.time()-start
+                    timings.append(iter_time)
+
+                    time.sleep(sleep_times[batch_idx])
+                    print(f"{batch_idx} finished, took {iter_time} sec, now sleep for {sleep_times[batch_idx]} sec")
 
                     batch_idx += 1
 
-                    start_iter = time.time()
-
-                print("Epoch done!")
                 end_barriers[tid].wait()
-                if i < 9:
-                    start_barriers[tid].wait()
+                # if batch_idx < num_iters-1:
+                #     start_barriers[tid].wait()
 
-        # timings = timings[2:]
-        # print(f"Avg is {np.median(np.asarray(timings))} sec")
-        print("Finished! Ready to join!")
+        timings = timings[2:]
+        p50 = np.percentile(timings, 50)
+        p95 = np.percentile(timings, 95)
+        p99 = np.percentile(timings, 99)
 
-#imagenet_loop('resnet50', 32, True, 0, None, 0)
+        print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")

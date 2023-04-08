@@ -109,7 +109,8 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
             additional_num_kernels,
             num_iters,
             profile,
-            run_eval
+            run_eval,
+            True
         )
     )
 

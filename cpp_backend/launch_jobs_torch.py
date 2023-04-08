@@ -9,6 +9,8 @@ from torchvision import models
 import torch
 import numpy as np
 
+torch.set_num_threads(2)
+
 # sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
 # from benchmark_suite.gnmt_trainer import gnmt_loop
 # sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
@@ -46,7 +48,7 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list):
+def launch_jobs(config_dict_list, mode):
 
     print(config_dict_list)
     num_clients = len(config_dict_list)
@@ -61,12 +63,14 @@ def launch_jobs(config_dict_list):
     model_names = [config_dict['arch'] for config_dict in config_dict_list]
     model_files = [config_dict['kernel_file'] for config_dict in config_dict_list]
     num_kernels = [config_dict['num_kernels'] for config_dict in config_dict_list]
+    num_iters = [config_dict['num_iters'] for config_dict in config_dict_list]
+
     tids = []
     threads = []
     for i, config_dict in enumerate(config_dict_list):
         func = function_dict[config_dict['arch']]
         model_args = config_dict['args']
-        model_args.update({"local_rank": 0, "start_barriers": start_barriers, "end_barriers": end_barriers, "tid": i})
+        model_args.update({"num_iters":num_iters[i], "local_rank": 0, "start_barriers": start_barriers, "end_barriers": end_barriers, "tid": i})
 
         thread = threading.Thread(target=func, kwargs=model_args)
         thread.start()
@@ -78,34 +82,63 @@ def launch_jobs(config_dict_list):
     print("before starting")
 
     timings=[]
-    for i in range(10):
-        start = time.time()
-        print(f"start iter {i}")
+    if mode == "sequential":
+        print("wait!")
         start_barriers[0].wait()
+        start = time.time()
         end_barriers[0].wait()
         torch.cuda.synchronize()
-        print(f"Part A took {time.time()-start}")
-        # startB = time.time()
-        # start_barriers[1].wait()
-        # end_barriers[1].wait()
-        # torch.cuda.synchronize()
-        total_time = time.time()-start
-        #print(f"Part B took {time.time()-startB}")
-        print(f"Iteration {i} took {total_time} sec")
-        timings.append(total_time)
+        print(f"Client 0 took {time.time()-start} sec")
 
-    timings = timings[2:]
-    print(f"Avg is {np.median(np.asarray(timings))} sec")
+        start_barriers[1].wait()
+        startB = time.time()
+        end_barriers[1].wait()
+        torch.cuda.synchronize()
+        print(f"Client 1 took {time.time()-startB}")
+
+        total_time = time.time()-start
+        print(f"Time for both is {time.time()-start} sec")
+
+
+    elif mode == "streams":
+        start_barriers[0].wait()
+        start_barriers[1].wait()
+        start = time.time()
+        end_barriers[0].wait()
+        end_barriers[1].wait()
+        torch.cuda.synchronize()
+        print(f"Time for both is {time.time()-start} sec")
+
+    # for i in range(10):
+    #     start = time.time()
+    #     print(f"start iter {i}")
+    #     start_barriers[0].wait()
+    #     start_barriers[1].wait()
+
+    #     end_barriers[0].wait()
+    #     end_barriers[1].wait()
+    #     torch.cuda.synchronize()
+    #     # print(f"Part A took {time.time()-start}")
+    #     # startB = time.time()
+    #     # start_barriers[1].wait()
+    #     # end_barriers[1].wait()
+    #     # torch.cuda.synchronize()
+    #     total_time = time.time()-start
+    #     #print(f"Part B took {time.time()-startB}")
+    #     print(f"Iteration {i} took {total_time} sec")
+    #     timings.append(total_time)
+
+    # timings = timings[2:]
+    # print(f"Avg is {np.median(np.asarray(timings))} sec, Min is {min(timings)} sec")
 
     for thread in threads:
         thread.join()
 
     print("train joined!")
 
-    print("--------- all threads joined!")
-
 if __name__ == "__main__":
     config_file = sys.argv[1]
+    mode = sys.argv[2] # "sequential" or "streams"
     with open(config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict)
+    launch_jobs(config_dict, mode)

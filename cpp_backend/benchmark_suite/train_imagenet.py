@@ -18,15 +18,19 @@ import argparse
 import threading
 
 
-def imagenet_loop(model_name, batchsize, train, num_iters, sleep_time, local_rank, barriers, tid):
+def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barriers, tid):
 
     print(model_name, batchsize, local_rank, barriers, tid)
 
     # do only forward for now, experimental
     barriers[0].wait()
 
-    if tid==1:
-        time.sleep(5)
+    #if tid==1:
+    #    time.sleep(5)
+    if rps > 0:
+        sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    else:
+        sleep_times = [0]*num_iters
 
     ds = torch.cuda.default_stream()
 
@@ -79,18 +83,17 @@ def imagenet_loop(model_name, batchsize, train, num_iters, sleep_time, local_ran
                         output = model(data)
                 #torch.cuda.profiler.cudart().cudaProfilerStop()
 
+                time.sleep(sleep_times[batch_idx])
+                print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
+
                 batch_idx += 1
 
-                start_iter = time.time()
+                if (batch_idx == 1): # for backward
+                    barriers[0].wait()
 
-                # if (batch_idx == 1) and train: # for backward
-                #     barriers[0].wait()
-
-                print(f"{batch_idx} submitted! sent everything!")
 
                 # if batch_idx < num_iters:
                 #     barriers[0].wait()
 
-                time.sleep(sleep_time)
 
         print("Finished! Ready to join!")
