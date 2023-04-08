@@ -17,6 +17,17 @@ import os
 import argparse
 import threading
 
+class DummyDataLoader():
+    def __init__(self, batchsize):
+        self.batchsize = batchsize
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        data = torch.rand([self.batchsize, 3, 224, 224]).contiguous()
+        target = torch.ones([self.batchsize]).to(torch.long)
+        return data, target
 
 def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barriers, tid):
 
@@ -34,13 +45,10 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
 
     ds = torch.cuda.default_stream()
 
-    #barriers[0].wait()
-
     print("-------------- thread id:  ", threading.get_native_id())
 
-    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank).contiguous()
-    target = torch.ones([batchsize]).to(torch.long).to(local_rank)
-    #data = torch.rand([batchsize, 2048]).to(local_rank)
+    #data = torch.rand([batchsize, 3, 224, 224]).contiguous()
+    #target = torch.ones([batchsize]).to(torch.long)
     model = models.__dict__[model_name](num_classes=1000)
     model = model.to(0)
 
@@ -52,11 +60,23 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
         model.eval()
 
 
+    # train_transform =  transforms.Compose([
+    #     transforms.RandomResizedCrop(224),
+    #     transforms.RandomHorizontalFlip(),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))]
+    # )
+    # train_dataset = \
+    #         datasets.ImageFolder("/mnt/data/home/fot/imagenet/imagenet-raw-euwest4",transform=train_transform)
+    # train_loader = torch.utils.data.DataLoader(
+    #         train_dataset, batch_size=batchsize, num_workers=8)
+
+    train_loader = DummyDataLoader(batchsize)
+    train_iter = enumerate(train_loader)
+    batch_idx, batch = next(train_iter)
+
     print("Enter loop!")
 
-    s = torch.cuda.Stream()
-
-    #with torch.cuda.stream(s):
     if True:
         timings=[]
         for i in range(1):
@@ -73,21 +93,28 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
                 #torch.cuda.profiler.cudart().cudaProfilerStart()
 
                 if train:
+                    # data = torch.rand([batchsize, 3, 224, 224]).contiguous()
+                    # target = torch.ones([batchsize]).to(torch.long)
+                    # gpu_data = data.to(local_rank)
+                    # gpu_target = target.to(local_rank)
+                    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     optimizer.zero_grad()
-                    output = model(data)
-                    loss = criterion(output, target)
+                    output = model(gpu_data)
+                    loss = criterion(output, gpu_target)
                     loss.backward()
                     optimizer.step()
                 else:
                     with torch.no_grad():
-                        output = model(data)
+                        #data = torch.rand([batchsize, 3, 224, 224]).contiguous()
+                        #gpu_data = data.to(local_rank)
+                        gpu_data = batch[0].to(local_rank)
+                        output = model(gpu_data)
                 #torch.cuda.profiler.cudart().cudaProfilerStop()
 
                 time.sleep(sleep_times[batch_idx])
                 print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
-                batch_idx += 1
-
+                batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward
                     barriers[0].wait()
 

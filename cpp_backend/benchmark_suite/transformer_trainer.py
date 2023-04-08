@@ -6,7 +6,21 @@ from mem_transformer import MemTransformerLM
 import lamb
 import numpy as np
 
-def transformer_loop(batchsize, train, local_rank, barriers, tid):
+class DummyDataLoader():
+    def __init__(self, batchsize):
+        self.batchsize = batchsize
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        data = torch.ones((192, self.batchsize)).to(torch.int64)
+        target = torch.ones((192, self.batchsize)).to(torch.int64)
+        mems = torch.ones((16, 192, self.batchsize, 512)).to(torch.int64)
+
+        return data, target, mems
+
+def transformer_loop(batchsize, train, num_iters, local_rank, barriers, tid):
 
     barriers[0].wait()
 
@@ -35,9 +49,13 @@ def transformer_loop(batchsize, train, local_rank, barriers, tid):
         'sample_softmax': -1
     }
 
-    data = torch.ones((192, batchsize)).to(torch.int64).cuda()
-    target = torch.ones((192, batchsize)).to(torch.int64).cuda()
-    mems = torch.ones((16, 192, batchsize, 512)).to(torch.int64).cuda()
+    # data = torch.ones((192, batchsize)).to(torch.int64).cuda()
+    # target = torch.ones((192, batchsize)).to(torch.int64).cuda()
+    # mems = torch.ones((16, 192, batchsize, 512)).to(torch.int64).cuda()
+
+    train_loader = DummyDataLoader(batchsize)
+    train_iter = enumerate(train_loader)
+    batch_idx, batch = next(train_iter)
 
     torch.cuda.profiler.cudart().cudaProfilerStart()
 
@@ -58,28 +76,28 @@ def transformer_loop(batchsize, train, local_rank, barriers, tid):
         batch_idx = 0
         torch.cuda.synchronize()
 
-        while batch_idx < 30:
+        while batch_idx < num_iters:
             print(f"submit!, batch_idx is {batch_idx}")
             if train:
+                data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                 loss, output = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
                 optimizer.step()
             else:
                 with torch.no_grad():
+                    data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                     output = model(data, target, mems)
-
-            batch_idx += 1
 
             print("sent everything!")
 
-            if (batch_idx == 1) and train: # for backward
+            batch_idx, batch = next(train_iter)
+            if (batch_idx == 1): # for backward
                 barriers[0].wait()
 
-            if batch_idx < 30:
-                    barriers[0].wait()
+            # if batch_idx < 30:
+            #         barriers[0].wait()
 
-        torch.cuda.synchronize()
         epoch_time = time.time()-start
         timings.append(epoch_time)
         print("Epoch took: ",epoch_time)
