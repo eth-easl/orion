@@ -20,7 +20,7 @@ shared_config:
   use_dummy_data: true
   num_requests: 200
   num_warm_up_reqs: 20
-  mean_arrival_time: 0.1 # measured in seconds
+  request_rate: 10 # measured in 1/seconds
   percentile_positions:
     - 90
     - 95

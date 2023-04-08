@@ -26,14 +26,17 @@ class DummyDataLoader:
 def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info: BasicSyncInfo):
     """
     Invoke the func {num_requests} times with first {num_warm_up_reqs} iterations as warm up.
-    Measure how long each invocation takes and calculate statistics (average and percentiles) over it,
+    Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
     and finally write all data via {sync_info}. 
     """
-    mean_arrival_time = shared_config['mean_arrival_time']
-    percentile_positions = shared_config['percentile_positions']
-    latency_history = []
+    request_rate = shared_config['request_rate']
+    scale = 1 / request_rate
     seed = int(time.time())
     np.random.seed(seed)
+    intervals = random.exponential(scale=scale, size=(num_requests, ))
+    percentile_positions = shared_config['percentile_positions']
+    latency_history = []
+
     with torch.no_grad():
         for iter in range(num_requests):
             if iter == num_warm_up_reqs:
@@ -41,8 +44,7 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
                 sync_info.pre_measurement_prep(tid)
                 entire_inference_start_time = time.time()
 
-            interval = random.exponential(scale=mean_arrival_time)
-            time.sleep(interval)
+            time.sleep(intervals[iter])
             # start func invocation
             start_time = time.time()
             with torch.cuda.stream(stream):
