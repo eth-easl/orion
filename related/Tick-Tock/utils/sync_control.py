@@ -1,6 +1,6 @@
 import logging
 
-from utils.sync_info import SyncInfo
+from utils.sync_info import BasicSyncInfo
 import torch
 import logging
 
@@ -10,7 +10,7 @@ import logging
 
 class ForwardControl:
 
-    def __init__(self, thread_id: int, batch_idx: int, sync_info: SyncInfo, stream: torch.cuda.Stream) -> None:
+    def __init__(self, thread_id: int, batch_idx: int, sync_info: BasicSyncInfo, stream: torch.cuda.Stream) -> None:
         # we assume thread 0 starts first
         if thread_id not in {0, 1}:
             raise ValueError("thread_id can be either zero or one")
@@ -50,7 +50,7 @@ class ForwardControl:
 
 class BackwardControl:
 
-    def __init__(self, thread_id: int, batch_idx: int, sync_info: SyncInfo, stream: torch.cuda.Stream) -> None:
+    def __init__(self, thread_id: int, batch_idx: int, sync_info: BasicSyncInfo, stream: torch.cuda.Stream) -> None:
         # we assume thread 0 starts first
         if thread_id not in {0, 1}:
             raise ValueError("thread_id can be either zero or one")
@@ -87,19 +87,3 @@ class BackwardControl:
         # raise the exception as is if there is any
         return exc_type is None
 
-
-class TrainingControl:
-    def __init__(self, sync_info: SyncInfo, device):
-        self.sync_info = sync_info
-        self.device = device
-
-    def __enter__(self):
-        # wait for any preprocessing steps (e.g. moving the model, tensors to gpu) to complete
-        torch.cuda.synchronize(self.device)
-        if not self.sync_info.no_sync_control:
-            self.sync_info.barrier.wait()
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
-        # lift sync control as one thread has finished training
-        self.sync_info.no_sync_control = True
-        return exc_type is None

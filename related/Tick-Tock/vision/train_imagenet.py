@@ -3,12 +3,32 @@ from torchvision import models, datasets, transforms
 import torch.nn.functional as F
 import logging
 import utils
+from utils.sync_info import BasicSyncInfo
 import time
+
 from utils.sync_control import *
 
 
+def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
+    model.eval()
 
-def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    num_requests = shared_config['num_requests']
+    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+
+
+    train_loader_iter = iter(train_loader)
+
+    def eval():
+        data, _ = next(train_loader_iter)
+        data = data.to(device)
+        model(data)
+
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+
+def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
     my_stream = torch.cuda.Stream(device=device)
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
@@ -21,7 +41,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     for batch_idx, batch in enumerate(train_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            torch.cuda.synchronize(device)
+            my_stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
@@ -52,10 +72,10 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
-    sync_info.no_sync_control = True
-    torch.cuda.synchronize(device)
-    sync_info.post_measurement_prep(tid)
+    my_stream.synchronize()
     duration = time.time() - start_time
+    sync_info.post_measurement_prep(tid)
+    sync_info.write_kv(f'duration{tid}', duration)
     logging.info(f'tid {tid} it takes {duration} seconds to train imagenet')
     return duration
 
@@ -63,6 +83,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
 def setup(model_config, shared_config, device):
     torch.cuda.set_device(device)
     arc = model_config['arc']
+    logging.info(f'vision model with arc {arc}')
     model = models.__dict__[arc](num_classes=1000)
     model = model.to(device)
     optimizer_func = getattr(torch.optim, model_config['optimizer'])

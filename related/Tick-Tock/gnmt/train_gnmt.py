@@ -8,11 +8,12 @@ import utils
 
 import gnmt.seq2seq.train.trainer as trainers
 import gnmt.seq2seq.data.config as config
-from gnmt.seq2seq.data.dataset import LazyParallelDataset
+from gnmt.seq2seq.data.dataset import LazyParallelDataset, RawTextDataset
 from gnmt.seq2seq.data.tokenizer import Tokenizer
 from gnmt.seq2seq.models.gnmt import GNMT
 from gnmt.seq2seq.train.smoothing import LabelSmoothing
 from gnmt.seq2seq.utils import setup_seeds
+from gnmt.seq2seq.inference.beam_search import SequenceGenerator
 
 
 def pad_vocabulary(math):
@@ -29,6 +30,113 @@ def build_criterion(padding_idx, smoothing):
     else:
         criterion = LabelSmoothing(padding_idx, smoothing)
     return criterion
+
+
+def eval_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    # build tokenizer
+    wmt16_en_de_root = shared_config['wmt16_en_de_root']
+    args_vocab = os.path.join(wmt16_en_de_root, 'vocab.bpe.32000')
+    args_bpe_codes = os.path.join(wmt16_en_de_root, 'bpe.32000')
+    eval_dataset_path = os.path.join(wmt16_en_de_root, 'newstest2014.en')
+    args_lang = {'src': 'en', 'tgt': 'de'}
+
+    pad_vocab = pad_vocabulary(model_config['math'])
+    tokenizer = Tokenizer(args_vocab, args_bpe_codes, args_lang, pad_vocab)
+
+    # build GNMT model
+    vocab_size = tokenizer.vocab_size
+    batch_first = False
+    nn_model_config = {'hidden_size': 1024,
+                       'vocab_size': vocab_size,
+                       'num_layers': 4,
+                       'dropout': 0.2,
+                       'batch_first': batch_first,
+                       'share_embedding': True,
+                       }
+    model = GNMT(**nn_model_config)
+    model.type(torch.FloatTensor)
+    model = model.to(device)
+    model.eval()
+    data = RawTextDataset(
+        raw_datafile=eval_dataset_path,
+        tokenizer=tokenizer,
+        sort=False
+    )
+
+    batch_size = model_config['batch_size']
+    num_requests = shared_config['num_requests']
+    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    loader = data.get_loader(
+        batch_size=batch_size,
+        batch_first=batch_first,
+        pad=True,
+        repeat=num_requests,
+        num_workers=model_config['num_workers']
+    )
+    beam_size = 5
+    max_seq_len = 80
+    len_norm_factor = 0.6
+    cov_penalty_factor = 0.1
+    len_norm_const = 5.0
+    insert_target_start = [config.BOS]
+    bos = [insert_target_start] * (batch_size * beam_size)
+    bos = torch.tensor(bos, dtype=torch.int64, device=device)
+    if batch_first:
+        bos = bos.view(-1, 1)
+    else:
+        bos = bos.view(1, -1)
+
+    generator = SequenceGenerator(
+        model=model,
+        beam_size=beam_size,
+        max_seq_len=max_seq_len,
+        len_norm_factor=len_norm_factor,
+        len_norm_const=len_norm_const,
+        cov_penalty_factor=cov_penalty_factor
+    )
+
+    if beam_size == 1:
+        generator_func = generator.greedy_search
+    else:
+        generator_func = generator.beam_search
+
+    if shared_config['use_dummy_data']:
+        logging.info('gnmt uses dummy data')
+        try:
+            datum = torch.load(model_config['dummy_datum_path'])
+            src_single_content, src_single_len, tgt_single_content, tgt_single_len = datum
+            src_content = torch.stack([src_single_content for _ in range(batch_size)], dim=1)
+            src_len = torch.full((batch_size,), src_single_len)
+        except:
+            logging.info("Can't load dummy_datum_path; build dummy data on the fly")
+            dataloader_iter = iter(loader)
+            src, tgt = next(dataloader_iter)
+            src_content, src_len = src
+
+        src_content = src_content.to(device)
+        src_len = src_len.to(device)
+        # indices not used by model in eval()
+        # so we can set it as garbage value to align DummyDataLoader with loader
+        indices = 0
+        virtual_loader = utils.DummyDataLoader(batch=((src_content, src_len), indices))
+    else:
+        virtual_loader = loader
+
+    virtual_loader_iterator = iter(virtual_loader)
+
+
+    def eval():
+        src, indices = next(virtual_loader_iterator)
+        src, src_length = src
+        src = src.to(device)
+        src_length = src_length.to(device)
+        context = model.encode(src, src_length)
+        context = [context, src_length.clone(), None]
+        _ = generator_func(batch_size, bos, context)
+
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
 
 
 def train_wrapper(sync_info, tid: int, model_config, shared_config):
@@ -59,12 +167,12 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     vocab_size = tokenizer.vocab_size
     batch_first = False
     nn_model_config = {'hidden_size': 1024,
-                    'vocab_size': vocab_size,
-                    'num_layers': 4,
-                    'dropout': 0.2,
-                    'batch_first': batch_first,
-                    'share_embedding': True,
-                    }
+                       'vocab_size': vocab_size,
+                       'num_layers': 4,
+                       'dropout': 0.2,
+                       'batch_first': batch_first,
+                       'share_embedding': True,
+                       }
     model = GNMT(**nn_model_config).to(device)
 
     # define loss function (criterion) and optimizer
@@ -73,7 +181,8 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     # get data loaders
     batching_opt = {'shard_size': 80, 'num_buckets': 5}
     _, shuffling_seeds = setup_seeds(master_seed=None, epochs=1, device=device)
-    train_loader = train_data.get_loader(batch_size=model_config['batch_size'],
+    batch_size = model_config['batch_size']
+    train_loader = train_data.get_loader(batch_size=batch_size,
                                          seeds=shuffling_seeds,
                                          batch_first=batch_first,
                                          shuffle=True,
@@ -98,7 +207,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                           'decay_steps': 4,
                           'decay_factor': 0.5},
         train_iterations=total_train_iters,
-        keep_checkpoints=5, # however not used
+        keep_checkpoints=5,  # however not used
         math=model_config['math'],
         loss_scaling={
             'init_scale': 8192,
@@ -120,10 +229,20 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
 
     if shared_config['use_dummy_data']:
         logging.info('gnmt uses dummy data')
-        train_dataloader_iter = iter(train_loader)
-        src, tgt = next(train_dataloader_iter)
-        src_content, src_len = src
-        tgt_content, tgt_len = tgt
+        try:
+            datum = torch.load(model_config['dummy_datum_path'])
+            src_single_content, src_single_len, tgt_single_content, tgt_single_len = datum
+            src_content = torch.stack([src_single_content for _ in range(batch_size)], dim=1)
+            tgt_content = torch.stack([tgt_single_content for _ in range(batch_size)], dim=1)
+            src_len = torch.full((batch_size,), src_single_len)
+            tgt_len = torch.full((batch_size,), tgt_single_len)
+        except:
+            logging.info("Can't load dummy_datum_path; build dummy data on the fly")
+            train_dataloader_iter = iter(train_loader)
+            src, tgt = next(train_dataloader_iter)
+            src_content, src_len = src
+            tgt_content, tgt_len = tgt
+
         src_content = src_content.to(device)
         tgt_content = tgt_content.to(device)
         src_len = src_len.to(device)
@@ -139,7 +258,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     for batch_idx, (src, tgt) in enumerate(virtual_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            torch.cuda.synchronize(device)
+            my_stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
@@ -151,10 +270,9 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
-
-    sync_info.no_sync_control = True
-    torch.cuda.synchronize(device)
-    sync_info.post_measurement_prep(tid)
+    my_stream.synchronize()
     duration = time.time() - start_time
+    sync_info.post_measurement_prep(tid)
+    sync_info.write_kv(f'duration{tid}', duration)
     logging.info(f'tid {tid} it takes {duration} seconds to train gnmt')
     return duration

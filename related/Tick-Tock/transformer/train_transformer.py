@@ -3,7 +3,6 @@ import warnings
 
 import yaml
 import utils
-from utils.sync_info import SyncInfo
 from utils.sync_control import *
 import numpy as np
 import torch
@@ -81,9 +80,7 @@ def weights_init(m, model_consts):
             init_bias(m.r_bias)
 
 
-def train_wrapper(sync_info, tid: int, model_config, shared_config):
-    device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+def setup(model_config, shared_config, device):
     # Before we do anything with models, we want to ensure that we get fp16
     # execution of torch.einsum in APEX AMP.
     # Otherwise it'll default to "promote" mode, and we'll get fp32 operations.
@@ -156,15 +153,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 opt_level=model_config['apex_amp_opt_level'],
             )
 
-    model.train()
     train_iter = tr_iter.get_fixlen_iter()
-
-    enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
-    mem = None
-    clip = 0.25
-
-    num_iterations = model_config['num_iterations']
-    warm_up_iters = model_config['warm_up_iters']
     if shared_config['use_dummy_data']:
         first_batch = next(train_iter)
         for t in first_batch:
@@ -174,12 +163,50 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     else:
         virtual_loader = train_iter
 
+    return model, virtual_loader, optimizer
+
+
+def eval_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    model, data_loader, _ = setup(model_config, shared_config, device)
+    model.eval()
+
+    num_requests = shared_config['num_requests']
+    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+
+    loader_iterator = iter(data_loader)
+
+    mems = None
+    def eval():
+        nonlocal mems
+        data, target, _, _ = next(loader_iterator)
+        _, mems = model(data, target, mems)
+
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+
+
+def train_wrapper(sync_info, tid: int, model_config, shared_config):
+    device = torch.device("cuda:0")
+    my_stream = torch.cuda.Stream(device=device)
+    model, data_loader, optimizer = setup(model_config, shared_config, device)
+
+    model.train()
+
+    enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
+    mem = None
+    clip = 0.25
+
+    num_iterations = model_config['num_iterations']
+    warm_up_iters = model_config['warm_up_iters']
+
+
     logging.info(f'transformer is set up with {num_iterations}')
 
-    for batch_idx, (data, target, seq_len, _) in enumerate(virtual_loader):
+    for batch_idx, (data, target, seq_len, _) in enumerate(data_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            torch.cuda.synchronize(device)
+            my_stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
@@ -215,11 +242,10 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
-
-    sync_info.no_sync_control = True
-    torch.cuda.synchronize(device)
-    sync_info.post_measurement_prep(tid)
+    my_stream.synchronize()
     duration = time.time() - start_time
+    sync_info.post_measurement_prep(tid)
+    sync_info.write_kv(f'duration{tid}', duration)
     logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
     return duration
 
