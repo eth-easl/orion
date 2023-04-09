@@ -5,12 +5,31 @@ import modeling
 
 from optimization import BertAdam
 
+class DummyDataLoader():
+    def __init__(self, batchsize):
+        self.batchsize = batchsize
 
-def bert_loop(batchsize, train, local_rank, barriers, tid):
+    def __iter__(self):
+        return self
 
-    print("ENTER!")
+    def __next__(self):
+        input_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
+        segment_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
+        input_mask = torch.ones((self.batchsize, 384)).to(torch.int64)
+        start_positions = torch.zeros((self.batchsize)).to(torch.int64)
+        end_positions = torch.ones((self.batchsize)).to(torch.int64)
+
+        return input_ids, segment_ids, input_mask, start_positions, end_positions
+
+def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
 
     barriers[0].wait()
+
+    if rps > 0:
+        sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    else:
+        sleep_times = [0]*num_iters
+
     model_config = {
         "attention_probs_dropout_prob": 0.1,
         "hidden_act": "gelu",
@@ -33,11 +52,6 @@ def bert_loop(batchsize, train, local_rank, barriers, tid):
 
     print("-------------- thread id:  ", threading.get_native_id())
 
-    input_ids = torch.ones((batchsize, 384)).to(torch.int64).to(0)
-    segment_ids = torch.ones((batchsize, 384)).to(torch.int64).to(0)
-    input_mask = torch.ones((batchsize, 384)).to(torch.int64).to(0)
-    start_positions = torch.zeros((batchsize)).to(torch.int64).to(0)
-    end_positions = torch.ones((batchsize)).to(torch.int64).to(0)
 
     model = modeling.BertForQuestionAnswering(config).to(0)
 
@@ -55,21 +69,25 @@ def bert_loop(batchsize, train, local_rank, barriers, tid):
     else:
         model.eval()
 
+    train_loader = DummyDataLoader(batchsize)
+    train_iter = enumerate(train_loader)
+    batch_idx, batch = next(train_iter)
+    
     for i in range(1):
         print("Start epoch: ", i)
 
         start = time.time()
         start_iter = time.time()
-        batch_idx = 0
         torch.cuda.synchronize()
                                 
-        while batch_idx < 30:
+        while batch_idx < num_iters:
     
             print(f"submit!, batch_idx is {batch_idx}")
             #torch.cuda.profiler.cudart().cudaProfilerStart()
 
             if train:
                 optimizer.zero_grad()
+                input_ids, segment_ids, input_mask, start_positions, end_positions = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank), batch[3].to(local_rank), batch[4].to(local_rank)
                 start_logits, end_logits = model(input_ids, segment_ids, input_mask)
                 ignored_index = start_logits.size(1)
                 loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
@@ -82,16 +100,15 @@ def bert_loop(batchsize, train, local_rank, barriers, tid):
                 with torch.no_grad():
                     output = model(input_ids, segment_ids, input_mask)
 
-            #torch.cuda.profiler.cudart().cudaProfilerStop()
-            #print(output)
-            batch_idx += 1
+            time.sleep(sleep_times[batch_idx])
+            print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
-            print("sent everything!")
-
-            #if (batch_idx == 1) and train: # for backward
-            #    barriers[0].wait()
-
-            if batch_idx < 30:
+            batch_idx, batch = next(train_iter)
+            if (batch_idx == 1): # for backward
                 barriers[0].wait()
 
-    print("Epoch took: ", time.time()-start)
+            #if batch_idx < num_iters:
+            #    barriers[0].wait()
+
+    print("Finished! Ready to join!")
+

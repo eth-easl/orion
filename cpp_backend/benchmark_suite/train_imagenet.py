@@ -105,8 +105,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                     # gpu_data = data.to(local_rank)
                     # gpu_target = target.to(local_rank)
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
-                    if batch_idx > 0:
-                        optimizer.zero_grad()
+                    optimizer.zero_grad()
                     output = model(gpu_data)
                     loss = criterion(output, gpu_target)
                     loss.backward()

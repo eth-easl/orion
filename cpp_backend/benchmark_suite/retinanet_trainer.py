@@ -61,7 +61,6 @@ def retinanet_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, bar
 
         start = time.time()
         start_iter = time.time()
-        batch_idx = 0
 
         while batch_idx < num_iters:
             print(f"submit!, batch_idx is {batch_idx}")

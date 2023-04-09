@@ -20,9 +20,14 @@ class DummyDataLoader():
 
         return data, target, mems
 
-def transformer_loop(batchsize, train, num_iters, local_rank, barriers, tid):
+def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
 
     barriers[0].wait()
+
+    if rps > 0:
+        sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    else:
+        sleep_times = [0]*num_iters
 
     model_config = {
         'n_token': 267735,
@@ -49,10 +54,6 @@ def transformer_loop(batchsize, train, num_iters, local_rank, barriers, tid):
         'sample_softmax': -1
     }
 
-    # data = torch.ones((192, batchsize)).to(torch.int64).cuda()
-    # target = torch.ones((192, batchsize)).to(torch.int64).cuda()
-    # mems = torch.ones((16, 192, batchsize, 512)).to(torch.int64).cuda()
-
     train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
@@ -73,7 +74,6 @@ def transformer_loop(batchsize, train, num_iters, local_rank, barriers, tid):
 
         start = time.time()
         start_iter = time.time()
-        batch_idx = 0
         torch.cuda.synchronize()
 
         while batch_idx < num_iters:
@@ -89,13 +89,14 @@ def transformer_loop(batchsize, train, num_iters, local_rank, barriers, tid):
                     data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                     output = model(data, target, mems)
 
-            print("sent everything!")
+            time.sleep(sleep_times[batch_idx])
+            print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
             batch_idx, batch = next(train_iter)
             if (batch_idx == 1): # for backward
                 barriers[0].wait()
 
-            # if batch_idx < 30:
+            # if batch_idx < num_iters:
             #         barriers[0].wait()
 
         epoch_time = time.time()-start

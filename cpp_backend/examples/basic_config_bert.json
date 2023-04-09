@@ -4,8 +4,11 @@
 		"arch": "bert",
 		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_4_fb0",
 		"num_kernels": 9361,
+		"num_iters": 10,
 		"args": {
 			"batchsize": 4,
+			"rps": 0,
+			"dummy_data": false,
 			"train": true
 		}
 	}
