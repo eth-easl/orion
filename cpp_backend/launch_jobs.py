@@ -10,11 +10,11 @@ import torch
 
 # sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
 # from benchmark_suite.gnmt_trainer import gnmt_loop
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
+from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
 from bert_trainer import bert_loop
-#sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
-#sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
-#from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
 from benchmark_suite.retinanet_trainer import retinanet_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
@@ -27,8 +27,6 @@ from benchmark_suite.bnorm_trainer import bnorm_loop
 from benchmark_suite.conv_bn_trainer import conv_bn_loop
 
 from scheduler_frontend import PyScheduler
-torch.set_num_threads(2)
-
 
 function_dict = {
     "resnet50": imagenet_loop,
@@ -39,8 +37,7 @@ function_dict = {
     "bnorm": bnorm_loop,
     "conv_bnorm": conv_bn_loop,
     "bert": bert_loop,
-    "gnmt": None, #gnmt_loop,
-    "transformer": None, #transformer_loop,
+    "transformer": transformer_loop,
     "retinanet": retinanet_loop,
 }
 
@@ -110,7 +107,7 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
             num_iters,
             profile,
             run_eval,
-            True
+            False
         )
     )
 

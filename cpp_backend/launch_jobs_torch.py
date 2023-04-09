@@ -13,13 +13,13 @@ torch.set_num_threads(2)
 
 # sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
 # from benchmark_suite.gnmt_trainer import gnmt_loop
-# sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
-# from benchmark_suite.bert_trainer import bert_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
-from benchmark_suite.transformer_trainer import transformer_loop
+from benchmark_suite.transformer_trainer_torch import transformer_loop
+sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
+from bert_trainer_torch import bert_loop
 sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
-#from benchmark_suite.retinanet_trainer import retinanet_loop
+from benchmark_suite.retinanet_trainer_torch import retinanet_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
 #from benchmark_suite.dlrm_trainer import dlrm_loop
 
@@ -31,11 +31,11 @@ function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
     "mobilenet_v2": imagenet_loop,
-    "bert": None, #bert_loop,
+    "efficientnet": imagenet_loop,
+    "bert": bert_loop,
     "gnmt": None, #gnmt_loop,
     "transformer": transformer_loop,
-    "retinanet": None, #retinanet_loop,
-    "dlrm": None, #dlrm_loop
+    "retinanet": retinanet_loop,
 }
 
 def seed_everything(seed: int):
@@ -90,11 +90,11 @@ def launch_jobs(config_dict_list, mode):
         torch.cuda.synchronize()
         print(f"Client 0 took {time.time()-start} sec")
 
-        start_barriers[1].wait()
-        startB = time.time()
-        end_barriers[1].wait()
-        torch.cuda.synchronize()
-        print(f"Client 1 took {time.time()-startB}")
+        # start_barriers[1].wait()
+        # startB = time.time()
+        # end_barriers[1].wait()
+        # torch.cuda.synchronize()
+        # print(f"Client 1 took {time.time()-startB}")
 
         total_time = time.time()-start
         print(f"Time for both is {time.time()-start} sec")
