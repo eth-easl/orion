@@ -1,14 +1,16 @@
 [
-
 	{
-		"arch": "resnet101",
-		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/resnet101_4_fb0",
-		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/resnet101_4_fb1",
-        "num_kernels": 1219,
-        "additional_num_kernels": 1847,
+		"arch": "efficientnet",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/efficientnet_32_fb0",
+		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/efficientnet_32_fb1",
+		"num_kernels": 3040,
+		"additional_num_kernels": 4338,
+		"num_iters": 10,
 		"args": {
-			"model_name": "resnet101",
-			"batchsize": 4,
+			"model_name": "efficientnet_v2_m",
+			"batchsize": 32,
+            "rps": 0,
+			"dummy_data": false,
 			"train": true
 		}
 	}

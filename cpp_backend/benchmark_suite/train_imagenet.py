@@ -29,7 +29,26 @@ class DummyDataLoader():
         target = torch.ones([self.batchsize]).to(torch.long)
         return data, target
 
-def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barriers, tid):
+class RealDataLoader():
+    def __init__(self, batchsize):
+        train_transform =  transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))]
+        )
+        train_dataset = \
+                datasets.ImageFolder("/mnt/data/home/fot/imagenet/imagenet-raw-euwest4",transform=train_transform)
+        self.train_loader = torch.utils.data.DataLoader(
+                train_dataset, batch_size=batchsize, num_workers=8)
+
+    def __iter__(self):
+        print("Inside iter")
+        return iter(self.train_loader)
+
+
+
+def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
 
     print(model_name, batchsize, local_rank, barriers, tid)
 
@@ -42,8 +61,6 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
         sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
     else:
         sleep_times = [0]*num_iters
-
-    ds = torch.cuda.default_stream()
 
     print("-------------- thread id:  ", threading.get_native_id())
 
@@ -59,19 +76,11 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
     else:
         model.eval()
 
+    if dummy_data:
+        train_loader = DummyDataLoader(batchsize)
+    else:
+        train_loader = RealDataLoader(batchsize)
 
-    # train_transform =  transforms.Compose([
-    #     transforms.RandomResizedCrop(224),
-    #     transforms.RandomHorizontalFlip(),
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))]
-    # )
-    # train_dataset = \
-    #         datasets.ImageFolder("/mnt/data/home/fot/imagenet/imagenet-raw-euwest4",transform=train_transform)
-    # train_loader = torch.utils.data.DataLoader(
-    #         train_dataset, batch_size=batchsize, num_workers=8)
-
-    train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
 
@@ -85,8 +94,6 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
             start = time.time()
             start_iter = time.time()
 
-            batch_idx = 0
-
             while batch_idx < num_iters:
 
                 print(f"submit!, batch_idx is {batch_idx}")
@@ -98,7 +105,8 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, local_rank, barr
                     # gpu_data = data.to(local_rank)
                     # gpu_target = target.to(local_rank)
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
-                    optimizer.zero_grad()
+                    if batch_idx > 0:
+                        optimizer.zero_grad()
                     output = model(gpu_data)
                     loss = criterion(output, gpu_target)
                     loss.backward()
