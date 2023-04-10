@@ -7,24 +7,24 @@ from model.retinanet import retinanet_from_backbone
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        images = [torch.ones((3,768,1024)).to(torch.float32) for _ in range(self.batchsize)]
-        targets = [
+        self.images = [torch.ones((3,768,1024)).to(torch.float32) for _ in range(self.batchsize)]
+        self.targets = [
             {
                 'boxes': torch.tensor([[   3.8400,   42.2873,  597.1200,  660.5751],
                             [ 367.3600, 2.5626, 1008.6400,  682.3594]]),
                 'labels': torch.tensor([148, 257]),
                 'image_id':  torch.tensor([299630]),
                 'area': torch.tensor([366817.7812, 435940.0625]),
-            '   iscrowd': torch.tensor([0, 0]),
+                'iscrowd': torch.tensor([0, 0]),
             }
             for _ in range(self.batchsize)
         ]
-        return images, targets
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.images, self.targets
 
 
 def retinanet_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):

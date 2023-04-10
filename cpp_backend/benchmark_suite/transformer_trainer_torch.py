@@ -9,15 +9,14 @@ import numpy as np
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
+        self.data = torch.ones((192, self.batchsize)).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize)).to(torch.int64)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        data = torch.ones((192, self.batchsize)).to(torch.int64)
-        target = torch.ones((192, self.batchsize)).to(torch.int64)
-
-        return data, target
+        return self.data, self.target
 
 def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
 

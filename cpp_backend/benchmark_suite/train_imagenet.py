@@ -20,14 +20,14 @@ import threading
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
+        self.data = torch.rand([self.batchsize, 3, 224, 224]).contiguous()
+        self.target = torch.ones([self.batchsize]).to(torch.long)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        data = torch.rand([self.batchsize, 3, 224, 224]).contiguous()
-        target = torch.ones([self.batchsize]).to(torch.long)
-        return data, target
+        return self.data, self.target
 
 class RealDataLoader():
     def __init__(self, batchsize):
@@ -84,7 +84,9 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
 
+    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
     print("Enter loop!")
+
 
     if True:
         timings=[]
@@ -100,10 +102,6 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                 #torch.cuda.profiler.cudart().cudaProfilerStart()
 
                 if train:
-                    # data = torch.rand([batchsize, 3, 224, 224]).contiguous()
-                    # target = torch.ones([batchsize]).to(torch.long)
-                    # gpu_data = data.to(local_rank)
-                    # gpu_target = target.to(local_rank)
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     optimizer.zero_grad()
                     output = model(gpu_data)
@@ -112,14 +110,12 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                     optimizer.step()
                 else:
                     with torch.no_grad():
-                        #data = torch.rand([batchsize, 3, 224, 224]).contiguous()
-                        #gpu_data = data.to(local_rank)
                         gpu_data = batch[0].to(local_rank)
                         output = model(gpu_data)
                 #torch.cuda.profiler.cudart().cudaProfilerStop()
 
                 time.sleep(sleep_times[batch_idx])
-                print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
+                #print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
                 batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward

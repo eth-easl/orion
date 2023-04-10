@@ -8,18 +8,17 @@ from optimization import BertAdam
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
+        self.input_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
+        self.segment_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
+        self.input_mask = torch.ones((self.batchsize, 384)).to(torch.int64)
+        self.start_positions = torch.zeros((self.batchsize,)).to(torch.int64)
+        self.end_positions = torch.ones((self.batchsize,)).to(torch.int64)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        input_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
-        segment_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
-        input_mask = torch.ones((self.batchsize, 384)).to(torch.int64)
-        start_positions = torch.zeros((self.batchsize)).to(torch.int64)
-        end_positions = torch.ones((self.batchsize)).to(torch.int64)
-
-        return input_ids, segment_ids, input_mask, start_positions, end_positions
+        return self.input_ids, self.segment_ids, self.input_mask, self.start_positions, self.end_positions
 
 def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
 
@@ -72,16 +71,16 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
     train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
-    
+
     for i in range(1):
         print("Start epoch: ", i)
 
         start = time.time()
         start_iter = time.time()
         torch.cuda.synchronize()
-                                
+
         while batch_idx < num_iters:
-    
+
             print(f"submit!, batch_idx is {batch_idx}")
             #torch.cuda.profiler.cudart().cudaProfilerStart()
 
@@ -112,4 +111,3 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
             #    barriers[0].wait()
 
     print("Finished! Ready to join!")
-

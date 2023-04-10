@@ -9,16 +9,14 @@ import numpy as np
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
+        self.data = torch.ones((192, self.batchsize)).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize)).to(torch.int64)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        data = torch.ones((192, self.batchsize)).to(torch.int64)
-        target = torch.ones((192, self.batchsize)).to(torch.int64)
-        #mems = torch.ones((16, 192, self.batchsize, 512)).to(torch.int64)
-
-        return data, target
+        return self.data, self.target
 
 def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
 
@@ -81,7 +79,7 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, b
             print(f"submit!, batch_idx is {batch_idx}")
             if train:
                 data, target = batch[0].to(local_rank), batch[1].to(local_rank)
-                loss, mem = model(data, target, mems)
+                loss, mems = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
                 optimizer.step()

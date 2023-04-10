@@ -20,14 +20,14 @@ import threading
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
+        self.data = torch.rand([self.batchsize, 3, 224, 224]).contiguous()
+        self.target = torch.ones([self.batchsize]).to(torch.long)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        data = torch.rand([self.batchsize, 3, 224, 224]).contiguous()
-        target = torch.ones([self.batchsize]).to(torch.long)
-        return data, target
+        return self.data, self.target
 
 class RealDataLoader():
     def __init__(self, batchsize):
@@ -77,7 +77,12 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
         train_loader = RealDataLoader(batchsize)
 
     train_iter = enumerate(train_loader)
+    print(tid, train_iter)
+
     batch_idx, batch = next(train_iter)
+
+    gpu_data = batch[0].to(local_rank)
+    start_barriers[tid].wait()
 
     print("Enter loop!")
 
@@ -85,10 +90,10 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
         for i in range(1):
             print("Start epoch: ", i)
 
+            start = time.time()
             while batch_idx < num_iters:
 
-                print(f"submit!, batch_idx is {batch_idx}")
-                start = time.time()
+                #print(f"submit!, batch_idx is {batch_idx}")
 
                 if train:
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -99,17 +104,21 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                     optimizer.step()
                 else:
                     with torch.no_grad():
+                        startiter = time.time()
                         gpu_data = batch[0].to(local_rank)
                         output = model(gpu_data)
-
-                s.synchronize()
-                iter_time = time.time()-start
+                        s.synchronize()
+                iter_time = time.time()-startiter
                 timings.append(iter_time)
 
                 time.sleep(sleep_times[batch_idx])
                 print(f"{batch_idx} finished, took {iter_time} sec, now sleep for {sleep_times[batch_idx]} sec")
 
-                batch_idx, batch = next(train_iter)
+                #v = time.time()
+                batch_idx,batch = next(train_iter)
+                #batch_idx += 1
+                #print(f"It took {time.time()-v}")
+
                 # if batch_idx < num_iters-1:
                 #     start_barriers[tid].wait()
 
