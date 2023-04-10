@@ -16,9 +16,8 @@ class DummyDataLoader():
     def __next__(self):
         data = torch.ones((192, self.batchsize)).to(torch.int64)
         target = torch.ones((192, self.batchsize)).to(torch.int64)
-        mems = torch.ones((16, 192, self.batchsize, 512)).to(torch.int64)
 
-        return data, target, mems
+        return data, target
 
 def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
 
@@ -69,6 +68,7 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, s
     else:
         model.eval()
 
+    mems = None
     with torch.cuda.stream(s):
         for i in range(1):
             print("Start epoch: ", i)
@@ -78,15 +78,15 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, s
                 start = time.time()
 
                 if train:
-                    data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
-                    loss, output = model(data, target, mems)
+                    data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+                    loss, mems = model(data, target, mems)
                     loss = loss.float().mean().type_as(loss)
                     loss.backward()
                     optimizer.step()
                 else:
                     with torch.no_grad():
-                        data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
-                        output = model(data, target, mems)
+                        data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+                        output, mems = model(data, target, mems)
 
                 s.synchronize()
                 iter_time = time.time()-start

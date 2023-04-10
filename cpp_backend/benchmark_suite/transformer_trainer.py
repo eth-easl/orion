@@ -16,9 +16,9 @@ class DummyDataLoader():
     def __next__(self):
         data = torch.ones((192, self.batchsize)).to(torch.int64)
         target = torch.ones((192, self.batchsize)).to(torch.int64)
-        mems = torch.ones((16, 192, self.batchsize, 512)).to(torch.int64)
+        #mems = torch.ones((16, 192, self.batchsize, 512)).to(torch.int64)
 
-        return data, target, mems
+        return data, target
 
 def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
 
@@ -69,6 +69,7 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, b
         model.eval()
 
     timings=[]
+    mems = None
     for i in range(1):
         print("Start epoch: ", i)
 
@@ -79,15 +80,15 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, b
         while batch_idx < num_iters:
             print(f"submit!, batch_idx is {batch_idx}")
             if train:
-                data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
-                loss, output = model(data, target, mems)
+                data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+                loss, mem = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
                 optimizer.step()
             else:
                 with torch.no_grad():
-                    data, target, mems = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
-                    output = model(data, target, mems)
+                    data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+                    output, mems = model(data, target, mems)
 
             time.sleep(sleep_times[batch_idx])
             print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
