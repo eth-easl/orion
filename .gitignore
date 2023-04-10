@@ -11,3 +11,7 @@ model_kernels/*
 .DS_Store
 .idea/
 __pycache__/
+cpp_backend/examples/*
+cpp_backend/eval/*
+cpp_backend/model_kernels/*
+scripts/process_intercepter_output.py
