@@ -82,7 +82,7 @@ transformer:
   num_iterations: 200
   warm_up_iters: 20
 retinanet:
-  dataset_name: coco # coco, openimages, or openimages-mlperf
+  dataset_name: openimages-mlperf # coco, openimages, or openimages-mlperf
   use_amp: false
   num_workers: 2
   batch_size: 8
