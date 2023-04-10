@@ -139,18 +139,17 @@ def setup(model_config, shared_config, device):
                                   num_workers=model_config['num_workers'])
 
     if shared_config['use_dummy_data']:
-        # fetch a batch from real train_dataloader
-        train_dataloader_iter = iter(train_dataloader)
-        first_batch = next(train_dataloader_iter)
-        for t in first_batch:
-            logging.info(f'part of dummy data shape: {t.shape}')
-        first_batch = tuple(t.to(device) for t in first_batch)
-
-        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+        input_ids = torch.ones((batch_size, 384)).to(torch.int64)
+        segment_ids = torch.ones((batch_size, 384)).to(torch.int64)
+        input_mask = torch.ones((batch_size, 384)).to(torch.int64)
+        start_positions = torch.zeros((batch_size, )).to(torch.int64)
+        end_positions = torch.ones((batch_size, )).to(torch.int64)
+        virtual_loader = utils.DummyDataLoader(batch=(input_ids, input_mask, segment_ids, start_positions, end_positions))
     else:
         virtual_loader = train_dataloader
 
     return model, virtual_loader, optimizer
+
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
@@ -171,6 +170,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         model(input_ids, segment_ids, input_mask)
 
     utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")

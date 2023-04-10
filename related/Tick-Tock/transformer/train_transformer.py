@@ -23,7 +23,6 @@ except ModuleNotFoundError:
 dataset = 'wt103'
 vocab = 'word'
 
-
 def init_weight(weight, model_consts):
     # if init == 'uniform':
     #     nn.init.uniform_(weight, -0.1, 0.1)
@@ -155,11 +154,10 @@ def setup(model_config, shared_config, device):
 
     train_iter = tr_iter.get_fixlen_iter()
     if shared_config['use_dummy_data']:
-        first_batch = next(train_iter)
-        for t in first_batch:
-            if torch.is_tensor(t):
-                logging.info(f'part of dummy data shape: {t.shape}')
-        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+        data = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+        target = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+        # The later two parts are not used in either training or inference. They are set to align its behavior with real loader.
+        virtual_loader = utils.DummyDataLoader(batch=(data, target, 1, 1))
     else:
         virtual_loader = train_iter
 

@@ -9,6 +9,7 @@ import time
 from utils.sync_control import *
 
 
+
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
     my_stream = torch.cuda.Stream(device=device)
@@ -92,12 +93,10 @@ def setup(model_config, shared_config, device):
     metric_fn = F.cross_entropy
 
     if shared_config['use_dummy_data']:
-        train_loader = utils.DummyDataLoader(
-            batch=(
-                torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device),
-                torch.randint(high=1000, size=(batch_size,)).to(device)
-            )
-        )
+        train_loader = utils.DummyDataLoader(batch=(
+            torch.rand([batch_size, 3, 224, 224]).contiguous(),
+            torch.ones([batch_size]).to(torch.long)
+        ))
     else:
         if arc == 'inception_v3':
             train_transform = transforms.Compose([
