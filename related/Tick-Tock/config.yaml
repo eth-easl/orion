@@ -68,7 +68,7 @@ bert:
   squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
   batch_size: 16
   num_workers: 2
-  arch: base # either base or large
+  arch: large # either base or large
   num_iterations: 200
   warm_up_iters: 20
   large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'

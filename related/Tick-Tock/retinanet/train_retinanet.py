@@ -12,7 +12,7 @@ def get_dataset_fn(name, shared_config):
     paths = {
         "coco": (get_coco, 91, shared_config['coco_root']),
         "openimages": (get_openimages, 601, None),  # Full openimages dataset
-        "openimages-mlperf": (get_openimages, None),  # L0 classes with more than 1000 samples
+        "openimages-mlperf": (get_openimages, 264, None),  # L0 classes with more than 1000 samples
     }
     return paths[name]
 
