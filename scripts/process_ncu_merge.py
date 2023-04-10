@@ -64,10 +64,16 @@ for i, row in df.iterrows():
 
 '''
 conv_info = []
+l = df.to_dict('records')
+print(len(l))
 
-for i, row in df.iterrows():
+i = 0
+num_rows = len(l)
+while i < num_rows:
+    row = l[i]
     x = row['Kernel_Name']
     if ('memset' in x) or ('memcpy' in x):
+        i += 1
         continue
     #processed_kernel_names.append(x)
 
@@ -114,8 +120,22 @@ for i, row in df.iterrows():
         else:
             processed_kernel_names.append([x,  row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
-    elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
-        processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+    #Comment for NLP models
+    # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
+    #     processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+
+    # transformer
+    elif 'volta_sgemm_32x128_tn' in x:
+        # check next row
+        next_row = l[i+1]
+        sms = row["SM_needed"]
+        duration = row["Duration(ns)"]
+        profile = row["Roofline_prof"]
+        # if 'splitKreduce_kernel' in next_row['Kernel_Name']:
+        #     sms = max(sms, next_row["SM_needed"])
+        #     duration += next_row["Duration(ns)"]
+        #     profile = get_profile([profile, next_row["Roofline_prof"]], profile)
+        processed_kernel_names.append([x, profile, 0, sms, duration])
 
     elif 'splitKreduce_kernel' in x:
         # part of cublas mm
@@ -127,6 +147,7 @@ for i, row in df.iterrows():
         tokens = x.split('<')
         #print(tokens[0])
         processed_kernel_names.append([tokens[0],  row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+    i += 1
 
 sms_needed = []
 for i,x in enumerate(processed_kernel_names):

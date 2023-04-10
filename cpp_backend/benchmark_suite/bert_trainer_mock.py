@@ -98,6 +98,7 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
                 optimizer.step()
             else:
                 with torch.no_grad():
+                    input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                     output = model(input_ids, segment_ids, input_mask)
 
             time.sleep(sleep_times[batch_idx])
