@@ -22,7 +22,15 @@ model_to_wrapper = {
         'train': nasnet_train_wrapper,
         'eval': None,
     },
-    'vision': {
+    'resnet50': {
+        'train': vision_train_wrapper,
+        'eval': vision_eval_wrapper,
+    },
+    'resnet101': {
+        'train': vision_train_wrapper,
+        'eval': vision_eval_wrapper,
+    },
+    'mobilenet_v2': {
         'train': vision_train_wrapper,
         'eval': vision_eval_wrapper,
     },
@@ -74,16 +82,11 @@ if __name__ == "__main__":
     model1_mode = config['model1']['mode']
     model0_config = config[model0_name]
     model1_config = config[model1_name]
-    readable_model0_name = readable_model_name(model0_name, model0_config)
-    readable_model1_name = readable_model_name(model1_name, model1_config)
-    if model0_name == 'vision1':
-        model0_name = 'vision'
-    if model1_name == 'vision1':
-        model1_name = 'vision'
+
     policy = config['policy']
 
     if args.log is None:
-        args.log = f'{model0_mode}-{readable_model0_name}-{model1_mode}-{readable_model1_name}-{policy}.log'
+        args.log = f'{model0_mode}-{model0_name}-{model1_mode}-{model1_name}-{policy}.log'
 
     logging.basicConfig(
         level=logging.INFO,
@@ -176,6 +179,6 @@ if __name__ == "__main__":
         data_manager.write_kv('duration', duration)
 
     notifier.notify(
-        subject=f'The experiment training {readable_model0_name} and {readable_model1_name} with {policy} is finished!',
+        subject=f'The experiment training {model0_name} and {model1_name} with {policy} is finished!',
         body=utils.dict2pretty_str(config)
     )

@@ -4,6 +4,7 @@ import logging
 import utils
 import os
 from utils import notifier
+import json
 
 
 def generate_configs(default_config, **kwargs):
@@ -29,27 +30,25 @@ def run(config, combination_name):
     os.system(f"python main.py --log ./{log_file} --config ./{config_file_name}")
     logging.info('training finished.')
 
+    # report some statistics
+    json_file =f'{log_file}.json'
+    try:
+        with open(f'./{json_file}', 'r') as file:
+            dict_data = json.load(file)
 
-def make_ordered_pair(model0, model1):
-    if model0 <= model1:
-        return model0, model1, True
-    else:
-        return model1, model0, False
+        model0 = config['model0']['name']
+        model1 = config['model1']['name']
+        round_func = lambda val: round(val, 2)
+
+        logging.info(f"results for {model0} and {model1}")
+        logging.info(f"p50: {round_func(dict_data['p50-0'])} {round_func(dict_data['p50-1'])}")
+        logging.info(f"p95: {round_func(dict_data['p95-0'])} {round_func(dict_data['p95-1'])}")
+        logging.info(f"duration: {round_func(dict_data['duration'])}")
+    except:
+        logging.info("the json data file cannot be opened")
 
 
-def find_num_requests(model0, model1, library):
-    if model0 <= model1:
-        return library[(model0, model1)]
-    else:
-        val1, val0 = library[(model1, model0)]
-        return val0, val1
 
-
-def canonical_name(model_name, model_config):
-    if model_name in ['vision', 'vision1']:
-        return model_config['arch']
-    else:
-        return model_name
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -65,45 +64,32 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_names = ['vision']
-    model1_names = ['vision1']
-    model0_modes = ['eval']
-    model1_modes = ['eval']
-    model_to_kwargs = {
-        'transformer': {
-            'batch_size': [4],
-            'arch': ['base'],
-        },
-        'vision': {
-            'batch_size': [4],
-            'arch': ['resnet50', 'mobilenet_v2'],
-        },
-        'vision1': {
-            'batch_size': [4],
-            'arch': ['resnet101', 'mobilenet_v2'],
-        },
-        'bert': {
-            'batch_size': [2],
-            'arch': ['base']
-        },
-        'retinanet': {
-            'batch_size': [4]
-        },
-    }
+    model0_mode = 'eval'
+    model1_mode = 'eval'
 
     policies = ['MPS-process']
-    skip_identical_models = False
-    skip_heterogeneous_models = False
     use_dummy_data = True
     request_rate = 0
 
     model_pair_to_num_requests = {
+        ('resnet50', 'bert'): (1000, 350),
+        ('mobilenet_v2', 'bert'): (1000, 200),
+        ('resnet101', 'bert'): (500, 350),
+        ('bert', 'bert'): (500, 500),
+        ('bert', 'transformer'): (350, 500),
+
         ('resnet101', 'resnet50'): (550, 1000),
+        ('mobilenet_v2', 'resnet101'): (1000, 450),
+        ('resnet101', 'resnet101'): (1000, 1000),
+        ('resnet101', 'transformer'): (500, 500),
+
         ('resnet50', 'transformer'): (550, 300),
         ('resnet50', 'resnet50'): (1000, 1000),
         ('resnet50', 'retinanet'): (1000, 150),
+
         ('retinanet', 'retinanet'): (200, 200),
         ('retinanet', 'transformer'): (100, 350),
+
         ('mobilenet_v2', 'transformer'): (1000, 350),
         ('mobilenet_v2', 'retinanet'): (1000, 90),
         ('mobilenet_v2', 'resnet50'): (1250, 1000),
@@ -112,60 +98,39 @@ if __name__ == "__main__":
         ('transformer', 'transformer'): (500, 500),
 
     }
+
+    # combinations = list(model_pair_to_num_requests.keys())
+    combinations = [
+        ('resnet101', 'resnet101'),
+        ('resnet101', 'transformer'),
+
+        ('resnet50', 'bert'),
+        ('mobilenet_v2', 'bert'),
+        ('resnet101', 'bert'),
+        ('bert', 'bert'),
+        ('bert', 'transformer')
+    ]
     # ----configuration region ended----
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
     default_full_config['shared_config']['request_rate'] = request_rate
-    for model0 in model0_names:
+    for model0, model1 in combinations:
         default_full_config['model0']['name'] = model0
-        for model0_mode in model0_modes:
-            logging.info(f"model0 {model0} with mode {model0_mode}")
-            default_full_config['model0']['mode'] = model0_mode
-            model0_default_config = default_full_config[model0]
-            for model1 in model1_names:
-                default_full_config['model1']['name'] = model1
-                for model1_mode in model1_modes:
-                    logging.info(f"model1 {model1} with mode {model1_mode}")
-                    default_full_config['model1']['mode'] = model1_mode
-                    model1_default_config = default_full_config[model1]
-                    for policy in policies:
-                        logging.info(f'policy {policy}')
-                        default_full_config['policy'] = policy
-                        if model0 == model1:
-                            if skip_identical_models:
-                                continue
-                            # only generate config once
-                            for model_config, name in generate_configs(model0_default_config, **model_to_kwargs[model0]):
-                                model0_canonical_name = canonical_name(model0, model_config)
-                                num_reqs, _ = find_num_requests(model0_canonical_name, model0_canonical_name, model_pair_to_num_requests)
-                                model_config['num_requests'] = num_reqs
-                                default_full_config[model0] = model_config
-                                combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{name}-{policy}-dummy-{use_dummy_data}'
-                                run(default_full_config, combination_name)
-                        else:
-                            if skip_heterogeneous_models:
-                                continue
-                            for model0_config, name0 in generate_configs(model0_default_config, **model_to_kwargs[model0]):
-                                for model1_config, name1 in generate_configs(model1_default_config, **model_to_kwargs[model1]):
-                                    model0_canonical_name = canonical_name(model0, model0_config)
-                                    model1_canonical_name = canonical_name(model1, model1_config)
-                                    reqs0, reqs1 = find_num_requests(model0_canonical_name, model1_canonical_name, model_pair_to_num_requests)
-                                    model0_config['num_requests'] = reqs0
-                                    model1_config['num_requests'] = reqs1
-                                    default_full_config[model0] = model0_config
-                                    default_full_config[model1] = model1_config
-                                    combination_name = f'{model0_mode}-{model0}-{name0}-{model1_mode}-{model1}-{name1}-{policy}-dummy-{use_dummy_data}'
-                                    run(default_full_config, combination_name)
+        default_full_config['model0']['mode'] = model0_mode
+        default_full_config['model1']['name'] = model1
+        default_full_config['model1']['mode'] = model1_mode
+        for policy in policies:
+            default_full_config['policy'] = policy
+            num_reqs0, num_reqs1 = model_pair_to_num_requests[(model0, model1)]
+            default_full_config[model0]['num_requests'] = num_reqs0
+            default_full_config[model1]['num_requests'] = num_reqs1
+            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
+            run(default_full_config, combination_name)
 
     notifier.notify(
         subject='A set of experiments have finished',
         body=utils.dict2pretty_str({
-            'model0_names': model0_names,
-            'model0_modes': model0_modes,
-            'model1_modes': model1_modes,
-            'model1_names': model1_names,
-            'policies': policies,
-            'model_to_kwargs': model_to_kwargs
+            'combinations': combinations
         })
     )
 
