@@ -168,8 +168,8 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
 
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_requests']
+    num_warm_up_reqs = model_config['num_warm_up_reqs']
 
     loader_iterator = iter(data_loader)
 

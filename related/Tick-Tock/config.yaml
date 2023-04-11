@@ -2,10 +2,10 @@
 policy: temporal # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
 model0:
   mode: eval # train or eval
-  name: vision # these two names should strictly correspond to the model names below
+  name: bert # these two names should strictly correspond to the model names below
 model1:
   mode: eval # train or eval
-  name: vision1
+  name: retinanet
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -18,9 +18,7 @@ shared_config:
   print_every: 100
   enable_profiling: false
   use_dummy_data: true
-  num_requests: 100
-  num_warm_up_reqs: 20
-  request_rate: 10 # measured in 1/seconds
+  request_rate: 0 # measured in 1/seconds. If 0 it means no sleep
   percentile_positions:
     - 50
     - 90
@@ -40,6 +38,8 @@ vision:
   num_workers: 2
   num_iterations: 200
   warm_up_iters: 20
+  num_requests: 500
+  num_warm_up_reqs: 20
 vision1:
   arc: mobilenet_v2
   optimizer: SGD
@@ -47,6 +47,8 @@ vision1:
   num_workers: 2
   num_iterations: 200
   warm_up_iters: 20
+  num_requests: 500
+  num_warm_up_reqs: 20
 dcgan:
   num_gen_filters: 64
   num_dis_filters: 64
@@ -67,13 +69,15 @@ bert:
   use_fp16: false # true or false; please stick to false or revise code otherwise
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
   squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 16
+  batch_size: 2
   num_workers: 2
   arch: large # either base or large
   num_iterations: 200
   warm_up_iters: 20
   large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
   base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+  num_requests: 500
+  num_warm_up_reqs: 20
 transformer:
   arch: base # either base or large
   use_fp16: false
@@ -82,10 +86,14 @@ transformer:
   batch_size: 4
   num_iterations: 20
   warm_up_iters: 10
+  num_requests: 500
+  num_warm_up_reqs: 20
 retinanet:
   dataset_name: openimages-mlperf # coco, openimages, or openimages-mlperf
   use_amp: false
   num_workers: 2
-  batch_size: 8
+  batch_size: 4
   num_iterations: 200
   warm_up_iters: 20
+  num_requests: 500
+  num_warm_up_reqs: 20

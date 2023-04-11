@@ -61,7 +61,7 @@ def setup_model(model_config):
 
 def setup(model_config, shared_config, device):
     batch_size = model_config['batch_size']
-    num_iterations = model_config['200']
+    num_iterations = model_config['num_iterations']
     model = setup_model(model_config)
     model = model.to(device)
 
@@ -151,8 +151,8 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     my_stream = torch.cuda.Stream(device=device)
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_requests']
+    num_warm_up_reqs = model_config['num_warm_up_reqs']
 
     loader_iterator = iter(data_loader)
 

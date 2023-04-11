@@ -83,21 +83,20 @@ def setup(model_config, shared_config, device):
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+    stream = torch.cuda.Stream(device=device)
     model, data_loader, _, _ = setup(model_config, shared_config, device)
     model.eval()
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_requests']
+    num_warm_up_reqs = model_config['num_warm_up_reqs']
 
     loader_iterator = iter(data_loader)
 
     def eval():
-        images, targets = next(loader_iterator)
-        images = list(image.to(device) for image in images)
-        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        model(images, targets)
+        images, _ = next(loader_iterator)
+        images = [image.to(device) for image in images]
+        model(images)
 
-    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info)
 
 
 def train_wrapper(sync_info, tid: int, model_config, shared_config):

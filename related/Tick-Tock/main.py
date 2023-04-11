@@ -74,12 +74,12 @@ if __name__ == "__main__":
     model1_mode = config['model1']['mode']
     model0_config = config[model0_name]
     model1_config = config[model1_name]
-    readable_model0_name = readable_model_name(model0_name, model0_config)
-    readable_model1_name = readable_model_name(model1_name, model1_config)
     if model0_name == 'vision1':
         model0_name = 'vision'
     if model1_name == 'vision1':
         model1_name = 'vision'
+    readable_model0_name = readable_model_name(model0_name, model0_config)
+    readable_model1_name = readable_model_name(model1_name, model1_config)
     policy = config['policy']
 
     if args.log is None:
