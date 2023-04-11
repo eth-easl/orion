@@ -10,13 +10,13 @@ from utils.sync_control import *
 def train_wrapper(sync_info, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
     my_stream = torch.cuda.Stream(device=device)
-    arc = model_config['arc']
-    model = NASNetALarge(num_classes=1000) if arc == 'large' else NASNetAMobile(num_classes=1000)
+    arch = model_config['arch']
+    model = NASNetALarge(num_classes=1000) if arch == 'large' else NASNetAMobile(num_classes=1000)
     model = model.to(device)
     model.train()
 
     train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(331 if arc == 'large' else 224),
+        transforms.RandomResizedCrop(331 if arch == 'large' else 224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])

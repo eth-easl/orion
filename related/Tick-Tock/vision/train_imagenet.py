@@ -83,9 +83,9 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
 
 def setup(model_config, shared_config, device):
     torch.cuda.set_device(device)
-    arc = model_config['arc']
-    logging.info(f'vision model with arc {arc}')
-    model = models.__dict__[arc](num_classes=1000)
+    arch = model_config['arch']
+    logging.info(f'vision model with arch {arch}')
+    model = models.__dict__[arch](num_classes=1000)
     model = model.to(device)
     optimizer_func = getattr(torch.optim, model_config['optimizer'])
     optimizer = optimizer_func(model.parameters(), lr=0.1)
@@ -98,7 +98,7 @@ def setup(model_config, shared_config, device):
             torch.ones([batch_size]).to(torch.long)
         ))
     else:
-        if arc == 'inception_v3':
+        if arch == 'inception_v3':
             train_transform = transforms.Compose([
                 transforms.Resize(299),
                 transforms.CenterCrop(299),

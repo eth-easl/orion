@@ -53,8 +53,8 @@ parser.add_argument('--config', default='./config.yaml', help='Path to the yaml 
 parser.add_argument('--log', help='Path to the log file', type=str)
 
 def readable_model_name(model_name, model_config):
-    if model_name == 'vision':
-        readable_name = f"{model_config['arc']}-{model_config['batch_size']}"
+    if model_name in  ['vision', 'vision1']:
+        readable_name = f"{model_config['arch']}-{model_config['batch_size']}"
     elif model_name == 'bert':
         readable_name = f"bert-{model_config['arch']}-{model_config['batch_size']}"
     else:
@@ -74,12 +74,12 @@ if __name__ == "__main__":
     model1_mode = config['model1']['mode']
     model0_config = config[model0_name]
     model1_config = config[model1_name]
+    readable_model0_name = readable_model_name(model0_name, model0_config)
+    readable_model1_name = readable_model_name(model1_name, model1_config)
     if model0_name == 'vision1':
         model0_name = 'vision'
     if model1_name == 'vision1':
         model1_name = 'vision'
-    readable_model0_name = readable_model_name(model0_name, model0_config)
-    readable_model1_name = readable_model_name(model1_name, model1_config)
     policy = config['policy']
 
     if args.log is None:
