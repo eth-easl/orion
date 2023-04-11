@@ -51,7 +51,8 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
                 func()
             stream.synchronize()
             latency = time.time() - start_time
-            latency_history.append(latency)
+            # convert to ms
+            latency_history.append(latency * 1000)
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)

@@ -60,19 +60,8 @@ def setup_model(model_config):
 
 
 def setup(model_config, shared_config, device):
-    seed = int(time.time())
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    squad_version = model_config['squad_version']
-    squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
-    train_examples = read_squad_examples(
-        input_file=squad_file,
-        is_training=True,
-        version_2_with_negative=squad_version == 2
-    )
     batch_size = model_config['batch_size']
-    num_train_optimization_steps = int(len(train_examples) / batch_size)
+    num_iterations = model_config['200']
     model = setup_model(model_config)
     model = model.to(device)
 
@@ -98,45 +87,16 @@ def setup(model_config, shared_config, device):
             model, optimizer = amp.initialize(model, optimizer, opt_level="O2", keep_batchnorm_fp32=False,
                                               loss_scale=loss_scale)
         scheduler = LinearWarmUpScheduler(optimizer, warmup=0.1,
-                                          total_steps=num_train_optimization_steps)
+                                          total_steps=num_iterations)
     else:
         optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5,
                              warmup=0.1,
-                             t_total=num_train_optimization_steps)
+                             t_total=num_iterations)
     vocab_file = os.path.join(
         model_config['large_model_dir'] if model_config['arch'] == 'large' else model_config['base_model_dir'],
         'vocab.txt'
     )
     tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
-
-    cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
-    try:
-        with open(cache_features_file, 'rb') as reader:
-            train_features = pickle.load(reader)
-    except:
-        logging.info(f'no cache file detected as {cache_features_file}; building features from squad examples...')
-        train_features = convert_examples_to_features(
-            examples=train_examples,
-            tokenizer=tokenizer,
-            max_seq_length=384,
-            doc_stride=128,
-            max_query_length=64,
-            is_training=True
-        )
-        logging.info(f'saving features to {cache_features_file}')
-        with open(cache_features_file, 'wb') as writer:
-            pickle.dump(train_features, writer)
-
-    all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
-    all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
-    all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
-    all_start_positions = torch.tensor([f.start_position for f in train_features], dtype=torch.long)
-    all_end_positions = torch.tensor([f.end_position for f in train_features], dtype=torch.long)
-    train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
-                               all_start_positions, all_end_positions)
-    train_sampler = RandomSampler(train_data)
-    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
-                                  num_workers=model_config['num_workers'])
 
     if shared_config['use_dummy_data']:
         input_ids = torch.ones((batch_size, 384)).to(torch.int64)
@@ -146,6 +106,41 @@ def setup(model_config, shared_config, device):
         end_positions = torch.ones((batch_size, )).to(torch.int64)
         virtual_loader = utils.DummyDataLoader(batch=(input_ids, input_mask, segment_ids, start_positions, end_positions))
     else:
+        squad_version = model_config['squad_version']
+        squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
+        train_examples = read_squad_examples(
+            input_file=squad_file,
+            is_training=True,
+            version_2_with_negative=squad_version == 2
+        )
+        cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
+        try:
+            with open(cache_features_file, 'rb') as reader:
+                train_features = pickle.load(reader)
+        except:
+            logging.info(f'no cache file detected as {cache_features_file}; building features from squad examples...')
+            train_features = convert_examples_to_features(
+                examples=train_examples,
+                tokenizer=tokenizer,
+                max_seq_length=384,
+                doc_stride=128,
+                max_query_length=64,
+                is_training=True
+            )
+            logging.info(f'saving features to {cache_features_file}')
+            with open(cache_features_file, 'wb') as writer:
+                pickle.dump(train_features, writer)
+
+        all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
+        all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
+        all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
+        all_start_positions = torch.tensor([f.start_position for f in train_features], dtype=torch.long)
+        all_end_positions = torch.tensor([f.end_position for f in train_features], dtype=torch.long)
+        train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
+                                   all_start_positions, all_end_positions)
+        train_sampler = RandomSampler(train_data)
+        train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
+                                      num_workers=model_config['num_workers'])
         virtual_loader = train_dataloader
 
     return model, virtual_loader, optimizer
