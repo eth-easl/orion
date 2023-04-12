@@ -66,6 +66,8 @@ int func_indexes[2] = {0, 0};
 cudaStream_t client_streams[2];
 bool streams_set[2] = {false, false};
 
+int* shmem = NULL;
+
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
 cudaError_t (*memcpy_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind) = NULL;
 cudaError_t (*memcpy_async_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream) = NULL;
@@ -147,6 +149,8 @@ cudnnStatus_t (*cudnn_conv_bw_filter_func)(
     void *dw
 );
 
+using namespace boost::interprocess;
+
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d], ", i);
@@ -170,6 +174,18 @@ DEBUG_PRINT("\n");
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
+	if (shmem==NULL) {
+        pid_t pid = getpid();
+		std::string shmem_string_name = "client" + std::to_string(pid);
+        const char* shmem_name = shmem_string_name.c_str();
+		shared_memory_object shm (open_only, shmem_name, read_write);
+      	//Map the whole shared memory in this process
+     	mapped_region region(shm, read_write);
+	    shmem = (int*)region.get_address();
+		printf("********** region %s mapped at address %p, I read %d\n", shmem, shmem, *shmem);
+		*shmem = 100;
+		printf("Written %d\n", *shmem);
+	}
 
 	int idx = get_idx();
 	assert (idx >= 0);

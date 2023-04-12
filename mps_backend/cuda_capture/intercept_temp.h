@@ -13,6 +13,8 @@
 #include <syscall.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 #include "../system_utils.h"
 #include "Torch_Array.h"
 

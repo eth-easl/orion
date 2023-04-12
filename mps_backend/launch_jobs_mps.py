@@ -81,6 +81,7 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
 
         thread = multiprocessing.Process(target=func, kwargs=model_args)
         thread.start()
+        tids.append(thread.pid)
         threads.append(thread)
 
     sched_thread = threading.Thread(

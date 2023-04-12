@@ -9,6 +9,11 @@
 #include <iostream>
 #include <string.h>
 #include <fstream>
+#include <cstring>
+#include <cstdlib>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <string>
 
 #include "utils_sched.h"
 

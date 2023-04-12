@@ -33,6 +33,14 @@ int* streams;
 int* event_ids;
 int status;
 
+// new
+int* client_ids;
+int** shmem_addr;
+
+using namespace boost::interprocess;
+
+mapped_region* region;
+
 void* Scheduler::busy_wait_fifo(int num_clients) {
     return NULL;
 }
@@ -42,6 +50,15 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 }
 
 void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool reef) {
+
+    printf("status 1 is %p, %d!\n", shmem_addr[0], *(shmem_addr[0]));
+    while(1) {
+        volatile int status = *(shmem_addr[0]);
+        if (status >= 0)
+            break;
+    }
+    printf("status is %d!\n", *(shmem_addr[0]));
+
     return NULL;
 }
 
@@ -112,6 +129,25 @@ extern "C" {
 		int* num_kernels,
 		int* num_iters
 	) {
+
+        client_ids = (int*)malloc(num_clients*sizeof(int));
+        shmem_addr = (int**)malloc(num_clients*sizeof(int*));
+        for (int i=0; i<num_clients; i++) {
+            client_ids[i] = tids[i];
+            std::string shmem_string_name = "client" + std::to_string(tids[i]);
+            const char* shmem_name = shmem_string_name.c_str();
+            shared_memory_object shm (create_only, shmem_name, read_write);
+            shm.truncate(4);
+            region = new mapped_region(shm, read_write);
+            std::memset(region->get_address(), -1, region->get_size());
+            shmem_addr[i] = (int*)(region->get_address());
+            printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name, shmem_addr[i], *(shmem_addr[0]));
+
+        }
+
+        int* p = shmem_addr[0];
+        printf("%p\n", p);
+        printf("status 2 is %d!\n", *p);
 
         return;
 
