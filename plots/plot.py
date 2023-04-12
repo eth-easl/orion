@@ -106,29 +106,47 @@ p50_data = {
 }
 
 # %%
+transpose = True
+num_models = len(id2model)
+grid_label_size = 24
+xlabel_size = 16
 width = 0.2  # the width of the bars
-fig, axes = plt.subplots(figsize=(20, 10), ncols=5, nrows=5)
+fig, axes = plt.subplots(figsize=(25, 15), ncols=5, nrows=5)
 x = np.arange(2)
-for i in range(5):
-    for j in range(5):
+ymax = 120
+color_map = {
+    'Sequential': 'b',
+    'Streams': 'y',
+    'ORION': 'm',
+    'MPS': 'g'
+}
+for i in range(num_models):
+    for j in range(num_models):
+        ax  = axes[num_models - 1 - i, num_models - 1 - j]
         if i > j:
-            # axes[i, j].axis('off')
-            pass
+            ax.axis('off')
         else:
-            ax = axes[i, j]
             sub_data = p50_data[(id2model[i], id2model[j])]
             for key_id, key in enumerate(sub_data.keys()):
                 offset = width * (key_id-2)
-                rects = ax.bar(x + offset, sub_data[key], width, label=key)
-                ax.bar(x + offset, sub_data[key], width)
-                ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]])
+                rects = ax.bar(x + offset, sub_data[key], width, label=key, color=color_map[key])
+                # ax.bar_label(rects, padding=1)
+                # ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]])
+                ax.tick_params(
+                    axis='x',  # changes apply to the x-axis
+                    which='both',  # both major and minor ticks are affected
+                    bottom=False,  # ticks along the bottom edge are off
+                    top=False,  # ticks along the top edge are off
+                    labelbottom=False)  # labels along the bottom edge are off
 
-for ax, col in zip(axes[0], id2model):
-    ax.set_title(col)
 
-for ax, row in zip(axes[:, 0], id2model):
-    ax.set_ylabel(row, size='large')
+for ax, col in zip(axes[num_models - 1], id2model[::-1]):
+    ax.set_title(col, y=-0.2,pad=-16, fontsize=grid_label_size)
 
+for ax, row in zip(axes[:, 0], id2model[::-1]):
+    ax.set_ylabel(row, fontsize=grid_label_size)
 
+handles, labels = axes[0, 0].get_legend_handles_labels()
+fig.legend(handles, labels, loc='upper right', prop={'size': 25})
 fig.suptitle('P50 latency', fontsize=32)
 plt.show()
