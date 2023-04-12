@@ -28,12 +28,16 @@ class DummyDataLoader():
         return self.images, self.targets
 
 
-def retinanet_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
+def retinanet_loop(batchsize, train, default, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
 
     start_barriers[tid].wait()
 
-    s = torch.cuda.Stream()
     timings = []
+
+    if default:
+        s = torch.cuda.default_stream()
+    else:
+        s = torch.cuda.Stream()
 
     if rps > 0:
         sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
@@ -59,6 +63,8 @@ def retinanet_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, sta
     train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
+
+    start_barriers[tid].wait()
 
     with torch.cuda.stream(s):
         for i in range(1):

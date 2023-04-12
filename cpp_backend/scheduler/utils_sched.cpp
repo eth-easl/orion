@@ -339,10 +339,10 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 		case MEMCPY_RECORD: {
 			memcpy_record record = frecord.data.mrecord;
 			if (!record.async) {
-				DEBUG_PRINT("found a new memcpy record from idx %d!\n", idx);
+				printf("found a new memcpy record from idx %d!\n", idx);
 				(*memcpy_function)(record.dst, record.src, record.count, record.kind);
 			} else {
-				DEBUG_PRINT("found a new memcpy-async record from idx %d!\n", idx);
+				printf("found a new memcpy-async record from idx %d, count is %d!\n", idx, record.count);
 				(*memcpy_async_function)(record.dst, record.src, record.count, record.kind, *sched_stream);
 			}
 			break;

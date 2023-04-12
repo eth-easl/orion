@@ -18,16 +18,19 @@ class DummyDataLoader():
     def __next__(self):
         return self.data, self.target
 
-def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
+def transformer_loop(batchsize, train, default, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
 
-    start_barriers[tid].wait()
+    start_barriers[0].wait()
 
     if rps > 0:
         sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
     else:
         sleep_times = [0]*num_iters
 
-    s = torch.cuda.Stream()
+    if default:
+        s = torch.cuda.default_stream()
+    else:
+        s = torch.cuda.Stream()
     timings = []
 
     model_config = {
@@ -66,6 +69,7 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, s
         optimizer = lamb.Lamb(model.parameters(), lr=0.1)
     else:
         model.eval()
+    start_barriers[0].wait()
 
     mems = None
     with torch.cuda.stream(s):
@@ -99,7 +103,7 @@ def transformer_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, s
                 # if batch_idx < num_iters:
                 #   barriers[0].wait()
 
-            end_barriers[tid].wait()
+            end_barriers[0].wait()
 
     timings = timings[2:]
     p50 = np.percentile(timings, 50)

@@ -1,6 +1,7 @@
 import argparse
 import json
 import threading
+import multiprocessing
 import time
 from ctypes import *
 import os
@@ -48,15 +49,19 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list, mode):
+def launch_jobs(config_dict_list, mode, processes):
 
     print(config_dict_list)
     num_clients = len(config_dict_list)
     print(num_clients)
 
     # init
-    start_barriers = [threading.Barrier(2) for i in range(num_clients)]
-    end_barriers = [threading.Barrier(2) for i in range(num_clients)]
+    if processes:
+        start_barriers = [multiprocessing.Barrier(num_clients+1) for i in range(num_clients)]
+        end_barriers = [multiprocessing.Barrier(num_clients+1) for i in range(num_clients)]
+    else:
+        start_barriers = [threading.Barrier(num_clients+1) for i in range(num_clients)]
+        end_barriers = [threading.Barrier(num_clients+1) for i in range(num_clients)]
 
     print(torch.__version__)
 
@@ -70,44 +75,63 @@ def launch_jobs(config_dict_list, mode):
     for i, config_dict in enumerate(config_dict_list):
         func = function_dict[config_dict['arch']]
         model_args = config_dict['args']
-        model_args.update({"num_iters":num_iters[i], "local_rank": 0, "start_barriers": start_barriers, "end_barriers": end_barriers, "tid": i})
+        default = True if mode=="sequential" else False
+        model_args.update({"num_iters":num_iters[i], "default": default, "local_rank": 0, "start_barriers": start_barriers, "end_barriers": end_barriers, "tid": i})
 
-        thread = threading.Thread(target=func, kwargs=model_args)
+        if processes:
+            thread = multiprocessing.Process(target=func, kwargs=model_args)
+        else:
+            thread = threading.Thread(target=func, kwargs=model_args)
+
         thread.start()
-        tids.append(thread.native_id)
+        #tids.append(thread.native_id)
         threads.append(thread)
 
     print(tids)
 
     print("before starting")
 
+
+
     timings=[]
-    if mode == "sequential":
-        print("wait!")
+    # if mode == "sequential":
+    #     print("wait!")
+    #     start_barriers[0].wait()
+    #     start_barriers[1].wait()
+
+    #     start_barriers[0].wait()
+    #     start = time.time()
+    #     end_barriers[0].wait()
+    #     torch.cuda.synchronize()
+    #     print(f"Client 0 took {time.time()-start} sec")
+
+    #     start_barriers[1].wait()
+    #     startB = time.time()
+    #     end_barriers[1].wait()
+    #     torch.cuda.synchronize()
+    #     print(f"Client 1 took {time.time()-startB}")
+
+    #     total_time = time.time()-start
+    #     print(f"Time for both is {time.time()-start} sec")
+
+
+    # elif mode == "streams":
+
+    start_barriers[0].wait()
+    #start_barriers[1].wait()
+
+    torch.cuda.profiler.cudart().cudaProfilerStart()
+    start = time.time()
+
+    for i in range(100):
+
         start_barriers[0].wait()
-        start = time.time()
+        #start_barriers[1].wait()
         end_barriers[0].wait()
-        torch.cuda.synchronize()
-        print(f"Client 0 took {time.time()-start} sec")
-
-        # start_barriers[1].wait()
-        # startB = time.time()
-        # end_barriers[1].wait()
-        # torch.cuda.synchronize()
-        # print(f"Client 1 took {time.time()-startB}")
-
-        total_time = time.time()-start
-        print(f"Time for both is {time.time()-start} sec")
-
-
-    elif mode == "streams":
-        start_barriers[0].wait()
-        start_barriers[1].wait()
-        start = time.time()
-        end_barriers[0].wait()
-        end_barriers[1].wait()
-        torch.cuda.synchronize()
-        print(f"Time for both is {time.time()-start} sec")
+        #end_barriers[1].wait()
+    torch.cuda.synchronize()
+    torch.cuda.profiler.cudart().cudaProfilerStop()
+    print(f"Time for both is {time.time()-start} sec")
 
     # for i in range(10):
     #     start = time.time()
@@ -137,8 +161,13 @@ def launch_jobs(config_dict_list, mode):
     print("train joined!")
 
 if __name__ == "__main__":
+    try:
+        multiprocessing.set_start_method('spawn')
+    except RuntimeError:
+        pass
     config_file = sys.argv[1]
     mode = sys.argv[2] # "sequential" or "streams"
+    processes = False
     with open(config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict, mode)
+    launch_jobs(config_dict, mode, processes)

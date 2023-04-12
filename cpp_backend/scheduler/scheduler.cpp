@@ -153,7 +153,7 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 	return NULL;
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool reef) {
 
 	printf("here!\n");
 

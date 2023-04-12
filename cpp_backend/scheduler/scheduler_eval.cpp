@@ -175,6 +175,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 	bool inf_finished = false;
 	bool started = false;
  	std::chrono::time_point<std::chrono::system_clock> start_time;
+	auto start_total = std::chrono::high_resolution_clock::now();
 
 	while(1) {
 		vector<func_record*> frecords = {NULL, NULL};
@@ -302,9 +303,12 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 			if (reef && event_ids[1] > 1)
 				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[0], *(events[1][event_ids[1]-1]), 0));
 
+			//cudaStreamSynchronize(*sched_streams[1]);
 			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
 			streams[0] = 0;
+			//cudaStreamSynchronize(*sched_streams[0]);
+
 			status = 0;
 		}
 
@@ -336,7 +340,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 			else if (seen[i] == num_client_kernels[i]) {
 				// check if GPU work for this client has finished
 				if (!locked[i]) {
-					printf("LOCK CLIENT %d\n", i);
+					DEBUG_PRINT("LOCK CLIENT %d\n", i);
 					pthread_mutex_lock(client_mutexes[i]);
 					locked[i] = true;
 				}
@@ -373,8 +377,13 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 			break;
 
 	}
-	if (!warmup)
+	if (!warmup) {
+		auto end_total = std::chrono::high_resolution_clock::now();
+		float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - start_total).count();
+		duration /= 1000.0;
+		printf("Total loop took %f sec\n", duration);
 		process_eval(client_durations);
+	}
 
 	// printf("All clients finished!\n");
 	// for (int i=0; i<num_clients; i++) {

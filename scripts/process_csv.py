@@ -42,7 +42,10 @@ for i, row in df.iterrows():
 '''
 found = 0
 idx = 0
-for i, row in df.iterrows():
+l = df.to_dict('records')
+print(len(l))
+
+for row in l:
     x = row['Name']
     if ('memset' in x) or ('memcpy' in x):
         continue

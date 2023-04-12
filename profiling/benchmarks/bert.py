@@ -60,7 +60,7 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
         #if not do_eval:
         #    optimizer.zero_grad()
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -71,15 +71,15 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
                 output = model(input_ids, segment_ids, input_mask)
         else:
             start_logits, end_logits = model(input_ids, segment_ids, input_mask)
-            ignored_index = start_logits.size(1)
-            loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
-            start_loss = loss_fct(start_logits, start_positions)
-            end_loss = loss_fct(end_logits, end_positions)
-            loss = (start_loss + end_loss) / 2
-            loss.backward()
-            optimizer.step()
+            # ignored_index = start_logits.size(1)
+            # loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
+            # start_loss = loss_fct(start_logits, start_positions)
+            # end_loss = loss_fct(end_logits, end_positions)
+            # loss = (start_loss + end_loss) / 2
+            # loss.backward()
+            # optimizer.step()
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
@@ -90,4 +90,4 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
     print("Done!")
 
 if __name__ == "__main__":
-    bert(8, 0, False, 'ncu')
+    bert(8, 0, False, 'nsys')

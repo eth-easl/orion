@@ -7,7 +7,7 @@ int get_idx() {
 	#else
 	#error "SYS_gettid unavailable on this system"
 	#endif
-		DEBUG_PRINT("-------------------my tid is %d, tids is %d, %d, %d, %d, %d \n", tid, thread_ids[0], thread_ids[1], thread_ids[2], thread_ids[3], thread_ids[4]);
+		//DEBUG_PRINT("-------------------my tid is %d, tids is %d, %d, %d, %d, %d \n", tid, thread_ids[0], thread_ids[1], thread_ids[2], thread_ids[3], thread_ids[4]);
 		//printf("tid is %d\n", tid);
 		if ((tid == thread_ids[0]) || (tid == thread_ids[3]))
 			return 0;

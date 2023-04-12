@@ -115,7 +115,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                 #torch.cuda.profiler.cudart().cudaProfilerStop()
 
                 time.sleep(sleep_times[batch_idx])
-                #print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
+                print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
                 batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward

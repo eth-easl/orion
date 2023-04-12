@@ -4,7 +4,6 @@ import numpy as np
 
 def get_profile(profile_list, main_prof):
     pset = set(profile_list)
-    print(pset)
     if -1 in pset:
         pset.remove(-1)
     if len(pset)==0:
@@ -67,6 +66,7 @@ conv_info = []
 l = df.to_dict('records')
 print(len(l))
 
+found = 0
 i = 0
 num_rows = len(l)
 while i < num_rows:
@@ -80,7 +80,7 @@ while i < num_rows:
     x = x.replace("<unnamed>", "(anonymous namespace)")
 
     if 'cudnn' in x and 'LSTM' not in x:
-        if 'bn_fw' in x:
+        if ('bn_fw' in x) or ('bn_bw' in x):
             processed_kernel_names.append(['BatchNorm', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
         elif (
             ('scudnn' in x)
@@ -121,8 +121,13 @@ while i < num_rows:
             processed_kernel_names.append([x,  row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
     #Comment for NLP models
-    # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
-    #     processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+    elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
+        processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+
+    # elif 'volta_gcgemm_32x32_nt' in x:
+    #     if found==0:
+    #         processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
+    #     found = 1
 
     # transformer
     elif 'volta_sgemm_32x128_tn' in x:
@@ -139,12 +144,27 @@ while i < num_rows:
 
     elif 'splitKreduce_kernel' in x:
         # part of cublas mm
+        found = 0
         pass
-    elif 'fused_dropout_kernel_vec' in x:
-        processed_kernel_names.append(['fused_dropout_kernel_vec', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+
+    elif 'volta_gcgemm_32x32_nt' in x:
+        if found==3:
+            print("here!")
+            conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
+            print(conv_info)
+            sms = [x[0] for x in conv_info]
+            dur_list = [x[1] for x in conv_info]
+            profiles = [x[2] for x in conv_info]
+            sms_max = max(sms)
+            dur = sum(dur_list)
+            profile = get_profile(profiles,  row["Roofline_prof"])
+            processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
+            conv_info=[]
+        found += 1
 
     else:
         tokens = x.split('<')
+        found = 0
         #print(tokens[0])
         processed_kernel_names.append([tokens[0],  row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
     i += 1

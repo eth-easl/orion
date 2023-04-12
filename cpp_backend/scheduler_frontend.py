@@ -25,7 +25,8 @@ class PyScheduler:
         additional_num_kernels,
         num_iters,
         profile,
-        run_eval
+        run_eval,
+        reef
     ):
 
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
@@ -50,7 +51,7 @@ class PyScheduler:
         num_clients = len(tids)
         print(f"Num clients is {num_clients}")
 
-        self._sched_lib.sched_setup(self._scheduler, num_clients, profile)
+        self._sched_lib.sched_setup(self._scheduler, num_clients, profile, reef)
 
         print(f"before starting, profile is {profile}")
         timings=[]
@@ -60,7 +61,7 @@ class PyScheduler:
             if profile:
                 barriers[0].wait()
                 # run once to warm-up and setup
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, reef)
                 torch.cuda.synchronize()
 
                 for j in range(num_clients):
@@ -75,7 +76,7 @@ class PyScheduler:
 
                 start = time.time()
                 print("call schedule")
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False, reef)
                 torch.cuda.synchronize()
                 print(f"Total time is {time.time()-start}")
 

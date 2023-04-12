@@ -5,22 +5,22 @@ CUDAINCLUDE=/usr/local/cuda-10.2/include/
 CUDALIB=/usr/local/cuda-10.2/lib64
 
 utils_sched.o: utils_sched.cpp
-	$(NVCC) $(CFLAGS) -DDEBUG -Xcompiler  -fPIC -x cu -shared -c utils_sched.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
+	$(NVCC) $(CFLAGS) -Xcompiler  -fPIC -x cu -shared -c utils_sched.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
 
 sleep.o: sleep.cu
 	$(NVCC) $(CFLAGS) -Xcompiler -fPIC -x cu -c sleep.cu --shared -lcudart
 
 scheduler.o: scheduler.cpp
-	$(NVCC) $(CFLAGS) -DDEBUG -Xcompiler  -fPIC  -x cu -shared -c scheduler.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
+	$(NVCC) $(CFLAGS) -Xcompiler  -fPIC  -x cu -shared -c scheduler.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
 
 scheduler_eval.o: scheduler_eval.cpp
-	$(NVCC) $(CFLAGS)  -Xcompiler  -fPIC  -x cu -shared -c scheduler_eval.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
+	$(NVCC) $(CFLAGS) -Xcompiler  -fPIC  -x cu -shared -c scheduler_eval.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
 
 scheduler.so: scheduler.o utils_sched.o sleep.o
-	 $(CC) $(CFLAGS) -DDEBUG -fPIC -shared utils_sched.o sleep.o scheduler.o -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o scheduler.so
+	 $(CC) $(CFLAGS) -fPIC -shared utils_sched.o sleep.o scheduler.o -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o scheduler.so
 
 scheduler_eval.so: scheduler_eval.o utils_sched.o sleep.o
-	 $(CC) $(CFLAGS) -DDEBUG -fPIC -shared utils_sched.o sleep.o scheduler_eval.o -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o scheduler_eval.so
+	 $(CC) $(CFLAGS) -fPIC -shared utils_sched.o sleep.o scheduler_eval.o -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o scheduler_eval.so
 
 all:
 	make scheduler.so scheduler_eval.so

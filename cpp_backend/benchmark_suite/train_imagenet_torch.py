@@ -46,16 +46,20 @@ class RealDataLoader():
         print("Inside iter")
         return iter(self.train_loader)
 
-def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
+def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, dummy_data, local_rank, start_barriers, end_barriers, tid):
 
-    start_barriers[tid].wait()
+    start_barriers[0].wait()
 
     if rps > 0:
         sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
     else:
         sleep_times = [0]*num_iters
 
-    s = torch.cuda.Stream()
+    if default:
+        s = torch.cuda.default_stream()
+    else:
+        s = torch.cuda.Stream()
+
     timings = []
 
     print("-------------- thread id:  ", threading.get_native_id())
@@ -82,7 +86,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
     batch_idx, batch = next(train_iter)
 
     gpu_data = batch[0].to(local_rank)
-    start_barriers[tid].wait()
+    output = model(gpu_data)
 
     print("Enter loop!")
 
@@ -93,7 +97,9 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
             start = time.time()
             while batch_idx < num_iters:
 
-                #print(f"submit!, batch_idx is {batch_idx}")
+                print(f"submit!, batch_idx is {batch_idx}")
+                startiter = time.time()
+
 
                 if train:
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -104,10 +110,12 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                     optimizer.step()
                 else:
                     with torch.no_grad():
-                        startiter = time.time()
+                        start_barriers[0].wait()
                         gpu_data = batch[0].to(local_rank)
                         output = model(gpu_data)
                         s.synchronize()
+                        end_barriers[0].wait()
+
                 iter_time = time.time()-startiter
                 timings.append(iter_time)
 
@@ -121,8 +129,6 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
 
                 # if batch_idx < num_iters-1:
                 #     start_barriers[tid].wait()
-
-            end_barriers[tid].wait()
 
 
     timings = timings[2:]

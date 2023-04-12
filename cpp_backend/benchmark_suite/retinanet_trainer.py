@@ -56,6 +56,9 @@ def retinanet_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, bar
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
 
+    images = batch[0]
+    gpu_images = [x.to(local_rank) for x in images]
+
     for i in range(1):
         print("Start epoch: ", i)
 
@@ -75,14 +78,14 @@ def retinanet_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, bar
                 optimizer.step()
             else:
                 with torch.no_grad():
-                    images = batch[0]
-                    gpu_images = [x.to(local_rank) for x in images]
+                    #images = batch[0]
+                    #gpu_images = [x.to(local_rank) for x in images]
                     output = model(gpu_images)
 
             time.sleep(sleep_times[batch_idx])
             print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
-            batch_idx, batch = next(train_iter)
+            batch_idx+=1 #batch = next(train_iter)
             if (batch_idx == 1): # for backward
                 barriers[0].wait()
 
