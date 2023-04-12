@@ -28,6 +28,9 @@ from benchmark_suite.conv_trainer import conv_loop
 from benchmark_suite.bnorm_trainer import bnorm_loop
 from benchmark_suite.conv_bn_trainer import conv_bn_loop
 
+from mps_scheduler import PyScheduler
+
+
 function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
@@ -59,6 +62,7 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
 
     num_barriers = num_clients+1 if profile else 2
     barriers = [multiprocessing.Barrier(num_barriers) for i in range(num_clients)]
+    py_scheduler = PyScheduler(num_clients)
 
     model_names = [config_dict['arch'] for config_dict in config_dict_list]
     model_files = [config_dict['kernel_file'] for config_dict in config_dict_list]
@@ -79,11 +83,32 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
         thread.start()
         threads.append(thread)
 
+    sched_thread = threading.Thread(
+        target=py_scheduler.run_scheduler,
+        args=(
+            barriers,
+            tids,
+            model_names,
+            model_files,
+            additional_model_files,
+            num_kernels,
+            additional_num_kernels,
+            num_iters,
+            profile,
+            run_eval,
+            False
+        )
+    )
+
+    sched_thread.start()
+
     for thread in threads:
         thread.join()
 
     print("train joined!")
 
+    sched_thread.join()
+    print("sched joined!")
 
     print("--------- all threads joined!")
 
