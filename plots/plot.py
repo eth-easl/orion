@@ -105,6 +105,100 @@ p50_data = {
     },
 }
 
+p95_data = {
+    ('ResNet50', 'ResNet50'): {
+        'Sequential': [13.2, 13.3],
+        'Streams': [11.9, 11.8],
+        'ORION': [10.3, 10.4],
+        'MPS': [10.38, 10.36]
+    },
+    ('ResNet50', 'MobileNetV2'): {
+        'Sequential': [10.7, 9.3],
+        'Streams': [10.6, 9],
+        'ORION': [9.9, 8.3],
+        'MPS': [8.84, 5.43]
+    },
+    ('ResNet50', 'ResNet101'): {
+        'Sequential': [14, 20],
+        'Streams': [10.9, 19.5],
+        'ORION': [10.3, 18],
+        'MPS': [10.36, 18.11]
+    },
+    ('ResNet50', 'BERT'): {
+        'Sequential': [56.1, 57],
+        'Streams': [23.1, 61.7],
+        'ORION': [23.6, 61.5],
+        'MPS': [22.58, 59.85]
+    },
+    ('ResNet50', 'Transformer'): {
+        'Sequential': [15, 29.9],
+        'Streams': [14, 25],
+        'ORION': [12, 23],
+        'MPS': [14.87, 26.27]
+    },
+    ('MobileNetV2', 'MobileNetV2'): {
+        'Sequential': [8.9, 8.9],
+        'Streams': [8.8, 8.9],
+        'ORION': [8, 7.99],
+        'MPS': [5.08, 5.06]
+    },
+    ('MobileNetV2', 'ResNet101'): {
+        'Sequential': [8.7, 19.2],
+        'Streams': [9.8, 19.2],
+        'ORION': [8.17, 18.3],
+        'MPS': [5.32, 14.7]
+    },
+    ('MobileNetV2', 'BERT'): {
+        'Sequential': [52, 67],
+        'Streams': [11.8, 55.9],
+        'ORION': [12.8, 55.7],
+        'MPS': [11.15, 54.05]
+    },
+    ('MobileNetV2', 'Transformer'): {
+        'Sequential': [8.8, 25],
+        'Streams': [8.4, 24.5],
+        'ORION': [7.42, 21.7],
+        'MPS': [6.68, 22.68]
+    },
+    ('ResNet101', 'ResNet101'): {
+        'Sequential': [21.4, 21.4],
+        'Streams': [18.9, 18.9],
+        'ORION': [17.8, 17.5],
+        'MPS': [17.67, 18.0]
+    },
+    ('ResNet101', 'BERT'): {
+        'Sequential': [59, 60],
+        'Streams': [42, 67],
+        'ORION': [39, 61],
+        'MPS': [40.26, 59.54]
+    },
+    # am here should be bert vs transformer
+    ('ResNet101', 'Transformer'): {
+        'Sequential': [27.2, 26.6],
+        'Streams': [25.3, 24.8],
+        'ORION': [23.2, 24.1],
+        'MPS': [26.19, 25.84]
+    },
+    ('BERT', 'BERT'): {
+        'Sequential': [99.5, 101],
+        'Streams': [93.9, 93.8],
+        'ORION': [90.2, 90.3],
+        'MPS': [92.7, 92.7]
+    },
+    ('BERT', 'Transformer'): {
+        'Sequential': [64.9, 66.8],
+        'Streams': [68, 47],
+        'ORION': [65.7, 45],
+        'MPS': [68.56, 49.39]
+    },
+    ('Transformer', 'Transformer'): {
+        'Sequential': [32.1, 32],
+        'Streams': [29, 29],
+        'ORION': [28, 28],
+        'MPS': [32.41, 32.28]
+    },
+}
+
 # %%
 transpose = True
 num_models = len(id2model)
@@ -131,13 +225,7 @@ for i in range(num_models):
                 offset = width * (key_id-2)
                 rects = ax.bar(x + offset, sub_data[key], width, label=key, color=color_map[key])
                 # ax.bar_label(rects, padding=1)
-                # ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]])
-                ax.tick_params(
-                    axis='x',  # changes apply to the x-axis
-                    which='both',  # both major and minor ticks are affected
-                    bottom=False,  # ticks along the bottom edge are off
-                    top=False,  # ticks along the top edge are off
-                    labelbottom=False)  # labels along the bottom edge are off
+                ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]], fontsize=15)
 
 
 for ax, col in zip(axes[num_models - 1], id2model[::-1]):
