@@ -199,6 +199,85 @@ p95_data = {
     },
 }
 
+
+train_train_data = {
+    ('ResNet50', 'ResNet50'): {
+        'Sequential': [27.9, 27.89],
+        'Streams': [50.27, 50.27],
+        'MPS': [49.85, 49.81]
+    },
+    ('ResNet50', 'MobileNetV2'): {
+        'Sequential': [37.51, 22.51],
+        'Streams': [55.27, 43.35],
+        'MPS': [54.23, 45.25]
+    },
+    ('ResNet50', 'ResNet101'): {
+        'Sequential': [37.51, 45.27],
+        'Streams': [71.40, 76.06],
+        'MPS': [61.92, 75.32]
+    },
+    ('ResNet50', 'BERT'): {
+        'Sequential': [95.13, 60.17],
+        'Streams': [118.34, 141.93],
+        'MPS': [138.14, 113.81]
+    },
+    ('ResNet50', 'Transformer'): {
+        'Sequential': [95.12, 51.13],
+        'Streams': [129.35, 126.74],
+        'MPS': [126.43, 122.95]
+    },
+    ('MobileNetV2', 'MobileNetV2'): {
+        'Sequential': [22.53, 22.54],
+        'Streams': [40.28, 40.32],
+        'MPS': [39.58, 39.54]
+    },
+    ('MobileNetV2', 'ResNet101'): {
+        'Sequential': [38.04, 45.22],
+        'Streams': [69.28, 75.65],
+        'MPS': [71.88, 74.35]
+    },
+    ('MobileNetV2', 'BERT'): {
+        'Sequential': [76.81, 60.21],
+        'Streams': [123.40, 100.46],
+        'MPS': [120.4, 88.54]
+    },
+    ('MobileNetV2', 'Transformer'): {
+        'Sequential': [76.79, 51.22],
+        'Streams': [112.46, 104.45],
+        'MPS': [109.23, 85.16]
+    },
+    ('ResNet101', 'ResNet101'): {
+        'Sequential': [45.26, 45.28],
+        'Streams': [81.99, 81.99],
+        'MPS': [80.96, 81.06]
+    },
+    ('ResNet101', 'BERT'): {
+        'Sequential': [76.4, 59.99],
+        'Streams': [123.92, 109.87],
+        'MPS': [120.82, 102.9]
+    },
+    ('ResNet101', 'Transformer'): {
+        'Sequential': [60.82, 50.99],
+        'Streams': [87.12, 100.83],
+        'MPS': [86.6, 97.16]
+    },
+    ('BERT', 'BERT'): {
+        'Sequential': [59.97, 60.0],
+        'Streams': [116.01, 116.01],
+        'MPS': [104.3, 104.29]
+    },
+    ('BERT', 'Transformer'): {
+        'Sequential': [60.04, 68.78],
+        'Streams': [88.63, 117.37],
+        'MPS': [82.07, 109.23]
+    },
+    ('Transformer', 'Transformer'): {
+        'Sequential': [50.89, 50.89],
+        'Streams': [91.39, 91.36],
+        'MPS': [81.06, 81.07]
+    },
+}
+
 # %%
 transpose = True
 num_models = len(id2model)
