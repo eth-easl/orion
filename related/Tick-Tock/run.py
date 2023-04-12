@@ -41,8 +41,7 @@ def run(config, combination_name):
         round_func = lambda val: round(val, 2)
 
         logging.info(f"results for {model0} and {model1}")
-        logging.info(f"p50: {round_func(dict_data['p50-0'])} {round_func(dict_data['p50-1'])}")
-        logging.info(f"p95: {round_func(dict_data['p95-0'])} {round_func(dict_data['p95-1'])}")
+        logging.info(f"duration for each: {round_func(dict_data['duration0'])} / {round_func(dict_data['duration1'])}")
         logging.info(f"duration: {round_func(dict_data['duration'])}")
     except:
         logging.info("the json data file cannot be opened")
@@ -64,52 +63,73 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_mode = 'eval'
-    model1_mode = 'eval'
+    model0_mode = 'train'
+    model1_mode = 'train'
 
     policies = ['MPS-process']
     use_dummy_data = True
     request_rate = 0
 
-    model_pair_to_num_requests = {
-        ('resnet50', 'bert'): (1000, 350),
-        ('mobilenet_v2', 'bert'): (1000, 200),
-        ('resnet101', 'bert'): (500, 350),
-        ('bert', 'bert'): (500, 500),
-        ('bert', 'transformer'): (350, 500),
+    model_pair_to_num_iters_train_train = {
+        ('resnet50', 'resnet50'): (300, 300),
+        ('resnet50', 'mobilenet_v2'): (400, 300),
+        ('resnet50', 'resnet101'): (400, 300),
+        ('resnet50', 'bert'): (1000, 300),
+        ('resnet50', 'transformer'): (1000, 300),
 
-        ('resnet101', 'resnet50'): (550, 1000),
-        ('mobilenet_v2', 'resnet101'): (1000, 450),
-        ('resnet101', 'resnet101'): (1000, 1000),
-        ('resnet101', 'transformer'): (500, 500),
+        ('mobilenet_v2', 'mobilenet_v2'): (300, 300),
+        ('mobilenet_v2', 'resnet101'): (500, 300),
+        ('mobilenet_v2', 'bert'): (1000, 300),
+        ('mobilenet_v2', 'transformer'): (1000, 300),
 
-        ('resnet50', 'transformer'): (550, 300),
-        ('resnet50', 'resnet50'): (1000, 1000),
-        ('resnet50', 'retinanet'): (1000, 150),
+        ('resnet101', 'resnet101'): (300, 300),
+        ('resnet101', 'bert'): (500, 300),
+        ('resnet101', 'transformer'): (400, 300),
 
-        ('retinanet', 'retinanet'): (200, 200),
-        ('retinanet', 'transformer'): (100, 350),
-
-        ('mobilenet_v2', 'transformer'): (1000, 350),
-        ('mobilenet_v2', 'retinanet'): (1000, 90),
-        ('mobilenet_v2', 'resnet50'): (1250, 1000),
-        ('mobilenet_v2', 'mobilenet_v2'): (1000, 1000),
-        ('mobilenet_v2', 'resnet101'): (1000, 450),
-        ('transformer', 'transformer'): (500, 500),
-
+        ('bert', 'bert'): (300, 300),
+        ('bert', 'transformer'): (300, 400),
+        ('transformer', 'transformer'): (300, 300)
     }
 
-    # combinations = list(model_pair_to_num_requests.keys())
-    combinations = [
-        ('resnet101', 'resnet101'),
-        ('resnet101', 'transformer'),
+    # model_pair_to_num_requests_infer_infer = {
+    #     ('resnet50', 'bert'): (1000, 350),
+    #     ('mobilenet_v2', 'bert'): (1000, 200),
+    #     ('resnet101', 'bert'): (500, 350),
+    #     ('bert', 'bert'): (500, 500),
+    #     ('bert', 'transformer'): (350, 500),
+    #
+    #     ('resnet101', 'resnet50'): (550, 1000),
+    #     ('mobilenet_v2', 'resnet101'): (1000, 450),
+    #     ('resnet101', 'resnet101'): (1000, 1000),
+    #     ('resnet101', 'transformer'): (500, 500),
+    #
+    #     ('resnet50', 'transformer'): (550, 300),
+    #     ('resnet50', 'resnet50'): (1000, 1000),
+    #     ('resnet50', 'retinanet'): (1000, 150),
+    #
+    #     ('retinanet', 'retinanet'): (200, 200),
+    #     ('retinanet', 'transformer'): (100, 350),
+    #
+    #     ('mobilenet_v2', 'transformer'): (1000, 350),
+    #     ('mobilenet_v2', 'retinanet'): (1000, 90),
+    #     ('mobilenet_v2', 'resnet50'): (1250, 1000),
+    #     ('mobilenet_v2', 'mobilenet_v2'): (1000, 1000),
+    #     ('mobilenet_v2', 'resnet101'): (1000, 450),
+    #     ('transformer', 'transformer'): (500, 500),
+    #
+    # }
 
-        ('resnet50', 'bert'),
-        ('mobilenet_v2', 'bert'),
-        ('resnet101', 'bert'),
-        ('bert', 'bert'),
-        ('bert', 'transformer')
-    ]
+    combinations = list(model_pair_to_num_iters_train_train.keys())
+    # combinations = [
+    #     ('resnet101', 'resnet101'),
+    #     ('resnet101', 'transformer'),
+    #
+    #     # ('resnet50', 'bert'),
+    #     # ('mobilenet_v2', 'bert'),
+    #     # ('resnet101', 'bert'),
+    #     # ('bert', 'bert'),
+    #     # ('bert', 'transformer')
+    # ]
     # ----configuration region ended----
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
@@ -121,9 +141,9 @@ if __name__ == "__main__":
         default_full_config['model1']['mode'] = model1_mode
         for policy in policies:
             default_full_config['policy'] = policy
-            num_reqs0, num_reqs1 = model_pair_to_num_requests[(model0, model1)]
-            default_full_config[model0]['num_requests'] = num_reqs0
-            default_full_config[model1]['num_requests'] = num_reqs1
+            num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
+            default_full_config[model0]['num_iterations'] = num_iters0
+            default_full_config[model1]['num_iterations'] = num_iters1
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
             run(default_full_config, combination_name)
 

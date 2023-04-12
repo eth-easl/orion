@@ -47,11 +47,27 @@ from utils.sync_control import *
 
 def setup_model(model_config):
     arch = model_config['arch']
-    config_file = os.path.join(
-        model_config['large_model_dir'] if arch == 'large' else model_config['base_model_dir'],
-        'bert_config.json'
-    )
-    config = modeling.BertConfig.from_json_file(config_file)
+    # config_file = os.path.join(
+    #     model_config['large_model_dir'] if arch == 'large' else model_config['base_model_dir'],
+    #     'bert_config.json'
+    # )
+    # config = modeling.BertConfig.from_json_file(config_file)
+    config_dict ={
+      "attention_probs_dropout_prob": 0.1,
+      "hidden_act": "gelu",
+      "hidden_dropout_prob": 0.1,
+      "hidden_size": 768,
+      "initializer_range": 0.02,
+      "intermediate_size": 3072,
+      "max_position_embeddings": 512,
+      "num_attention_heads": 12,
+      "num_hidden_layers": 12,
+      "type_vocab_size": 2,
+      "vocab_size": 30522
+    }
+
+    config = modeling.BertConfig.from_dict(config_dict)
+
     # Padding for divisibility by 8
     if config.vocab_size % 8 != 0:
         config.vocab_size += 8 - (config.vocab_size % 8)
@@ -92,11 +108,6 @@ def setup(model_config, shared_config, device):
         optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5,
                              warmup=0.1,
                              t_total=num_iterations)
-    vocab_file = os.path.join(
-        model_config['large_model_dir'] if model_config['arch'] == 'large' else model_config['base_model_dir'],
-        'vocab.txt'
-    )
-    tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
 
     if shared_config['use_dummy_data']:
         input_ids = torch.ones((batch_size, 384)).to(torch.int64)
@@ -106,6 +117,11 @@ def setup(model_config, shared_config, device):
         end_positions = torch.ones((batch_size, )).to(torch.int64)
         virtual_loader = utils.DummyDataLoader(batch=(input_ids, input_mask, segment_ids, start_positions, end_positions))
     else:
+        vocab_file = os.path.join(
+            model_config['large_model_dir'] if model_config['arch'] == 'large' else model_config['base_model_dir'],
+            'vocab.txt'
+        )
+        tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
         squad_version = model_config['squad_version']
         squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
         train_examples = read_squad_examples(

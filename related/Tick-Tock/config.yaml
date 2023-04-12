@@ -1,11 +1,11 @@
 ---
 policy: MPS-process # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
 model0:
-  mode: eval # train or eval
+  mode: train # train or eval
   name: bert # these two names should strictly correspond to the model names below
 model1:
-  mode: eval # train or eval
-  name: retinanet
+  mode: train # train or eval
+  name: transformer
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'

@@ -61,6 +61,7 @@ class TickTockSyncInfo(BasicSyncInfo):
             self.start_time = time.time()
 
     def post_measurement_prep(self, tid):
+        self.no_sync_control = True
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
