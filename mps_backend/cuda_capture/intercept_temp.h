@@ -746,6 +746,10 @@ extern int func_indexes[2];
 
 extern cudaStream_t client_streams[2];
 
+// new
+extern volatile int* shmem;
+extern boost::interprocess::mapped_region* region;
+
 // functions
 extern cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
 extern cudaError_t (*memcpy_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind);

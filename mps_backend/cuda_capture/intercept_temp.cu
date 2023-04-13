@@ -66,7 +66,12 @@ int func_indexes[2] = {0, 0};
 cudaStream_t client_streams[2];
 bool streams_set[2] = {false, false};
 
-int* shmem = NULL;
+using namespace boost::interprocess;
+
+// new
+volatile int* shmem = NULL;
+mapped_region* region;
+
 
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
 cudaError_t (*memcpy_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind) = NULL;
@@ -149,8 +154,6 @@ cudnnStatus_t (*cudnn_conv_bw_filter_func)(
     void *dw
 );
 
-using namespace boost::interprocess;
-
 void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 
 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d], ", i);
@@ -180,12 +183,15 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
         const char* shmem_name = shmem_string_name.c_str();
 		shared_memory_object shm (open_only, shmem_name, read_write);
       	//Map the whole shared memory in this process
-     	mapped_region region(shm, read_write);
-	    shmem = (int*)region.get_address();
-		printf("********** region %s mapped at address %p, I read %d\n", shmem, shmem, *shmem);
-		*shmem = 100;
-		printf("Written %d\n", *shmem);
+     	region = new mapped_region(shm, read_write);
+	    shmem = (int*)(region->get_address());
+		//*shmem = 100;
+		printf("********** region %s mapped at address %p, I read %d\n", shmem_name, shmem, *shmem);
+
 	}
+
+	*shmem = MALLOC_RECORD;
+	while (*shmem == MALLOC_RECORD);
 
 	int idx = get_idx();
 	assert (idx >= 0);
@@ -242,6 +248,9 @@ cudaError_t cudaFree(void* devPtr) {
 		*(void **)(&free_func) = dlsym (RTLD_NEXT, "cudaFree");
 		assert (free_func != NULL);
 	}
+
+	*shmem = FREE_RECORD;
+	while (*shmem == FREE_RECORD);
 
 	if (idx < 2) {
 
@@ -326,6 +335,9 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	}
 
 	cudaError_t err = cudaSuccess;
+
+	*shmem = MEMCPY_RECORD;
+	while (*shmem == MEMCPY_RECORD);
 
 	if (idx < 2) {
 
@@ -412,6 +424,9 @@ cudaError_t cudaMemsetAsync ( void* devPtr, int  value, size_t count, cudaStream
 		assert (memset_async_func != NULL);
 	}
 
+	*shmem = MEMSET_RECORD;
+	while (*shmem == MEMSET_RECORD);
+
 	cudaError_t err = cudaSuccess;
 
 	if (idx < 2) {
@@ -465,6 +480,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		*(void **)(&kernel_func) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
 		assert (kernel_func != NULL);
 	}
+
+	*shmem = KERNEL_RECORD;
+	while (*shmem == KERNEL_RECORD);
 
 	cudaError_t err = cudaSuccess;
 	kernel_record new_kernel_record;

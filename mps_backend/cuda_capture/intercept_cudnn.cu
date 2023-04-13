@@ -23,6 +23,9 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
+	*shmem = CUDNN_CONV_RECORD;
+	while (*shmem == CUDNN_CONV_RECORD);
+
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
 
@@ -80,6 +83,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+	*shmem = CUDNN_BNORM_RECORD;
+	while (*shmem == CUDNN_BNORM_RECORD);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
@@ -160,6 +165,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
 
+	*shmem = CUDNN_BNORM_INF_RECORD;
+	while (*shmem == CUDNN_BNORM_INF_RECORD);
 
 	// create record
 	// cudnnBatchNormalizationForwardInference_record bn_record = {
@@ -216,6 +223,9 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+
+	*shmem = CUDNN_RNN_INF_RECORD;
+	while (*shmem == CUDNN_RNN_INF_RECORD);
 
 	if (idx < 2) {
 
@@ -313,6 +323,9 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+
+	*shmem = CUDNN_RNN_TRAIN_RECORD;
+	while (*shmem == CUDNN_RNN_TRAIN_RECORD);
 
 	if (idx < 2) {
 
@@ -418,6 +431,8 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 	assert (idx >= 0);
 
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+	*shmem = CUDNN_BNORM_BACKWARD_RECORD;
+    while (*shmem == CUDNN_BNORM_BACKWARD_RECORD);
 
 	// cudnnBatchNormalizationBackwardEx_record record = {
 	// 	handle,
@@ -540,6 +555,9 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
+	*shmem = CUDNN_CONV_DATA_RECORD;
+	while (*shmem == CUDNN_CONV_DATA_RECORD);
+
 	if (idx < 2) {
 	// 	cudnnConvolutionBackwardData_record record = {
 	// 		handle,
@@ -614,6 +632,9 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 
 	int idx = get_idx();
 	assert (idx >= 0);
+
+	*shmem = CUDNN_CONV_FILTER_RECORD;
+	while (*shmem == CUDNN_CONV_FILTER_RECORD);
 
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 

@@ -71,9 +71,9 @@ class PyScheduler:
                 #         new_kernel_file = additional_kernel_files[0].encode('utf-8')
                 #         self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
 
-                print("wait here")
-                barriers[0].wait()
-                print("done!")
+                # print("wait here")
+                # barriers[0].wait()
+                # print("done!")
 
 
                 start = time.time()

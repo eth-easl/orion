@@ -6,6 +6,8 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+	*shmem = CUBLAS_SGEMM_RECORD;
+	while (*shmem == CUBLAS_SGEMM_RECORD);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
@@ -66,6 +68,8 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+	*shmem = CUBLAS_SGEMM_STRIDED_RECORD;
+	while (*shmem == CUBLAS_SGEMM_STRIDED_RECORD);
 
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);

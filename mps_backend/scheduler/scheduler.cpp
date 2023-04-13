@@ -51,14 +51,15 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 
 void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool reef) {
 
+	printf("Enter busy_wait_profile!\n");
     printf("status 1 is %p, %d!\n", shmem_addr[0], *(shmem_addr[0]));
     while(1) {
-        volatile int status = *(shmem_addr[0]);
-        if (status >= 0)
-            break;
+        volatile int *status = shmem_addr[0];
+        if (*status >= 0) {
+		    //printf("HELLO! status is %d!\n", *(shmem_addr[0]));
+			*status = -1;
+		}
     }
-    printf("status is %d!\n", *(shmem_addr[0]));
-
     return NULL;
 }
 
