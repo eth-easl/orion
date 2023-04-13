@@ -39,7 +39,8 @@ int** shmem_addr;
 
 using namespace boost::interprocess;
 
-mapped_region* region;
+mapped_region* region0;
+mapped_region* region1;
 
 void* Scheduler::busy_wait_fifo(int num_clients) {
     return NULL;
@@ -58,6 +59,11 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
         if (*status >= 0) {
 		    //printf("HELLO! status is %d!\n", *(shmem_addr[0]));
 			*status = -1;
+		}
+		volatile int *status1 = shmem_addr[1];
+        if (*status1 >= 0) {
+		    //printf("HELLO! status is %d!\n", *(shmem_addr[0]));
+			*status1 = -1;
 		}
     }
     return NULL;
@@ -139,10 +145,24 @@ extern "C" {
             const char* shmem_name = shmem_string_name.c_str();
             shared_memory_object shm (create_only, shmem_name, read_write);
             shm.truncate(4);
-            region = new mapped_region(shm, read_write);
-            std::memset(region->get_address(), -1, region->get_size());
-            shmem_addr[i] = (int*)(region->get_address());
-            printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name, shmem_addr[i], *(shmem_addr[0]));
+			if (i==0) {
+				region0 = new mapped_region(shm, read_write);
+            	std::memset(region0->get_address(), -1, region0->get_size());
+            	shmem_addr[i] = (int*)(region0->get_address());
+			}
+            else {
+				region1 = new mapped_region(shm, read_write);
+            	std::memset(region1->get_address(), -1, region1->get_size());
+            	shmem_addr[i] = (int*)(region1->get_address());
+			}
+            // key_t key = ftok(shmem_name,65);
+
+    		// // shmget returns an identifier in shmid
+    		// int shmid = shmget(key,1024,0666|IPC_CREAT);
+			// // shmat to attach to shared memory
+   			// char *str = (char*) shmat(shmid,(void*)0,0);
+			// shmem_addr[i] = (int*)str;
+			printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name, shmem_addr[i], *(shmem_addr[i]));
 
         }
 

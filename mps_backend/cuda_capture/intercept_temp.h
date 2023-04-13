@@ -17,6 +17,8 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include "../system_utils.h"
 #include "Torch_Array.h"
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #ifdef INCLUDE_TORCH_CUDA
 #include "Reduce.cuh"

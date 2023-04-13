@@ -14,6 +14,8 @@
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <string>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #include "utils_sched.h"
 
