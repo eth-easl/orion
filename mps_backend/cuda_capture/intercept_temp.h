@@ -841,7 +841,7 @@ extern cudnnStatus_t (*cudnn_conv_bw_filter_func)(
 int get_idx();
 void block(int idx, pthread_mutex_t** mutexes, queue<func_record>** kqueues);
 
-cudaStream_t push_and_wait(int value, bool wait_for_stream);
+std::pair<cudaStream_t, cudaEvent_t> push_and_wait(int value, bool wait_for_stream);
 
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 template <typename T>

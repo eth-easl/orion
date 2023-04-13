@@ -12,11 +12,12 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 		assert(cublas_sgemm_func != NULL);
 	}
 
-	cudaStream_t sched_stream = push_and_wait(CUBLAS_SGEMM_RECORD, true);
-	cublasSetStream_v2(handle, sched_stream);
+	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUBLAS_SGEMM_RECORD, true);
+	cublasSetStream_v2(handle, sched_pair.first);
 
 	status = (*cublas_sgemm_func)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 	assert (status == CUBLAS_STATUS_SUCCESS);
+	CHECK_CUDA_ERROR(cudaEventRecord(sched_pair.second, sched_pair.first));
 	DEBUG_PRINT("CUBLAS status is %d\n", status);
 	return status;
 
@@ -34,11 +35,12 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 		assert(cublas_sgemm_strided_func != NULL);
 	}
 
-	cudaStream_t sched_stream = push_and_wait(CUBLAS_SGEMM_STRIDED_RECORD, true);
-	cublasSetStream_v2(handle, sched_stream);
+	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUBLAS_SGEMM_STRIDED_RECORD, true);
+	cublasSetStream_v2(handle, sched_pair.first);
 
 	status = (*cublas_sgemm_strided_func)(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 	assert (status == CUBLAS_STATUS_SUCCESS);
+	CHECK_CUDA_ERROR(cudaEventRecord(sched_pair.second, sched_pair.first));
 	DEBUG_PRINT("CUBLAS status is %d\n", status);
 	return status;
 }
