@@ -293,27 +293,54 @@ color_map = {
     'ORION': 'm',
     'MPS': 'g'
 }
-for i in range(num_models):
-    for j in range(num_models):
-        ax  = axes[num_models - 1 - i, num_models - 1 - j]
-        if i > j:
-            ax.axis('off')
-        else:
-            sub_data = p50_data[(id2model[i], id2model[j])]
-            for key_id, key in enumerate(sub_data.keys()):
-                offset = width * (key_id-2)
-                rects = ax.bar(x + offset, sub_data[key], width, label=key, color=color_map[key])
-                # ax.bar_label(rects, padding=1)
-                ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]], fontsize=15)
 
 
-for ax, col in zip(axes[num_models - 1], id2model[::-1]):
-    ax.set_title(col, y=-0.2,pad=-16, fontsize=grid_label_size)
+def plot_p50_latency():
+    for i in range(num_models):
+        for j in range(num_models):
+            ax = axes[num_models - 1 - i, num_models - 1 - j]
+            if i > j:
+                ax.axis('off')
+            else:
+                sub_data = p50_data[(id2model[i], id2model[j])]
+                for key_id, key in enumerate(sub_data.keys()):
+                    offset = width * (key_id - 2)
+                    rects = ax.bar(x + offset, sub_data[key], width, label=key, color=color_map[key])
+                    # ax.bar_label(rects, padding=1)
+                    ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]], fontsize=15)
+    for ax, col in zip(axes[num_models - 1], id2model[::-1]):
+        ax.set_title(col, y=-0.2, pad=-16, fontsize=grid_label_size)
 
-for ax, row in zip(axes[:, 0], id2model[::-1]):
-    ax.set_ylabel(row, fontsize=grid_label_size)
+    for ax, row in zip(axes[:, 0], id2model[::-1]):
+        ax.set_ylabel(row, fontsize=grid_label_size)
 
-handles, labels = axes[0, 0].get_legend_handles_labels()
-fig.legend(handles, labels, loc='upper right', prop={'size': 25})
-fig.suptitle('P50 latency', fontsize=32)
-plt.show()
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper right', prop={'size': 25})
+    fig.suptitle('P50 latency', fontsize=32)
+    plt.show()
+
+def plot_durations():
+    for i in range(num_models):
+        for j in range(num_models):
+            ax  = axes[num_models - 1 - i, num_models - 1 - j]
+            if i > j:
+                ax.axis('off')
+            else:
+                sub_data = train_train_data[(id2model[i], id2model[j])]
+                for key_id, key in enumerate(sub_data.keys()):
+                    offset = width * (key_id-1)
+                    rects = ax.bar(x + offset, sub_data[key], width, label=key, color=color_map[key])
+                    # ax.bar_label(rects, padding=1)
+                    ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]], fontsize=15)
+
+
+    for ax, col in zip(axes[num_models - 1], id2model[::-1]):
+        ax.set_title(col, y=-0.2,pad=-16, fontsize=grid_label_size)
+
+    for ax, row in zip(axes[:, 0], id2model[::-1]):
+        ax.set_ylabel(row, fontsize=grid_label_size)
+
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper right', prop={'size': 25})
+    fig.suptitle('durations', fontsize=32)
+    plt.show()
