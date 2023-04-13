@@ -207,9 +207,9 @@ train_train_data = {
         'MPS': [49.85, 49.81]
     },
     ('ResNet50', 'MobileNetV2'): {
-        'Sequential': [37.51, 22.51],
-        'Streams': [55.27, 43.35],
-        'MPS': [54.23, 45.25]
+        'Sequential': [37.54, 30.29],
+        'Streams': [61.26, 59.49],
+        'MPS': [60.02, 60.44]
     },
     ('ResNet50', 'ResNet101'): {
         'Sequential': [37.51, 45.27],
@@ -217,9 +217,9 @@ train_train_data = {
         'MPS': [61.92, 75.32]
     },
     ('ResNet50', 'BERT'): {
-        'Sequential': [95.13, 60.17],
-        'Streams': [118.34, 141.93],
-        'MPS': [138.14, 113.81]
+        'Sequential': [66.41, 50.5],
+        'Streams': [105.27, 98.23],
+        'MPS': [103.23, 95.58]
     },
     ('ResNet50', 'Transformer'): {
         'Sequential': [95.12, 51.13],
@@ -237,9 +237,9 @@ train_train_data = {
         'MPS': [71.88, 74.35]
     },
     ('MobileNetV2', 'BERT'): {
-        'Sequential': [76.81, 60.21],
-        'Streams': [123.40, 100.46],
-        'MPS': [120.4, 88.54]
+        'Sequential': [61.29, 60.94],
+        'Streams': [108.03, 100.5],
+        'MPS': [105.82, 89.47]
     },
     ('MobileNetV2', 'Transformer'): {
         'Sequential': [76.79, 51.22],
@@ -257,9 +257,9 @@ train_train_data = {
         'MPS': [120.82, 102.9]
     },
     ('ResNet101', 'Transformer'): {
-        'Sequential': [60.82, 50.99],
-        'Streams': [87.12, 100.83],
-        'MPS': [86.6, 97.16]
+        'Sequential': [68.88, 51.54],
+        'Streams': [98.27, 107.03],
+        'MPS': [97.41, 104.12]
     },
     ('BERT', 'BERT'): {
         'Sequential': [59.97, 60.0],
@@ -267,9 +267,9 @@ train_train_data = {
         'MPS': [104.3, 104.29]
     },
     ('BERT', 'Transformer'): {
-        'Sequential': [60.04, 68.78],
-        'Streams': [88.63, 117.37],
-        'MPS': [82.07, 109.23]
+        'Sequential': [70.46, 60.42],
+        'Streams': [102.24, 116.47],
+        'MPS': [96.53, 108.73]
     },
     ('Transformer', 'Transformer'): {
         'Sequential': [50.89, 50.89],
@@ -344,3 +344,7 @@ def plot_durations():
     fig.legend(handles, labels, loc='upper right', prop={'size': 25})
     fig.suptitle('durations', fontsize=32)
     plt.show()
+
+
+# %%
+plot_durations()
