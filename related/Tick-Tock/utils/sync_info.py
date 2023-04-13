@@ -62,6 +62,10 @@ class TickTockSyncInfo(BasicSyncInfo):
 
     def post_measurement_prep(self, tid):
         self.no_sync_control = True
+        # the other thread might already enter next foward control
+        # before setting `no_sync_control`; set the flags to make it continue
+        self.eventf0.set()
+        self.eventf1.set()
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
