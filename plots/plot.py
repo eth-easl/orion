@@ -198,82 +198,97 @@ p95_data = {
     },
 }
 
-
+# note for tick-tock a different number of iterations is used
 train_train_data = {
     ('ResNet50', 'ResNet50'): {
         'Sequential': [27.9, 27.89],
         'Streams': [50.27, 50.27],
-        'MPS': [49.85, 49.81]
+        'MPS': [49.85, 49.81],
+        'Tick-Tock': [52.43, 52.5]
     },
     ('ResNet50', 'MobileNetV2'): {
         'Sequential': [37.54, 30.29],
         'Streams': [61.26, 59.49],
-        'MPS': [60.02, 60.44]
+        'MPS': [60.02, 60.44],
+        'Tick-Tock': [48.07, 48.12]
     },
     ('ResNet50', 'ResNet101'): {
         'Sequential': [37.51, 45.27],
         'Streams': [71.40, 76.06],
-        'MPS': [61.92, 75.32]
+        'MPS': [61.92, 75.32],
+        'Tick-Tock': [69.04, 69.15]
     },
     ('ResNet50', 'BERT'): {
         'Sequential': [66.41, 50.5],
         'Streams': [105.27, 98.23],
-        'MPS': [103.23, 95.58]
+        'MPS': [103.23, 95.58],
+        'Tick-Tock': [84.59, 84.74]
     },
     ('ResNet50', 'Transformer'): {
         'Sequential': [95.12, 51.13],
         'Streams': [129.35, 126.74],
-        'MPS': [126.43, 122.95]
+        'MPS': [126.43, 122.95],
+        'Tick-Tock': [75.85, 76.0]
     },
     ('MobileNetV2', 'MobileNetV2'): {
         'Sequential': [22.53, 22.54],
         'Streams': [40.28, 40.32],
-        'MPS': [39.58, 39.54]
+        'MPS': [39.58, 39.54],
+        'Tick-Tock': [43.51, 43.56]
     },
     ('MobileNetV2', 'ResNet101'): {
         'Sequential': [38.04, 45.22],
         'Streams': [69.28, 75.65],
-        'MPS': [71.88, 74.35]
+        'MPS': [71.88, 74.35],
+        'Tick-Tock': [63.95, 64.06]
     },
     ('MobileNetV2', 'BERT'): {
         'Sequential': [61.29, 60.94],
         'Streams': [108.03, 100.5],
-        'MPS': [105.82, 89.47]
+        'MPS': [105.82, 89.47],
+        'Tick-Tock': [79.6, 79.75]
     },
     ('MobileNetV2', 'Transformer'): {
         'Sequential': [76.79, 51.22],
         'Streams': [112.46, 104.45],
-        'MPS': [109.23, 85.16]
+        'MPS': [109.23, 85.16],
+        'Tick-Tock': [71.61, 71.75]
     },
     ('ResNet101', 'ResNet101'): {
         'Sequential': [45.26, 45.28],
         'Streams': [81.99, 81.99],
-        'MPS': [80.96, 81.06]
+        'MPS': [80.96, 81.06],
+        'Tick-Tock': [85.76, 85.86]
     },
     ('ResNet101', 'BERT'): {
         'Sequential': [76.4, 59.99],
         'Streams': [123.92, 109.87],
-        'MPS': [120.82, 102.9]
+        'MPS': [120.82, 102.9],
+        'Tick-Tock': [101.82, 101.97]
     },
     ('ResNet101', 'Transformer'): {
         'Sequential': [68.88, 51.54],
         'Streams': [98.27, 107.03],
-        'MPS': [97.41, 104.12]
+        'MPS': [97.41, 104.12],
+        'Tick-Tock': [93.08, 93.22]
     },
     ('BERT', 'BERT'): {
         'Sequential': [59.97, 60.0],
         'Streams': [116.01, 116.01],
-        'MPS': [104.3, 104.29]
+        'MPS': [104.3, 104.29],
+        'Tick-Tock': [118.56, 118.71]
     },
     ('BERT', 'Transformer'): {
         'Sequential': [70.46, 60.42],
         'Streams': [102.24, 116.47],
-        'MPS': [96.53, 108.73]
+        'MPS': [96.53, 108.73],
+        'Tick-Tock': [109.3, 109.44]
     },
     ('Transformer', 'Transformer'): {
         'Sequential': [50.89, 50.89],
         'Streams': [91.39, 91.36],
-        'MPS': [81.06, 81.07]
+        'MPS': [81.06, 81.07],
+        'Tick-Tock': [100.65, 100.8]
     },
 }
 
@@ -305,18 +320,19 @@ num_models = len(id2model)
 grid_label_size = 24
 xlabel_size = 16
 width = 0.2  # the width of the bars
-fig, axes = plt.subplots(figsize=(25, 15), ncols=5, nrows=5)
 x = np.arange(2)
 ymax = 120
 color_map = {
     'Sequential': 'b',
     'Streams': 'y',
     'ORION': 'm',
-    'MPS': 'g'
+    'MPS': 'g',
+    'Tick-Tock': 'r'
 }
 
 
 def plot_p50_latency():
+    fig, axes = plt.subplots(figsize=(25, 15), ncols=5, nrows=5)
     for i in range(num_models):
         for j in range(num_models):
             ax = axes[num_models - 1 - i, num_models - 1 - j]
@@ -340,10 +356,13 @@ def plot_p50_latency():
     fig.suptitle('P50 latency', fontsize=32)
     plt.show()
 
-def plot_durations():
+
+# %%
+def plot_throughput():
+    fig, axes = plt.subplots(figsize=(35, 15), ncols=5, nrows=5)
     for i in range(num_models):
         for j in range(num_models):
-            ax  = axes[num_models - 1 - i, num_models - 1 - j]
+            ax = axes[num_models - 1 - i, num_models - 1 - j]
             if i > j:
                 ax.axis('off')
             else:
@@ -356,12 +375,16 @@ def plot_durations():
                     iterations1 = iterations1 - 10
                     duration0, duration1 = sub_data[key]
                     if key in ['MPS', 'Streams']:
-                        data_to_plot = [iterations0/duration0, iterations1/duration1]
+                        data_to_plot = [iterations0 / duration0, iterations1 / duration1]
                     elif key == 'Sequential':
                         # add penalty
-                        duration0 += duration1/2
-                        duration1 += duration0/2
+                        delta1 = duration0 / 2
+                        delta0 = duration1 / 2
+                        duration0 += delta0
+                        duration1 += delta1
                         data_to_plot = [iterations0 / duration0, iterations1 / duration1]
+                    elif key == 'Tick-Tock':
+                        data_to_plot = [290 / duration0, 290 / duration1]
 
                     rects = ax.bar(x + offset, data_to_plot, width, label=key, color=color_map[key])
                     # ax.bar_label(rects, padding=1)
@@ -379,6 +402,5 @@ def plot_durations():
     fig.suptitle('Throughput (iterations per second)', fontsize=32)
     plt.show()
 
-
 # %%
-plot_durations()
+plot_throughput()
