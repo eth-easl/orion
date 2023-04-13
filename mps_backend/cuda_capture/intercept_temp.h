@@ -842,6 +842,7 @@ int get_idx();
 void block(int idx, pthread_mutex_t** mutexes, queue<func_record>** kqueues);
 
 std::pair<cudaStream_t, cudaEvent_t> push_and_wait(int value, bool wait_for_stream);
+void wait_events(cudaStream_t stream);
 
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 template <typename T>

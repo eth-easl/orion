@@ -14,6 +14,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_CONV_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	status = (*cudnn_conv_func)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
@@ -39,6 +40,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_BNORM_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	//printf("run func %p\n", cudnn_bnorm_function);
@@ -66,6 +68,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_BNORM_INF_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	status = (*cudnn_bnorm_infer_func)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
@@ -88,6 +91,7 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_RNN_INF_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	status = (*cudnn_rnn_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
@@ -134,6 +138,7 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_RNN_TRAIN_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	status = (*cudnn_rnn_train_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
@@ -223,6 +228,7 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 	);
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_BNORM_BACKWARD_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	assert (status == CUDNN_STATUS_SUCCESS);
@@ -273,6 +279,7 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 	);
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_CONV_DATA_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	assert (status == CUDNN_STATUS_SUCCESS);
@@ -323,6 +330,7 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 	);
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUDNN_CONV_FILTER_RECORD, true);
+	wait_events(sched_pair.first);
 	cudnnSetStream(handle, sched_pair.first);
 
 	assert (status == CUDNN_STATUS_SUCCESS);

@@ -13,6 +13,7 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUBLAS_SGEMM_RECORD, true);
+	wait_events(sched_pair.first);
 	cublasSetStream_v2(handle, sched_pair.first);
 
 	status = (*cublas_sgemm_func)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
@@ -36,6 +37,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(CUBLAS_SGEMM_STRIDED_RECORD, true);
+	wait_events(sched_pair.first);
 	cublasSetStream_v2(handle, sched_pair.first);
 
 	status = (*cublas_sgemm_strided_func)(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);

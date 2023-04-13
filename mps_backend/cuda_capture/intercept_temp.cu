@@ -235,6 +235,11 @@ std::pair<cudaStream_t, cudaEvent_t> push_and_wait(int value, bool wait_for_stre
 	}
 }
 
+void wait_events(cudaStream_t stream) {
+	CHECK_CUDA_ERROR(cudaStreamWaitEvent(stream, lp_event, 0));
+	CHECK_CUDA_ERROR(cudaStreamWaitEvent(stream, hp_event, 0));
+}
+
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 	if (shmem==NULL) {
@@ -326,6 +331,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	cudaError_t err = cudaSuccess;
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(MEMCPY_RECORD, true);
 
+	wait_events(sched_pair.first);
 	err = (*memcpy_async_func)(dst, src, count, kind, sched_pair.first); // TODO: not sure about which stream to use here
 	CHECK_CUDA_ERROR(err);
 	CHECK_CUDA_ERROR(cudaEventRecord(sched_pair.second, sched_pair.first));
@@ -367,6 +373,7 @@ cudaError_t cudaMemsetAsync ( void* devPtr, int  value, size_t count, cudaStream
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(MEMSET_RECORD, true);
+	wait_events(sched_pair.first);
 
 	cudaError_t err = cudaSuccess;
 	err = (*memset_async_func)(devPtr, value, count, sched_pair.first);
@@ -399,6 +406,7 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 	}
 
 	std::pair<cudaStream_t, cudaEvent_t> sched_pair = push_and_wait(KERNEL_RECORD, true);
+	wait_events(sched_pair.first);
 
 	cudaError_t err = cudaSuccess;
 	kernel_record new_kernel_record;

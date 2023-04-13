@@ -68,10 +68,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 				}
 
 				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD)) {
-					if (seen[i] % 2 == 0)
-						*(shmem_streams_addr[i]) = 0;
-					else
-						*(shmem_streams_addr[i]) = 1;
+					*(shmem_streams_addr[i]) = 0;
 				}
 
 				*status = -1;
