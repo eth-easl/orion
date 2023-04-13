@@ -72,22 +72,22 @@ if __name__ == "__main__":
 
     model_pair_to_num_iters_train_train = {
         ('resnet50', 'resnet50'): (300, 300),
-        ('resnet50', 'mobilenet_v2'): (400, 300),
+        ('resnet50', 'mobilenet_v2'): (400, 400),
         ('resnet50', 'resnet101'): (400, 300),
-        ('resnet50', 'bert'): (1000, 300),
+        ('resnet50', 'bert'): (700, 250),
         ('resnet50', 'transformer'): (1000, 300),
 
         ('mobilenet_v2', 'mobilenet_v2'): (300, 300),
         ('mobilenet_v2', 'resnet101'): (500, 300),
-        ('mobilenet_v2', 'bert'): (1000, 300),
+        ('mobilenet_v2', 'bert'): (800, 300),
         ('mobilenet_v2', 'transformer'): (1000, 300),
 
         ('resnet101', 'resnet101'): (300, 300),
         ('resnet101', 'bert'): (500, 300),
-        ('resnet101', 'transformer'): (400, 300),
+        ('resnet101', 'transformer'): (450, 300),
 
         ('bert', 'bert'): (300, 300),
-        ('bert', 'transformer'): (300, 400),
+        ('bert', 'transformer'): (345, 350),
         ('transformer', 'transformer'): (300, 300)
     }
 
@@ -119,7 +119,14 @@ if __name__ == "__main__":
     #
     # }
 
-    combinations = list(model_pair_to_num_iters_train_train.keys())
+    combinations = [
+        ('resnet50', 'mobilenet_v2'),
+        ('resnet50', 'bert'),
+        ('mobilenet_v2', 'bert'),
+        ('resnet101', 'transformer'),
+        ('bert', 'transformer')
+
+    ] # + list(model_pair_to_num_iters_train_train.keys())
     # combinations = [
     #     ('resnet101', 'resnet101'),
     #     ('resnet101', 'transformer'),
