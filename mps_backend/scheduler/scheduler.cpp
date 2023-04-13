@@ -73,6 +73,7 @@ void Scheduler::schedule_pair(vector<int> frecords) {
 		schedule_op(frecords[1], 1, 1);
 	}
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
+		printf("found pair!\n");
 		schedule_op(frecords[0], 0, 0);
 		schedule_op(frecords[1], 1, 0);
 	}
@@ -80,10 +81,12 @@ void Scheduler::schedule_pair(vector<int> frecords) {
 		schedule_op(frecords[0], 0, 0);
 	}
 	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
+		printf("found pair!\n");
 		schedule_op(frecords[0], 0, 0);
 		schedule_op(frecords[1], 1, 1);
 	}
 	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
+		printf("found pair!\n");
 		schedule_op(frecords[0], 0, 1);
 		schedule_op(frecords[1], 1, 0);
 	}
@@ -118,25 +121,28 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 			if (*status >= 0) {
 				frecords[i] = *status;
 			}
-			if (frecords[0] >= 0 && frecords[1] >= 0) {
-				schedule_pair(frecords);
-			}
-			else if (frecords[0] >= 0) {
-				schedule_op(frecords[0], 0, 0);
-			}
-			else if (frecords[1] >= 0) {
-				schedule_op(frecords[1], 1, 0);
-			}
-
 		}
+		if (frecords[0] >= 0 && frecords[1] >= 0) {
+			schedule_pair(frecords);
+		}
+		else if (frecords[0] >= 0) {
+			schedule_op(frecords[0], 0, 0);
+		}
+		else if (frecords[1] >= 0) {
+			schedule_op(frecords[1], 1, 0);
+		}
+
 		int finished = 0;
 		for (int i=0; i<num_clients; i++) {
-			if (num_client_cur_iters[i] == num_client_max_iters[i])
+			if (num_client_cur_iters[i] == num_client_max_iters[i]) {
+				//if (i==0)
+					//printf("Client %d has finished!\n", i);
 				finished += 1;
+			}
 			else if (seen[i] == num_client_kernels[i]) {
 				seen[i] = 0;
 				num_client_cur_iters[i] += 1;
-				printf("Client %d has done %d iters\n", i, num_client_cur_iters[i]);
+				//printf("Client %d has done %d iters\n", i, num_client_cur_iters[i]);
 			}
 		}
 		if (finished==num_clients)
