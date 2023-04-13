@@ -358,8 +358,8 @@ def plot_p50_latency():
 
 
 # %%
-def plot_throughput():
-    fig, axes = plt.subplots(figsize=(35, 15), ncols=5, nrows=5)
+def plot_per_model_throughput():
+    fig, axes = plt.subplots(figsize=(25, 15), ncols=5, nrows=5)
     for i in range(num_models):
         for j in range(num_models):
             ax = axes[num_models - 1 - i, num_models - 1 - j]
@@ -378,10 +378,9 @@ def plot_throughput():
                         data_to_plot = [iterations0 / duration0, iterations1 / duration1]
                     elif key == 'Sequential':
                         # add penalty
-                        delta1 = duration0 / 2
-                        delta0 = duration1 / 2
-                        duration0 += delta0
-                        duration1 += delta1
+                        total_duration = duration0 + duration1
+                        duration0 = total_duration
+                        duration1 = total_duration
                         data_to_plot = [iterations0 / duration0, iterations1 / duration1]
                     elif key == 'Tick-Tock':
                         data_to_plot = [290 / duration0, 290 / duration1]
@@ -399,8 +398,57 @@ def plot_throughput():
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right', prop={'size': 25})
-    fig.suptitle('Throughput (iterations per second)', fontsize=32)
+    fig.suptitle('Per-model throughput (iterations per second)', fontsize=32)
     plt.show()
 
 # %%
-plot_throughput()
+def plot_overall_throughput():
+    fig, axes = plt.subplots(figsize=(25, 15), ncols=5, nrows=5)
+    for i in range(num_models):
+        for j in range(num_models):
+            ax = axes[num_models - 1 - i, num_models - 1 - j]
+            if i > j:
+                ax.axis('off')
+            else:
+                sub_data = train_train_data[(id2model[i], id2model[j])]
+                data_to_plot = dict()
+                for key_id, key in enumerate(sub_data.keys()):
+                    iterations0, iterations1 = model_pair_to_num_iters_train_train[(id2model[i], id2model[j])]
+                    # subtract warm up iterations
+                    iterations0 = iterations0 - 10
+                    iterations1 = iterations1 - 10
+                    duration0, duration1 = sub_data[key]
+                    if key in ['MPS', 'Streams']:
+                        data_to_plot[key] = (iterations0 + iterations1) / max(duration0, duration1)
+                    elif key == 'Sequential':
+                        # add penalty
+                        data_to_plot[key] = (iterations0 + iterations1) / (duration0 + duration1)
+                    elif key == 'Tick-Tock':
+                        data_to_plot[key] = (290 + 290) / max(duration0, duration1)
+
+                rects = ax.bar(
+                    x=np.arange(4),
+                    height=data_to_plot.values(),
+                    color=[color_map[method] for method in ['Sequential', 'Streams', 'MPS', 'Tick-Tock']],
+                    label = data_to_plot.keys()
+                )
+                # ax.bar_label(rects, padding=1)
+                ax.tick_params(
+                    axis='x',  # changes apply to the x-axis
+                    which='both',  # both major and minor ticks are affected
+                    bottom=False,  # ticks along the bottom edge are off
+                    top=False,  # ticks along the top edge are off
+                    labelbottom=False)  # labels along the bottom edge are off
+
+    for ax, col in zip(axes[num_models - 1], id2model[::-1]):
+        ax.set_title(col, y=-0.2,pad=-16, fontsize=grid_label_size)
+
+    for ax, row in zip(axes[:, 0], id2model[::-1]):
+        ax.set_ylabel(row, fontsize=grid_label_size)
+
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper right', prop={'size': 25})
+    fig.suptitle('Overall throughput (iterations per second)', fontsize=32)
+    plt.show()
+# %%
+plot_overall_throughput()
