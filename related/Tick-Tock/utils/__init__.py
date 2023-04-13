@@ -76,3 +76,58 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
     sync_info.write_kvs(data_to_record)
 
 
+def non_stop_measure(func, num_warm_up_reqs, tid, shared_config, stream, sync_info: BasicSyncInfo):
+    """
+    Invoke the func continuously with first {num_warm_up_reqs} iterations as warm up until {sync_info} instructs
+    it to stop.
+    Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
+    and finally write all data via {sync_info}.
+    """
+    request_rate = shared_config['request_rate']
+
+    seed = int(time.time())
+    np.random.seed(seed)
+    percentile_positions = shared_config['percentile_positions']
+    latency_history = []
+
+    iteration = -1
+    with torch.no_grad():
+        while sync_info.should_continue_loop():
+            iteration += 1
+            if iteration == num_warm_up_reqs:
+                # start measurement
+                sync_info.pre_measurement_prep(tid)
+                entire_inference_start_time = time.time()
+
+            if request_rate > 0:
+                time.sleep(random.exponential(scale=1/request_rate))
+
+            # start func invocation
+            with torch.cuda.stream(stream):
+                start_time = time.time()
+                func()
+            stream.synchronize()
+            latency = time.time() - start_time
+            # convert to ms
+            latency_history.append(latency * 1000)
+
+    inference_duration = time.time() - entire_inference_start_time
+    sync_info.post_measurement_prep(tid)
+    # discard the first {num_warm_up_reqs} latencies and the last latency as part if it was being processed when
+    # the other thread/process had finished
+    latency_history = latency_history[num_warm_up_reqs:-1]
+    mean_latency = mean(latency_history)
+    percentiles = np.percentile(latency_history, percentile_positions)
+
+    data_to_record = {
+        f'latencies{tid}': latency_history,
+        f'mean_latency{tid}': mean_latency,
+        f'duration{tid}': inference_duration,
+        f'iterations{tid}': iteration + 1
+    }
+    # record percentiles
+    for idx, percentile_pos in enumerate(percentile_positions):
+        data_to_record[f'p{percentile_pos}-{tid}'] = percentiles[idx]
+    # write all data to the data file
+    sync_info.write_kvs(data_to_record)
+

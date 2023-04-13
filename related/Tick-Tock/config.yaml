@@ -1,11 +1,11 @@
 ---
-policy: MPS-process # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
+policy: MPS-thread # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
 model0:
   mode: train # train or eval
-  name: bert # these two names should strictly correspond to the model names below
+  name: mobilenet_v2 # these two names should strictly correspond to the model names below
 model1:
-  mode: train # train or eval
-  name: transformer
+  mode: eval # train or eval
+  name: bert
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -18,7 +18,7 @@ shared_config:
   print_every: 100
   enable_profiling: false
   use_dummy_data: true
-  request_rate: 0 # measured in 1/seconds. If 0 it means no sleep
+  request_rate: 4 # measured in 1/seconds. If 0 it means no sleep
   percentile_positions:
     - 50
     - 90
@@ -31,7 +31,7 @@ resnet50:
   optimizer: SGD
   batch_size: 32
   num_workers: 2
-  num_iterations: 300
+  num_iterations: 30
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
@@ -49,7 +49,7 @@ mobilenet_v2:
   optimizer: SGD
   batch_size: 64
   num_workers: 2
-  num_iterations: 500
+  num_iterations: 700
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
@@ -57,9 +57,9 @@ bert:
   use_fp16: false # true or false; please stick to false or revise code otherwise
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
   squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 8
+  batch_size: 2
   num_workers: 2
-  arch: base # either base or large
+  arch: large # either base or large
   num_iterations: 300
   warm_up_iters: 10
   large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'

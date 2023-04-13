@@ -21,6 +21,9 @@ class BasicSyncInfo:
     def write_kvs(self, kv_pairs):
         self.data_manager.write_kvs(kv_pairs)
 
+    def should_continue_loop(self):
+        return True
+
 
 class TickTockSyncInfo(BasicSyncInfo):
 
@@ -90,6 +93,7 @@ class MPSSyncInfo(BasicSyncInfo):
             self.barrier = multiprocessing.Barrier(2)
             self.lock = multiprocessing.Lock()
         self.start_time = None
+        self.continue_loop = True
 
     def pre_measurement_prep(self, tid):
         self.barrier.wait()
@@ -97,6 +101,8 @@ class MPSSyncInfo(BasicSyncInfo):
             self.start_time = time.time()
 
     def post_measurement_prep(self, tid):
+        # let the other part break out of the loop
+        self.continue_loop = False
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
@@ -110,5 +116,5 @@ class MPSSyncInfo(BasicSyncInfo):
         with self.lock:
             super().write_kvs(kv_pairs)
 
-
-
+    def should_continue_loop(self):
+        return self.continue_loop

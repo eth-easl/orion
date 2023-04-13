@@ -98,10 +98,15 @@ if __name__ == "__main__":
             logging.FileHandler(args.log, mode='a'),
         ]
     )
-    logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
 
     logging.info(f'{model0_mode} {model0_name} and {model1_mode} {model1_name} using {policy}')
     shared_config = config['shared_config']
+    if {model0_mode, model1_mode} == {'train', 'eval'}:
+        shared_config['use_non_stop_measure'] = True
+    else:
+        shared_config['use_non_stop_measure'] = False
+
+    logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
 
     data_manager = DataManager(f'{args.log}.json')
 

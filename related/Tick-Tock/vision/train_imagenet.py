@@ -27,7 +27,10 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         data = data.to(device)
         model(data)
 
-    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info)
+    if shared_config['use_non_stop_measure']:
+        utils.non_stop_measure(eval, num_warm_up_reqs, tid, shared_config, stream, sync_info)
+    else:
+        utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
