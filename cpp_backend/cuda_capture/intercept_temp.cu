@@ -66,6 +66,7 @@ int func_indexes[2] = {0, 0};
 cudaStream_t client_streams[2];
 bool streams_set[2] = {false, false};
 
+
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
 cudaError_t (*memcpy_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind) = NULL;
 cudaError_t (*memcpy_async_func)(void* dst, const void* src, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream) = NULL;
