@@ -30,6 +30,8 @@ class Scheduler {
 		void* busy_wait_fifo(int num_clients);
 		void* busy_wait_profile(int num_clients, int iter, bool warmup, bool reef);
 		void* busy_wait_single_client(int client_id);
+		void schedule_pair(vector<int> frecords);
+		void schedule_op(int op_type, int idx, int priority);
 };
 
 //void* sched_func(void* sched);

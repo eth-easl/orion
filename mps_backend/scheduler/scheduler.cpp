@@ -54,38 +54,92 @@ void* Scheduler::busy_wait_single_client(int client_id) {
     return NULL;
 }
 
+
+void Scheduler::schedule_pair(vector<int> frecords) {
+
+	op_info op_info_0 = op_info_vector[0][seen[0]];
+	op_info op_info_1 = op_info_vector[1][seen[1]];
+
+	if ((frecords[0] == MALLOC_RECORD) || (frecords[0] == FREE_RECORD) || (frecords[0] == MEMCPY_RECORD) || (frecords[0] == MEMSET_RECORD)) {
+		schedule_op(frecords[0], 0, 0);
+	}
+	else if ((frecords[1] == MALLOC_RECORD) || (frecords[1] == FREE_RECORD) || (frecords[1] == MEMCPY_RECORD) || (frecords[1] == MEMSET_RECORD)) {
+		schedule_op(frecords[1], 1, 0);
+	}
+	else if (op_info_0.duration < 10000.0) {
+		schedule_op(frecords[0], 0, 1);
+	}
+	else if (op_info_1.duration < 10000.0) {
+		schedule_op(frecords[1], 1, 1);
+	}
+	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
+		schedule_op(frecords[0], 0, 0);
+		schedule_op(frecords[1], 1, 0);
+	}
+	else if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
+		schedule_op(frecords[0], 0, 0);
+	}
+	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
+		schedule_op(frecords[0], 0, 0);
+		schedule_op(frecords[1], 1, 1);
+	}
+	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
+		schedule_op(frecords[0], 0, 1);
+		schedule_op(frecords[1], 1, 0);
+	}
+	else {
+		schedule_op(frecords[0], 0, 0);
+		schedule_op(frecords[1], 1, 0);
+	}
+}
+
+
+void Scheduler::schedule_op(int op_type, int idx, int priority) {
+	if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD) && (op_type != MEMCPY_RECORD) && (op_type != MEMSET_RECORD)) {
+		seen[idx]++;
+	}
+	if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD)) {
+		*(shmem_streams_addr[idx]) = priority;
+	}
+	*(shmem_addr[idx]) = -1;
+}
+
 void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool reef) {
 
 	printf("Enter busy_wait_profile!\n");
-    printf("status 1 is %p, %d!\n", shmem_addr[0], *(shmem_addr[0]));
     while(1) {
+
+		vector<int> frecords = {-1, -1};
 		for (int i=0; i<num_clients; i++) {
+			if (seen[i] == num_client_kernels[i])
+				continue;
+
 			volatile int *status = shmem_addr[i];
 			if (*status >= 0) {
-				int op_type = *status;
-				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD) && (op_type != MEMCPY_RECORD) && (op_type != MEMSET_RECORD)) {
-					seen[i]++;
-				}
-
-				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD)) {
-					*(shmem_streams_addr[i]) = 0;
-				}
-
-				*status = -1;
-				if (seen[i] == num_client_kernels[i]) {
-					seen[i] = 0;
-					num_client_cur_iters[i] += 1;
-				}
+				frecords[i] = *status;
 			}
+			if (frecords[0] >= 0 && frecords[1] >= 0) {
+				schedule_pair(frecords);
+			}
+			else if (frecords[0] >= 0) {
+				schedule_op(frecords[0], 0, 0);
+			}
+			else if (frecords[1] >= 0) {
+				schedule_op(frecords[1], 1, 0);
+			}
+
 		}
-		bool finished = true;
+		int finished = 0;
 		for (int i=0; i<num_clients; i++) {
-			if (num_client_cur_iters[i] < num_client_max_iters[i]) {
-				finished = false;
-				break;
+			if (num_client_cur_iters[i] == num_client_max_iters[i])
+				finished += 1;
+			else if (seen[i] == num_client_kernels[i]) {
+				seen[i] = 0;
+				num_client_cur_iters[i] += 1;
+				printf("Client %d has done %d iters\n", i, num_client_cur_iters[i]);
 			}
 		}
-		if (finished)
+		if (finished==num_clients)
 			break;
     }
     return NULL;
@@ -104,7 +158,7 @@ extern "C" {
 	}
 
 
-	void populate_kernel_info(vector<char*>* kernel_vector, char* kernel_info_file, vector<op_info> &ops) {
+	void populate_kernel_info(char* kernel_info_file, vector<op_info> &ops) {
 
 		// TODO: make this more generic, e.g. pass files/models w.r.t input
 		printf("KERNEL_INFO_FILE IS %s\n", kernel_info_file);
@@ -126,10 +180,6 @@ extern "C" {
         		v.push_back(substr);
     		}
 
-			char* kernel_name = new char[v[0].length()+1];
-			strcpy(kernel_name, v[0].c_str());
-			kernel_vector->push_back(kernel_name);
-
 			op_info info = {v[0], stoi(v[1]), stoi(v[2]), stoi(v[3]), stof(v[4])};
 			ops.push_back(info);
 		}
@@ -141,10 +191,8 @@ extern "C" {
 	void setup_change(Scheduler* scheduler, int client_id, char* file, int num_kernels) {
 
 		// needed for backward
-		vector<char*>** func_names_all = (vector<char*>**)dlsym(klib, "func_names");
-		(*func_names_all[client_id]).clear();
 		op_info_vector[client_id].clear();
-		populate_kernel_info(func_names_all[client_id], file, op_info_vector[client_id]);
+		populate_kernel_info(file, op_info_vector[client_id]);
 		num_client_kernels[client_id] = num_kernels;
 
 	}
@@ -202,6 +250,9 @@ extern "C" {
 			// shmem_addr[i] = (int*)str;
 			printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name, shmem_addr[i], *(shmem_addr[i]));
 			printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name_streams, shmem_streams_addr[i], *(shmem_streams_addr[i]));
+
+			op_info_vector.push_back({});
+			populate_kernel_info(files[i], op_info_vector[i]);
 
         }
 
