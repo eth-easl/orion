@@ -47,11 +47,27 @@ from utils.sync_control import *
 
 def setup_model(model_config):
     arch = model_config['arch']
-    config_file = os.path.join(
-        model_config['large_model_dir'] if arch == 'large' else model_config['base_model_dir'],
-        'bert_config.json'
-    )
-    config = modeling.BertConfig.from_json_file(config_file)
+    # config_file = os.path.join(
+    #     model_config['large_model_dir'] if arch == 'large' else model_config['base_model_dir'],
+    #     'bert_config.json'
+    # )
+    # config = modeling.BertConfig.from_json_file(config_file)
+    config_dict ={
+      "attention_probs_dropout_prob": 0.1,
+      "hidden_act": "gelu",
+      "hidden_dropout_prob": 0.1,
+      "hidden_size": 768,
+      "initializer_range": 0.02,
+      "intermediate_size": 3072,
+      "max_position_embeddings": 512,
+      "num_attention_heads": 12,
+      "num_hidden_layers": 12,
+      "type_vocab_size": 2,
+      "vocab_size": 30522
+    }
+
+    config = modeling.BertConfig.from_dict(config_dict)
+
     # Padding for divisibility by 8
     if config.vocab_size % 8 != 0:
         config.vocab_size += 8 - (config.vocab_size % 8)
@@ -60,19 +76,8 @@ def setup_model(model_config):
 
 
 def setup(model_config, shared_config, device):
-    seed = int(time.time())
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    squad_version = model_config['squad_version']
-    squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
-    train_examples = read_squad_examples(
-        input_file=squad_file,
-        is_training=True,
-        version_2_with_negative=squad_version == 2
-    )
     batch_size = model_config['batch_size']
-    num_train_optimization_steps = int(len(train_examples) / batch_size)
+    num_iterations = model_config['num_iterations']
     model = setup_model(model_config)
     model = model.to(device)
 
@@ -98,67 +103,72 @@ def setup(model_config, shared_config, device):
             model, optimizer = amp.initialize(model, optimizer, opt_level="O2", keep_batchnorm_fp32=False,
                                               loss_scale=loss_scale)
         scheduler = LinearWarmUpScheduler(optimizer, warmup=0.1,
-                                          total_steps=num_train_optimization_steps)
+                                          total_steps=num_iterations)
     else:
         optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5,
                              warmup=0.1,
-                             t_total=num_train_optimization_steps)
-    vocab_file = os.path.join(
-        model_config['large_model_dir'] if model_config['arch'] == 'large' else model_config['base_model_dir'],
-        'vocab.txt'
-    )
-    tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
-
-    cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
-    try:
-        with open(cache_features_file, 'rb') as reader:
-            train_features = pickle.load(reader)
-    except:
-        logging.info(f'no cache file detected as {cache_features_file}; building features from squad examples...')
-        train_features = convert_examples_to_features(
-            examples=train_examples,
-            tokenizer=tokenizer,
-            max_seq_length=384,
-            doc_stride=128,
-            max_query_length=64,
-            is_training=True
-        )
-        logging.info(f'saving features to {cache_features_file}')
-        with open(cache_features_file, 'wb') as writer:
-            pickle.dump(train_features, writer)
-
-    all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
-    all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
-    all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
-    all_start_positions = torch.tensor([f.start_position for f in train_features], dtype=torch.long)
-    all_end_positions = torch.tensor([f.end_position for f in train_features], dtype=torch.long)
-    train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
-                               all_start_positions, all_end_positions)
-    train_sampler = RandomSampler(train_data)
-    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
-                                  num_workers=model_config['num_workers'])
+                             t_total=num_iterations)
 
     if shared_config['use_dummy_data']:
-        # fetch a batch from real train_dataloader
-        train_dataloader_iter = iter(train_dataloader)
-        first_batch = next(train_dataloader_iter)
-        for t in first_batch:
-            logging.info(f'part of dummy data shape: {t.shape}')
-        first_batch = tuple(t.to(device) for t in first_batch)
-
-        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+        input_ids = torch.ones((batch_size, 384)).to(torch.int64)
+        segment_ids = torch.ones((batch_size, 384)).to(torch.int64)
+        input_mask = torch.ones((batch_size, 384)).to(torch.int64)
+        start_positions = torch.zeros((batch_size, )).to(torch.int64)
+        end_positions = torch.ones((batch_size, )).to(torch.int64)
+        virtual_loader = utils.DummyDataLoader(batch=(input_ids, input_mask, segment_ids, start_positions, end_positions))
     else:
+        vocab_file = os.path.join(
+            model_config['large_model_dir'] if model_config['arch'] == 'large' else model_config['base_model_dir'],
+            'vocab.txt'
+        )
+        tokenizer = BertTokenizer(vocab_file=vocab_file, do_lower_case=True, max_len=512)
+        squad_version = model_config['squad_version']
+        squad_file = shared_config['squad_version1'] if squad_version == 1 else shared_config['squad_version2']
+        train_examples = read_squad_examples(
+            input_file=squad_file,
+            is_training=True,
+            version_2_with_negative=squad_version == 2
+        )
+        cache_features_file = os.path.join(os.path.dirname(squad_file), 'cache_features')
+        try:
+            with open(cache_features_file, 'rb') as reader:
+                train_features = pickle.load(reader)
+        except:
+            logging.info(f'no cache file detected as {cache_features_file}; building features from squad examples...')
+            train_features = convert_examples_to_features(
+                examples=train_examples,
+                tokenizer=tokenizer,
+                max_seq_length=384,
+                doc_stride=128,
+                max_query_length=64,
+                is_training=True
+            )
+            logging.info(f'saving features to {cache_features_file}')
+            with open(cache_features_file, 'wb') as writer:
+                pickle.dump(train_features, writer)
+
+        all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
+        all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
+        all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
+        all_start_positions = torch.tensor([f.start_position for f in train_features], dtype=torch.long)
+        all_end_positions = torch.tensor([f.end_position for f in train_features], dtype=torch.long)
+        train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids,
+                                   all_start_positions, all_end_positions)
+        train_sampler = RandomSampler(train_data)
+        train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size,
+                                      num_workers=model_config['num_workers'])
         virtual_loader = train_dataloader
 
     return model, virtual_loader, optimizer
+
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
     my_stream = torch.cuda.Stream(device=device)
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_requests']
+    num_warm_up_reqs = model_config['num_warm_up_reqs']
 
     loader_iterator = iter(data_loader)
 
@@ -171,6 +181,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         model(input_ids, segment_ids, input_mask)
 
     utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")

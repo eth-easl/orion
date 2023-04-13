@@ -23,7 +23,6 @@ except ModuleNotFoundError:
 dataset = 'wt103'
 vocab = 'word'
 
-
 def init_weight(weight, model_consts):
     # if init == 'uniform':
     #     nn.init.uniform_(weight, -0.1, 0.1)
@@ -89,19 +88,14 @@ def setup(model_config, shared_config, device):
     if 'apex' in sys.modules:
         amp.register_half_function(torch, 'einsum')
 
-    seed = int(time.time())
+
     arch = model_config['arch']
     with open('./transformer/transformer_consts.yaml', 'r') as file:
         model_consts = yaml.load(file, Loader=yaml.FullLoader)[arch]
 
-    np.random.seed(seed)
-    torch.manual_seed(seed)
     batch_size = model_config['batch_size']
-    corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
-    ntokens = len(corpus.vocab)
 
     ext_len = 0
-    tr_iter = corpus.get_iterator('train', batch_size, model_consts['tgt_len'], device=device, ext_len=ext_len)
 
     # adaptive softmax / embedding
     cutoffs, tie_projs = [], [False]
@@ -110,7 +104,7 @@ def setup(model_config, shared_config, device):
         tie_projs += [True] * len(cutoffs)
     sample_softmax = -1
     MemTransformerLM_kwargs = {
-        'n_token': ntokens,
+        'n_token': 267735,
         'n_layer': model_consts['n_layer'],
         'n_head': model_consts['n_head'],
         'd_model': model_consts['d_model'],
@@ -153,14 +147,16 @@ def setup(model_config, shared_config, device):
                 opt_level=model_config['apex_amp_opt_level'],
             )
 
-    train_iter = tr_iter.get_fixlen_iter()
+
     if shared_config['use_dummy_data']:
-        first_batch = next(train_iter)
-        for t in first_batch:
-            if torch.is_tensor(t):
-                logging.info(f'part of dummy data shape: {t.shape}')
-        virtual_loader = utils.DummyDataLoader(batch=first_batch)
+        data = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+        target = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+        # The later two parts are not used in either training or inference. They are set to align its behavior with real loader.
+        virtual_loader = utils.DummyDataLoader(batch=(data, target, 1, 1))
     else:
+        corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
+        tr_iter = corpus.get_iterator('train', batch_size, model_consts['tgt_len'], device=device, ext_len=ext_len)
+        train_iter = tr_iter.get_fixlen_iter()
         virtual_loader = train_iter
 
     return model, virtual_loader, optimizer
@@ -172,8 +168,8 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
 
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_requests']
+    num_warm_up_reqs = model_config['num_warm_up_reqs']
 
     loader_iterator = iter(data_loader)
 
@@ -181,6 +177,8 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     def eval():
         nonlocal mems
         data, target, _, _ = next(loader_iterator)
+        data = data.to(device)
+        target = target.to(device)
         _, mems = model(data, target, mems)
 
     utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
@@ -211,6 +209,8 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
             # start timer
             start_time = time.time()
 
+        data = data.to(device)
+        target = target.to(device)
         with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
             with torch.cuda.stream(my_stream):
                 # with torch.cuda.amp.autocast(enable_autocast):

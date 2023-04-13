@@ -18,7 +18,7 @@ def bert_loop(batchsize, loader, local_rank, barrier, tid):
         "num_hidden_layers": 24,
         "output_all_encoded_layers": False,
         "type_vocab_size": 2,
-        "vocab_size": 30528
+        "vocab_size": 30522
     }
 
     config = modeling.BertConfig.from_dict(model_config)

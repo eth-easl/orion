@@ -133,7 +133,7 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
         src = src.to(device)
         src_length = src_length.to(device)
         context = model.encode(src, src_length)
-        context = [context, src_length.clone(), None]
+        context = [context, src_length.clone().detach(), None]
         _ = generator_func(batch_size, bos, context)
 
     utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)

@@ -9,14 +9,15 @@ import time
 from utils.sync_control import *
 
 
+
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+    stream = torch.cuda.Stream(device=device)
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.eval()
 
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_requests']
+    num_warm_up_reqs = model_config['num_warm_up_reqs']
 
 
     train_loader_iter = iter(train_loader)
@@ -26,7 +27,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         data = data.to(device)
         model(data)
 
-    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     device = torch.device("cuda:0")
@@ -82,9 +83,9 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
 
 def setup(model_config, shared_config, device):
     torch.cuda.set_device(device)
-    arc = model_config['arc']
-    logging.info(f'vision model with arc {arc}')
-    model = models.__dict__[arc](num_classes=1000)
+    arch = model_config['arch']
+    logging.info(f'vision model with arch {arch}')
+    model = models.__dict__[arch](num_classes=1000)
     model = model.to(device)
     optimizer_func = getattr(torch.optim, model_config['optimizer'])
     optimizer = optimizer_func(model.parameters(), lr=0.1)
@@ -92,14 +93,12 @@ def setup(model_config, shared_config, device):
     metric_fn = F.cross_entropy
 
     if shared_config['use_dummy_data']:
-        train_loader = utils.DummyDataLoader(
-            batch=(
-                torch.rand([batch_size, 3, 224, 224], dtype=torch.float).to(device),
-                torch.randint(high=1000, size=(batch_size,)).to(device)
-            )
-        )
+        train_loader = utils.DummyDataLoader(batch=(
+            torch.rand([batch_size, 3, 224, 224]).contiguous(),
+            torch.ones([batch_size]).to(torch.long)
+        ))
     else:
-        if arc == 'inception_v3':
+        if arch == 'inception_v3':
             train_transform = transforms.Compose([
                 transforms.Resize(299),
                 transforms.CenterCrop(299),

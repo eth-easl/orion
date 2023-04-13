@@ -30,28 +30,32 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
     and finally write all data via {sync_info}. 
     """
     request_rate = shared_config['request_rate']
-    scale = 1 / request_rate
+    if request_rate > 0:
+        scale = 1 / request_rate
+        intervals = random.exponential(scale=scale, size=(num_requests,))
+    else:
+        intervals = [0]*num_requests
     seed = int(time.time())
     np.random.seed(seed)
-    intervals = random.exponential(scale=scale, size=(num_requests, ))
     percentile_positions = shared_config['percentile_positions']
     latency_history = []
 
     with torch.no_grad():
-        for iter in range(num_requests):
-            if iter == num_warm_up_reqs:
+        for iteration in range(num_requests):
+            if iteration == num_warm_up_reqs:
                 # start measurement
                 sync_info.pre_measurement_prep(tid)
                 entire_inference_start_time = time.time()
 
-            time.sleep(intervals[iter])
+            time.sleep(intervals[iteration])
             # start func invocation
-            start_time = time.time()
             with torch.cuda.stream(stream):
+                start_time = time.time()
                 func()
             stream.synchronize()
             latency = time.time() - start_time
-            latency_history.append(latency)
+            # convert to ms
+            latency_history.append(latency * 1000)
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)
