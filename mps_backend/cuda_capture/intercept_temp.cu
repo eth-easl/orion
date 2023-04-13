@@ -178,12 +178,15 @@ DEBUG_PRINT("\n");
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
 	if (shmem==NULL) {
+		//shmem = (int*)malloc(sizeof(int));
+
         pid_t pid = getpid();
 		std::string shmem_string_name = "client" + std::to_string(pid);
         const char* shmem_name = shmem_string_name.c_str();
 		shared_memory_object shm (open_only, shmem_name, read_write);
      	region = new mapped_region(shm, read_write);
 	    shmem = (int*)(region->get_address());
+
 		//*shmem = 100;
 		// key_t key = ftok(shmem_name,65);
 
@@ -192,7 +195,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		// // shmat to attach to shared memory
    		// char *str = (char*) shmat(shmid,(void*)0,0);
 		// shmem = (int*)str;
-		printf("********** region %s mapped at address %p, I read %d\n", shmem_name, shmem, *shmem);
+		//printf("********** region %s mapped at address %p, I read %d\n", shmem_name, shmem, *shmem);
 
 	}
 

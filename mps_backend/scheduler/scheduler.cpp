@@ -55,16 +55,29 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 	printf("Enter busy_wait_profile!\n");
     printf("status 1 is %p, %d!\n", shmem_addr[0], *(shmem_addr[0]));
     while(1) {
-        volatile int *status = shmem_addr[0];
-        if (*status >= 0) {
-		    //printf("HELLO! status is %d!\n", *(shmem_addr[0]));
-			*status = -1;
+		for (int i=0; i<num_clients; i++) {
+			volatile int *status = shmem_addr[i];
+			if (*status >= 0) {
+				int op_type = *status;
+				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD) && (op_type != MEMCPY_RECORD) && (op_type != MEMSET_RECORD))
+					seen[i]++;
+
+				*status = -1;
+				if (seen[i] == num_client_kernels[i]) {
+					seen[i] = 0;
+					num_client_cur_iters[i] += 1;
+				}
+			}
 		}
-		volatile int *status1 = shmem_addr[1];
-        if (*status1 >= 0) {
-		    //printf("HELLO! status is %d!\n", *(shmem_addr[0]));
-			*status1 = -1;
+		bool finished = true;
+		for (int i=0; i<num_clients; i++) {
+			if (num_client_cur_iters[i] < num_client_max_iters[i]) {
+				finished = false;
+				break;
+			}
 		}
+		if (finished)
+			break;
     }
     return NULL;
 }
@@ -166,11 +179,12 @@ extern "C" {
 
         }
 
-        int* p = shmem_addr[0];
-        printf("%p\n", p);
-        printf("status 2 is %d!\n", *p);
+		num_client_kernels = num_kernels;
+		num_client_max_iters = num_iters;
+		num_client_cur_iters = (int*)calloc(num_clients, sizeof(int));
+		seen = (int*)calloc(num_clients, sizeof(int));
 
-        return;
+		return;
 
 	}
 
