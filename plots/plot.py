@@ -172,7 +172,6 @@ p95_data = {
         'ORION': [39, 61],
         'MPS': [40.26, 59.54]
     },
-    # am here should be bert vs transformer
     ('ResNet101', 'Transformer'): {
         'Sequential': [27.2, 26.6],
         'Streams': [25.3, 24.8],
@@ -279,6 +278,28 @@ train_train_data = {
 }
 
 # %%
+model_pair_to_num_iters_train_train = {
+    ('ResNet50', 'ResNet50'): (300, 300),
+    ('ResNet50', 'MobileNetV2'): (400, 400),
+    ('ResNet50', 'ResNet101'): (400, 300),
+    ('ResNet50', 'BERT'): (700, 250),
+    ('ResNet50', 'Transformer'): (1000, 300),
+
+    ('MobileNetV2', 'MobileNetV2'): (300, 300),
+    ('MobileNetV2', 'ResNet101'): (500, 300),
+    ('MobileNetV2', 'BERT'): (800, 300),
+    ('MobileNetV2', 'Transformer'): (1000, 300),
+
+    ('ResNet101', 'ResNet101'): (300, 300),
+    ('ResNet101', 'BERT'): (500, 300),
+    ('ResNet101', 'Transformer'): (450, 300),
+
+    ('BERT', 'BERT'): (300, 300),
+    ('BERT', 'Transformer'): (345, 350),
+    ('Transformer', 'Transformer'): (300, 300)
+}
+
+# %%
 transpose = True
 num_models = len(id2model)
 grid_label_size = 24
@@ -329,7 +350,20 @@ def plot_durations():
                 sub_data = train_train_data[(id2model[i], id2model[j])]
                 for key_id, key in enumerate(sub_data.keys()):
                     offset = width * (key_id-1)
-                    rects = ax.bar(x + offset, sub_data[key], width, label=key, color=color_map[key])
+                    iterations0, iterations1 = model_pair_to_num_iters_train_train[(id2model[i], id2model[j])]
+                    # subtract warm up iterations
+                    iterations0 = iterations0 - 10
+                    iterations1 = iterations1 - 10
+                    duration0, duration1 = sub_data[key]
+                    if key in ['MPS', 'Streams']:
+                        data_to_plot = [iterations0/duration0, iterations1/duration1]
+                    elif key == 'Sequential':
+                        # add penalty
+                        duration0 += duration1/2
+                        duration1 += duration0/2
+                        data_to_plot = [iterations0 / duration0, iterations1 / duration1]
+
+                    rects = ax.bar(x + offset, data_to_plot, width, label=key, color=color_map[key])
                     # ax.bar_label(rects, padding=1)
                     ax.set_xticks(ticks=[0, 1], labels=[id2model[i], id2model[j]], fontsize=15)
 
@@ -342,7 +376,7 @@ def plot_durations():
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right', prop={'size': 25})
-    fig.suptitle('durations', fontsize=32)
+    fig.suptitle('Throughput (iterations per second)', fontsize=32)
     plt.show()
 
 
