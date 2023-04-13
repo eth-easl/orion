@@ -61,6 +61,7 @@ class PyScheduler:
 
         if run_eval:
             if profile:
+                torch.cuda.profiler.cudart().cudaProfilerStart()
                 barriers[0].wait()
                 # run once to warm-up and setup
                 # self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, reef)
@@ -75,11 +76,11 @@ class PyScheduler:
                 # barriers[0].wait()
                 # print("done!")
 
-
                 start = time.time()
                 print("call schedule")
                 self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False, reef)
                 barriers[0].wait()
 
                 torch.cuda.synchronize()
+                torch.cuda.profiler.cudart().cudaProfilerStop()
                 print(f"Total time is {time.time()-start}")
