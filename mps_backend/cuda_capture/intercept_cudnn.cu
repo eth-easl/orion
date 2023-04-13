@@ -1,21 +1,6 @@
 
 #include "intercept_temp.h"
 
-void getDescriptor(const cudnnTensorDescriptor_t desc) {
-
-	int ndims = 10;
-	cudnnDataType_t* dtype = (cudnnDataType_t*)malloc(sizeof(cudnnDataType_t));
-	int* nbdims = (int*)malloc(sizeof(int));
-	int dimA[10] = {0};
-	int strideA[10] = {0};
-
-	cudnnStatus_t status = cudnnGetTensorNdDescriptor(desc, ndims, dtype, nbdims, dimA, strideA);
-	printf("%d\n", *dtype);
-
-	assert (status==CUDNN_STATUS_SUCCESS);
-
-}
-
 cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
 
 
@@ -23,56 +8,19 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	*shmem = CUDNN_CONV_RECORD;
-	while (*shmem == CUDNN_CONV_RECORD);
-
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
-
-	// cudnnConvolutionForward_record new_conv_record = {
-	// 	handle,
-	// 	alpha,
-	// 	xDesc,
-	// 	x,
-	// 	wDesc,
-	// 	w,
-	// 	convDesc,
-	// 	algo,
-	// 	workSpace,
-	// 	workSpaceSizeInBytes,
-	// 	beta,
-	// 	yDesc,
-	// 	y
-	// };
-	// union func_data new_func_data;
-	// new_func_data.cudnnConvRecord = new_conv_record;
-	// func_record new_record = {CUDNN_CONV_RECORD, new_func_data};
-
-	// push or run
-	if (idx < 2) {
-	// 	 pthread_mutex_lock(mutexes[idx]);
-
-	// 	 DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
-	// 	 kqueues[idx]->push(new_record);
-	// 	 func_indexes[idx] += 1;
-	// 	 pthread_mutex_unlock(mutexes[idx]);
-
-	// 	 block(idx, mutexes, kqueues);
-	// }
-	// else {
-
-		if (cudnn_conv_func==NULL) {
-			*(void **)(&cudnn_conv_func) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
-			assert(cudnn_conv_func != NULL);
-		}
-
-		status = (*cudnn_conv_func)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
-		if (status != CUDNN_STATUS_SUCCESS)
-			printf("status is %d\n", status);
-		assert (status == CUDNN_STATUS_SUCCESS);
-
-		DEBUG_PRINT("CONV submitted!!\n");
+	if (cudnn_conv_func==NULL) {
+		*(void **)(&cudnn_conv_func) = dlsym(RTLD_NEXT, "cudnnConvolutionForward");
+		assert(cudnn_conv_func != NULL);
 	}
+
+	cudaStream_t sched_stream = push_and_wait(CUDNN_CONV_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
+
+	status = (*cudnn_conv_func)(handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace, workSpaceSizeInBytes, beta, yDesc, y);
+	if (status != CUDNN_STATUS_SUCCESS)
+		printf("status is %d\n", status);
+	assert (status == CUDNN_STATUS_SUCCESS);
+	DEBUG_PRINT("CONV submitted!!\n");
 
 	return status;
 
@@ -83,73 +31,18 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-	*shmem = CUDNN_BNORM_RECORD;
-	while (*shmem == CUDNN_BNORM_RECORD);
 
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
-
-	// create record
-	// cudnnBatchNormalizationForwardTrainingEx_record new_bn_record = {
-	// 	handle,
-	// 	mode,
-	// 	bnOps,
-	// 	alpha,
-	// 	beta,
-	// 	xDesc,
-	// 	xData,
-	// 	zDesc,
-	// 	zData,
-	// 	yDesc,
-	// 	yData,
-	// 	bnScaleBiasMeanVarDesc,
-	// 	bnScaleData,
-	// 	bnBiasData,
-	// 	exponentialAverageFactor,
-	// 	resultRunningMeanData,
-	// 	resultRunningVarianceData,
-	// 	epsilon,
-	// 	saveMean,
-	// 	saveInvVariance,
-	// 	activationDesc,
-	// 	workspace,
-	// 	workSpaceSizeInBytes,
-	// 	reserveSpace,
-	// 	reserveSpaceSizeInBytes
-
-	// };
-	// union func_data new_func_data;
-	// new_func_data.cudnnBNormRecord = new_bn_record;
-	// func_record new_record = {CUDNN_BNORM_RECORD, new_func_data};
-
-	// push or run
-
-	if (idx < 2) {
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx,  mutexes, kqueues);
-	// }
-	// else {
-
-		if (cudnn_bnorm_func==NULL) {
-			*(void **)(&cudnn_bnorm_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
-			assert(cudnn_bnorm_func != NULL);
-		}
-		//printf("run func %p\n", cudnn_bnorm_function);
-		status = (*cudnn_bnorm_func)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
-		// if (status != CUDNN_STATUS_SUCCESS)
-		// 	printf("status is %d\n", status);
-		// assert (status == CUDNN_STATUS_SUCCESS);
-
-		// DEBUG_PRINT("BNORM submitted!!\n");
-
+	if (cudnn_bnorm_func==NULL) {
+		*(void **)(&cudnn_bnorm_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
+		assert(cudnn_bnorm_func != NULL);
 	}
+
+	cudaStream_t sched_stream = push_and_wait(CUDNN_BNORM_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
+
+	//printf("run func %p\n", cudnn_bnorm_function);
+	status = (*cudnn_bnorm_func)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+	assert (status == CUDNN_STATUS_SUCCESS);
 
 	return status;
 }
@@ -165,54 +58,16 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
 
-	*shmem = CUDNN_BNORM_INF_RECORD;
-	while (*shmem == CUDNN_BNORM_INF_RECORD);
-
-	// create record
-	// cudnnBatchNormalizationForwardInference_record bn_record = {
-	// 	handle,
-	// 	mode,
-	// 	alpha,
-	// 	beta,
-	// 	xDesc,
-	// 	x,
-	// 	yDesc,
-	// 	y,
-	// 	bnScaleBiasMeanVarDesc,
-	// 	bnScale,
-	// 	bnBias,
-	// 	estimatedMean,
-	// 	estimatedVariance,
-	// 	epsilon
-	// };
-
-	// union func_data new_func_data;
-	// new_func_data.cudnnBNormInfRecord = bn_record;
-	// func_record new_record = {CUDNN_BNORM_INF_RECORD, new_func_data};
-
-	if (idx < 2) {
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx,  mutexes, kqueues);
-
-	// }
-	// else {
-
-		if (cudnn_bnorm_infer_func==NULL) {
-			*(void **)(&cudnn_bnorm_infer_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
-			assert(cudnn_bnorm_infer_func != NULL);
-		}
-
-		status = (*cudnn_bnorm_infer_func)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
-		assert (status == CUDNN_STATUS_SUCCESS);
-
+	if (cudnn_bnorm_infer_func==NULL) {
+		*(void **)(&cudnn_bnorm_infer_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardInference");
+		assert(cudnn_bnorm_infer_func != NULL);
 	}
+
+	cudaStream_t sched_stream = push_and_wait(CUDNN_BNORM_INF_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
+
+	status = (*cudnn_bnorm_infer_func)(handle, mode, alpha, beta, xDesc, x, xDesc, y, bnScaleBiasMeanVarDesc, bnScale, bnBias, estimatedMean, estimatedVariance, epsilon);
+	assert (status == CUDNN_STATUS_SUCCESS);
 
 	return status;
 }
@@ -224,72 +79,17 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	*shmem = CUDNN_RNN_INF_RECORD;
-	while (*shmem == CUDNN_RNN_INF_RECORD);
-
-	if (idx < 2) {
-
-	// 	cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	//         //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
-
-	// 	*xDesc_new = *xDesc;
-	// 	//printf("%p, %p, %p, %p\n", xDesc, *xDesc, xDesc_new, *(xDesc_new));
-	// 	//memcpy(xDesc_new, xDesc, sizeof(cudnnTensorDescriptor_t));
-
-	// 	cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	// 	*yDesc_new = *yDesc;
-
-
-	// 	cudnnRNNForwardInf_record rnn_record = {
-	// 		handle,
-	// 		rnnDesc,
-	// 		seqLength,
-	// 		xDesc_new,
-	// 		x,
-	// 		hxDesc,
-	// 		hx,
-	// 		cxDesc,
-	// 		cx,
-	// 		wDesc,
-	// 		w,
-	// 		yDesc_new,
-	// 		y,
-	// 		hyDesc,
-	// 		hy,
-	// 		cyDesc,
-	// 		cy,
-	// 		workspace,
-	// 		workSpaceSizeInBytes
-	// 	};
-
-	// 	union func_data new_func_data;
-	// 	new_func_data.cudnnRnnInfRecord = rnn_record;
-	// 	func_record new_record = {CUDNN_RNN_INF_RECORD, new_func_data};
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx,  mutexes, kqueues);
-	// }
-	// else {
-
-		if (cudnn_rnn_func==NULL) {
-			*(void **)(&cudnn_rnn_func) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
-			assert(cudnn_rnn_func != NULL);
-		}
-
-		status = (*cudnn_rnn_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
-
-		printf("------------------------- cudnn status is %d\n", status);
-		// TODO: not sure why this complains here in just one call!
-		assert (status == CUDNN_STATUS_SUCCESS);
-
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all);
+	if (cudnn_rnn_func==NULL) {
+		*(void **)(&cudnn_rnn_func) = dlsym(RTLD_NEXT, "cudnnRNNForwardInference");
+		assert(cudnn_rnn_func != NULL);
 	}
+
+	cudaStream_t sched_stream = push_and_wait(CUDNN_RNN_INF_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
+
+	status = (*cudnn_rnn_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
+	// TODO: not sure why this complains here in just one call!
+	assert (status == CUDNN_STATUS_SUCCESS);
 
 	return status;
 
@@ -324,70 +124,16 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	*shmem = CUDNN_RNN_TRAIN_RECORD;
-	while (*shmem == CUDNN_RNN_TRAIN_RECORD);
-
-	if (idx < 2) {
-
-	// 	cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	//         //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
-
-	// 	*xDesc_new = *xDesc;
-	// 	printf("%p, %p, %p, %p\n", xDesc, *xDesc, xDesc_new, *(xDesc_new));
-	// 	//memcpy(xDesc_new, xDesc, sizeof(cudnnTensorDescriptor_t));
-
-	// 	cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	// 	*yDesc_new = *yDesc;
-
-	// 	cudnnRNNForwardTraining_record rnn_record = {
-	// 		handle,
-	// 		rnnDesc,
-	// 		seqLength,
-	// 		xDesc,
-	// 		x,
-	// 		hxDesc,
-	// 		hx,
-	// 		cxDesc,
-	// 		cx,
-	// 		wDesc,
-	// 		w,
-	// 		yDesc,
-	// 		y,
-	// 		hyDesc,
-	// 		hy,
-	// 		cyDesc,
-	// 		cy,
-	// 		workspace,
-	// 		workSpaceSizeInBytes,
-	// 		reserveSpace,
-	// 		reserveSpaceSizeInBytes
-	// 	};
-
-	// 	union func_data new_func_data;
-	// 	new_func_data.cudnnRnnTrainRecord = rnn_record;
-	// 	func_record new_record = {CUDNN_RNN_TRAIN_RECORD, new_func_data};
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx,  mutexes, kqueues);
-	// }
-	// else {
-
-		if (cudnn_rnn_train_func==NULL) {
-			*(void **)(&cudnn_rnn_train_func) = dlsym(RTLD_NEXT, "cudnnRNNForwardTraining");
-			assert(cudnn_rnn_train_func != NULL);
-		}
-
-		status = (*cudnn_rnn_train_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
-
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all);
+	if (cudnn_rnn_train_func==NULL) {
+		*(void **)(&cudnn_rnn_train_func) = dlsym(RTLD_NEXT, "cudnnRNNForwardTraining");
+		assert(cudnn_rnn_train_func != NULL);
 	}
 
+	cudaStream_t sched_stream = push_and_wait(CUDNN_RNN_TRAIN_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
+
+	status = (*cudnn_rnn_train_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
+	assert (status == CUDNN_STATUS_SUCCESS);
 	return status;
 }
 
@@ -431,66 +177,13 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 	assert (idx >= 0);
 
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-	*shmem = CUDNN_BNORM_BACKWARD_RECORD;
-    while (*shmem == CUDNN_BNORM_BACKWARD_RECORD);
 
-	// cudnnBatchNormalizationBackwardEx_record record = {
-	// 	handle,
-	// 	mode,
-	// 	bnOps,
-	// 	alphaDataDiff,
-	// 	betaDataDiff,
-	// 	alphaParamDiff,
-	// 	betaParamDiff,
-	// 	xDesc,
-	// 	xData,
-	// 	yDesc,
-	// 	yData,
-	// 	dyDesc,
-	// 	dyData,
-	// 	dzDesc,
-	// 	dzData,
-	// 	dxDesc,
-	// 	dxData,
-	// 	dBnScaleBiasDesc,
-	// 	bnScaleData,
-	// 	bnBiasData,
-	// 	dBnScaleData,
-	// 	dBnBiasData,
-	// 	epsilon,
-	// 	savedMean,
-	// 	savedInvVariance,
-	// 	activationDesc,
-	// 	workspace,
-	// 	workSpaceSizeInBytes,
-	// 	reserveSpace,
-	// 	reserveSpaceSizeInBytes
-	// };
+	if (cudnn_bnorm_bw_func==NULL) {
+		*(void **)(&cudnn_bnorm_bw_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationBackwardEx");
+		assert(cudnn_bnorm_bw_func != NULL);
+	}
 
-	// union func_data new_func_data;
-	// new_func_data.cudnnBNormBackRecord = record;
-	// func_record new_record = {CUDNN_BNORM_BACKWARD_RECORD, new_func_data};
-
-	if (idx < 2) {
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!Index is %d\n", func_indexes[idx], idx);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx, mutexes, kqueues);
-	// }
-
-	// else {
-
-		if (cudnn_bnorm_bw_func==NULL) {
-			*(void **)(&cudnn_bnorm_bw_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationBackwardEx");
-			assert(cudnn_bnorm_bw_func != NULL);
-		}
-
-
-		status = (*cudnn_bnorm_bw_func)(
+	status = (*cudnn_bnorm_bw_func)(
 			handle,
 			mode,
 			bnOps,
@@ -521,16 +214,12 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 			workSpaceSizeInBytes,
 			reserveSpace,
 			reserveSpaceSizeInBytes
-		);
+	);
 
-		if (status != CUDNN_STATUS_SUCCESS)
-			printf("status is %d\n", status);
-		assert (status == CUDNN_STATUS_SUCCESS);
+	cudaStream_t sched_stream = push_and_wait(CUDNN_BNORM_BACKWARD_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
 
-		DEBUG_PRINT("BNORM BACKWARD submitted!!\n");
-
-	}
-
+	assert (status == CUDNN_STATUS_SUCCESS);
 	return status;
 }
 
@@ -555,45 +244,11 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	*shmem = CUDNN_CONV_DATA_RECORD;
-	while (*shmem == CUDNN_CONV_DATA_RECORD);
-
-	if (idx < 2) {
-	// 	cudnnConvolutionBackwardData_record record = {
-	// 		handle,
-	// 		alpha,
-	// 		wDesc,
-	// 		w,
-	// 		dyDesc,
-	// 		dy,
-	// 		convDesc,
-	// 		algo,
-	// 		workSpace,
-	// 		workSpaceSizeInBytes,
-	// 		beta,
-	// 		dxDesc,
-	// 		dx
-	// 	};
-
-	// 	union func_data new_func_data;
-	// 	new_func_data.cudnnConvBackDataRecord = record;
-	// 	func_record new_record = {CUDNN_CONV_DATA_RECORD, new_func_data};
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx,  mutexes, kqueues);
-	// }
-	// else {
-
-		if (cudnn_conv_bw_data_func==NULL) {
-			*(void **)(&cudnn_conv_bw_data_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardData");
-			assert(cudnn_conv_bw_data_func != NULL);
-		}
-		status = (*cudnn_conv_bw_data_func)(
+	if (cudnn_conv_bw_data_func==NULL) {
+		*(void **)(&cudnn_conv_bw_data_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardData");
+		assert(cudnn_conv_bw_data_func != NULL);
+	}
+	status = (*cudnn_conv_bw_data_func)(
 			handle,
 			alpha,
 			wDesc,
@@ -607,10 +262,12 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 			beta,
 			dxDesc,
 			dx
-		);
-		assert (status == CUDNN_STATUS_SUCCESS);
-	}
+	);
 
+	cudaStream_t sched_stream = push_and_wait(CUDNN_CONV_DATA_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
+
+	assert (status == CUDNN_STATUS_SUCCESS);
 	return status;
 }
 
@@ -633,50 +290,14 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 	int idx = get_idx();
 	assert (idx >= 0);
 
-	*shmem = CUDNN_CONV_FILTER_RECORD;
-	while (*shmem == CUDNN_CONV_FILTER_RECORD);
-
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	// cudnnConvolutionBackwardFilter_record new_conv_record = {
-	// 	handle,
-	// 	alpha,
-	// 	xDesc,
-	// 	x,
-	// 	dyDesc,
-	// 	dy,
-	// 	convDesc,
-	// 	algo,
-	// 	workSpace,
-	// 	workSpaceSizeInBytes,
-	// 	beta,
-	// 	dwDesc,
-	// 	dw
-	// };
+	if (cudnn_conv_bw_filter_func==NULL) {
+		*(void **)(&cudnn_conv_bw_filter_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardFilter");
+		assert(cudnn_conv_bw_filter_func != NULL);
+	}
 
-	// union func_data new_func_data;
-	// new_func_data.cudnnConvBackFilterRecord = new_conv_record;
-	// func_record new_record = {CUDNN_CONV_FILTER_RECORD, new_func_data};
-
-	if (idx < 2) {
-
-	// 	pthread_mutex_lock(mutexes[idx]);
-	// 	DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardFilter!Index is %d\n", func_indexes[idx], idx);
-	// 	kqueues[idx]->push(new_record);
-	// 	func_indexes[idx] += 1;
-	// 	pthread_mutex_unlock(mutexes[idx]);
-
-	// 	block(idx,  mutexes, kqueues);
-
-	// }
-	// else {
-
-		if (cudnn_conv_bw_filter_func==NULL) {
-			*(void **)(&cudnn_conv_bw_filter_func) = dlsym(RTLD_NEXT, "cudnnConvolutionBackwardFilter");
-			assert(cudnn_conv_bw_filter_func != NULL);
-		}
-
-		status = (*cudnn_conv_bw_filter_func)(
+	status = (*cudnn_conv_bw_filter_func)(
 			handle,
 			alpha,
 			xDesc,
@@ -690,12 +311,12 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 			beta,
 			dwDesc,
 			dw
-		);
+	);
 
-		assert (status == CUDNN_STATUS_SUCCESS);
+	cudaStream_t sched_stream = push_and_wait(CUDNN_CONV_FILTER_RECORD, true);
+	cudnnSetStream(handle, sched_stream);
 
-	}
-
+	assert (status == CUDNN_STATUS_SUCCESS);
 	return status;
 }
 

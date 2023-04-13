@@ -36,11 +36,15 @@ int status;
 // new
 int* client_ids;
 int** shmem_addr;
+int** shmem_streams_addr;
 
 using namespace boost::interprocess;
 
 mapped_region* region0;
 mapped_region* region1;
+
+mapped_region* streams_region0;
+mapped_region* streams_region1;
 
 void* Scheduler::busy_wait_fifo(int num_clients) {
     return NULL;
@@ -59,8 +63,16 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, bool 
 			volatile int *status = shmem_addr[i];
 			if (*status >= 0) {
 				int op_type = *status;
-				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD) && (op_type != MEMCPY_RECORD) && (op_type != MEMSET_RECORD))
+				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD) && (op_type != MEMCPY_RECORD) && (op_type != MEMSET_RECORD)) {
 					seen[i]++;
+				}
+
+				if ((op_type != MALLOC_RECORD) && (op_type != FREE_RECORD)) {
+					if (seen[i] % 2 == 0)
+						*(shmem_streams_addr[i]) = 0;
+					else
+						*(shmem_streams_addr[i]) = 1;
+				}
 
 				*status = -1;
 				if (seen[i] == num_client_kernels[i]) {
@@ -152,21 +164,37 @@ extern "C" {
 
         client_ids = (int*)malloc(num_clients*sizeof(int));
         shmem_addr = (int**)malloc(num_clients*sizeof(int*));
+		shmem_streams_addr = (int**)malloc(num_clients*sizeof(int*));
+
         for (int i=0; i<num_clients; i++) {
             client_ids[i] = tids[i];
             std::string shmem_string_name = "client" + std::to_string(tids[i]);
             const char* shmem_name = shmem_string_name.c_str();
             shared_memory_object shm (create_only, shmem_name, read_write);
             shm.truncate(4);
+
+			std::string shmem_string_name_streams = "client_streams" + std::to_string(tids[i]);
+            const char* shmem_name_streams = shmem_string_name_streams.c_str();
+            shared_memory_object shm_streams (create_only, shmem_name_streams, read_write);
+            shm_streams.truncate(4);
+
 			if (i==0) {
 				region0 = new mapped_region(shm, read_write);
             	std::memset(region0->get_address(), -1, region0->get_size());
             	shmem_addr[i] = (int*)(region0->get_address());
+
+				streams_region0 = new mapped_region(shm_streams, read_write);
+            	std::memset(streams_region0->get_address(), -1, streams_region0->get_size());
+            	shmem_streams_addr[i] = (int*)(streams_region0->get_address());
 			}
             else {
 				region1 = new mapped_region(shm, read_write);
             	std::memset(region1->get_address(), -1, region1->get_size());
             	shmem_addr[i] = (int*)(region1->get_address());
+
+				streams_region1 = new mapped_region(shm_streams, read_write);
+            	std::memset(streams_region1->get_address(), -1, streams_region1->get_size());
+            	shmem_streams_addr[i] = (int*)(streams_region1->get_address());
 			}
             // key_t key = ftok(shmem_name,65);
 
@@ -176,6 +204,7 @@ extern "C" {
    			// char *str = (char*) shmat(shmid,(void*)0,0);
 			// shmem_addr[i] = (int*)str;
 			printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name, shmem_addr[i], *(shmem_addr[i]));
+			printf("------------- %d, region %s mapped at address %p, set to %d\n", i, shmem_name_streams, shmem_streams_addr[i], *(shmem_streams_addr[i]));
 
         }
 

@@ -751,6 +751,8 @@ extern cudaStream_t client_streams[2];
 // new
 extern volatile int* shmem;
 extern boost::interprocess::mapped_region* region;
+extern cudaStream_t lp_stream;
+extern cudaStream_t hp_stream;
 
 // functions
 extern cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
@@ -839,6 +841,7 @@ extern cudnnStatus_t (*cudnn_conv_bw_filter_func)(
 int get_idx();
 void block(int idx, pthread_mutex_t** mutexes, queue<func_record>** kqueues);
 
+cudaStream_t push_and_wait(int value, bool wait_for_stream);
 
 #define CHECK_CUDA_ERROR(val) check((val), #val, __FILE__, __LINE__)
 template <typename T>
