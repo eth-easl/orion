@@ -41,8 +41,10 @@ def run(config, combination_name):
         round_func = lambda val: round(val, 2)
 
         logging.info(f"results for {model0} and {model1}")
-        logging.info(f"duration for each: {round_func(dict_data['duration0'])} / {round_func(dict_data['duration1'])}")
-        logging.info(f"duration: {round_func(dict_data['duration'])}")
+        logging.info(f"duration for training: {round_func(dict_data['duration0'])}")
+        logging.info(f"p50 for evaluation: {round_func(dict_data['p50-1'])}")
+        logging.info(f"p95 for evaluation: {round_func(dict_data['p95-1'])}")
+        logging.info(f"num reqs for evaluation: {round_func(dict_data['iterations1'])}")
     except:
         logging.info("the json data file cannot be opened")
 
@@ -64,32 +66,85 @@ if __name__ == "__main__":
 
     # ----configuration region started----
     model0_mode = 'train'
-    model1_mode = 'train'
+    model1_mode = 'eval'
 
-    policies = ['MPS-process']
+    policies = ['MPS-thread']
     use_dummy_data = True
-    request_rate = 0
-
-    model_pair_to_num_iters_train_train = {
-        ('resnet50', 'resnet50'): (300, 300),
-        ('resnet50', 'mobilenet_v2'): (400, 400),
-        ('resnet50', 'resnet101'): (400, 300),
-        ('resnet50', 'bert'): (700, 250),
-        ('resnet50', 'transformer'): (1000, 300),
-
-        ('mobilenet_v2', 'mobilenet_v2'): (300, 300),
-        ('mobilenet_v2', 'resnet101'): (500, 300),
-        ('mobilenet_v2', 'bert'): (800, 300),
-        ('mobilenet_v2', 'transformer'): (1000, 300),
-
-        ('resnet101', 'resnet101'): (300, 300),
-        ('resnet101', 'bert'): (500, 300),
-        ('resnet101', 'transformer'): (450, 300),
-
-        ('bert', 'bert'): (300, 300),
-        ('bert', 'transformer'): (345, 350),
-        ('transformer', 'transformer'): (300, 300)
+    request_rates = {
+        'resnet50': 30,
+        'mobilenet_v2': 40,
+        'resnet101': 18,
+        'bert': 4,
+        'transformer': 11
     }
+
+    train_batch_sizes = {
+        'resnet50': 32,
+        'mobilenet_v2': 64,
+        'resnet101': 32,
+        'bert': 8,
+        'transformer': 8
+    }
+
+    eval_batch_sizes = {
+        'resnet50': 4,
+        'mobilenet_v2': 4,
+        'resnet101': 4,
+        'bert': 2,
+        'transformer': 4
+    }
+
+    model_pair_to_num_iters_train_inf = {
+        # ('resnet50', 'resnet50'): 300,
+        ('resnet50', 'mobilenet_v2'): 300,
+        ('resnet50', 'resnet101'): 300,
+        ('resnet50', 'bert'): 700,
+        ('resnet50', 'transformer'): 700,
+
+        ('mobilenet_v2', 'resnet50'): 300,
+        ('mobilenet_v2', 'resnet101'): 300,
+        ('mobilenet_v2', 'bert'): 700,
+        ('mobilenet_v2', 'transformer'): 700,
+
+        ('resnet101', 'resnet50'): 300,
+        ('resnet101', 'mobilenet_v2'): 300,
+        # ('resnet101', 'resnet101'): 300,
+        ('resnet101', 'bert'): 400,
+        ('resnet101', 'transformer'): 400,
+
+        ('bert', 'resnet50'): 300,
+        ('bert', 'mobilenet_v2'): 300,
+        ('bert', 'resnet101'): 300,
+        # ('bert', 'bert'): 300,
+        ('bert', 'transformer'): 300,
+
+        ('transformer', 'resnet50'): 300,
+        ('transformer', 'mobilenet_v2'): 300,
+        ('transformer', 'resnet101'): 300,
+        ('transformer', 'bert'): 300,
+        # ('transformer', 'transformer'): 300
+    }
+
+    # model_pair_to_num_iters_train_train = {
+    #     ('resnet50', 'resnet50'): (300, 300),
+    #     ('resnet50', 'mobilenet_v2'): (400, 400),
+    #     ('resnet50', 'resnet101'): (400, 300),
+    #     ('resnet50', 'bert'): (700, 250),
+    #     ('resnet50', 'transformer'): (1000, 300),
+    #
+    #     ('mobilenet_v2', 'mobilenet_v2'): (300, 300),
+    #     ('mobilenet_v2', 'resnet101'): (500, 300),
+    #     ('mobilenet_v2', 'bert'): (800, 300),
+    #     ('mobilenet_v2', 'transformer'): (1000, 300),
+    #
+    #     ('resnet101', 'resnet101'): (300, 300),
+    #     ('resnet101', 'bert'): (500, 300),
+    #     ('resnet101', 'transformer'): (450, 300),
+    #
+    #     ('bert', 'bert'): (300, 300),
+    #     ('bert', 'transformer'): (345, 350),
+    #     ('transformer', 'transformer'): (300, 300)
+    # }
 
     # model_pair_to_num_requests_infer_infer = {
     #     ('resnet50', 'bert'): (1000, 350),
@@ -119,38 +174,41 @@ if __name__ == "__main__":
     #
     # }
 
-    combinations = [
-        ('resnet50', 'mobilenet_v2'),
-        ('resnet50', 'bert'),
-        ('mobilenet_v2', 'bert'),
-        ('resnet101', 'transformer'),
-        ('bert', 'transformer')
+    num_exprs = len(model_pair_to_num_iters_train_inf)
+    combinations = list(model_pair_to_num_iters_train_inf.keys())[:int(num_exprs/2)]
 
-    ] # + list(model_pair_to_num_iters_train_train.keys())
-    # combinations = [
-    #     ('resnet101', 'resnet101'),
-    #     ('resnet101', 'transformer'),
-    #
-    #     # ('resnet50', 'bert'),
-    #     # ('mobilenet_v2', 'bert'),
-    #     # ('resnet101', 'bert'),
-    #     # ('bert', 'bert'),
-    #     # ('bert', 'transformer')
-    # ]
     # ----configuration region ended----
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
-    default_full_config['shared_config']['request_rate'] = request_rate
+
     for model0, model1 in combinations:
         default_full_config['model0']['name'] = model0
         default_full_config['model0']['mode'] = model0_mode
         default_full_config['model1']['name'] = model1
         default_full_config['model1']['mode'] = model1_mode
+        # model0 is trained, model1 is evaluated
+        default_full_config['shared_config']['request_rate'] = request_rates[model1]
+
+        if model0 == model1:
+            # omit this case temporarily
+            continue
+
+        if model0 == 'bert':
+            # for training use bert-base
+            default_full_config[model0]['arch'] = 'base'
+        if model1 == 'bert':
+            # for evaluation use bert-large
+            default_full_config[model1]['arch'] = 'large'
+
         for policy in policies:
             default_full_config['policy'] = policy
-            num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
-            default_full_config[model0]['num_iterations'] = num_iters0
-            default_full_config[model1]['num_iterations'] = num_iters1
+            num_iters = model_pair_to_num_iters_train_inf[(model0, model1)]
+            # num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
+            default_full_config[model0]['num_iterations'] = num_iters
+
+            default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
+            default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
+
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
             run(default_full_config, combination_name)
 
