@@ -18,6 +18,7 @@ shared_config:
   print_every: 100
   enable_profiling: false
   use_dummy_data: true
+  use_non_stop_measure: false
   request_rate: 4 # measured in 1/seconds. If 0 it means no sleep
   percentile_positions:
     - 50

@@ -68,8 +68,9 @@ if __name__ == "__main__":
     model0_mode = 'train'
     model1_mode = 'eval'
 
-    policies = ['MPS-process']
+    policies = ['MPS-thread']
     use_dummy_data = True
+    use_non_stop_measure = False
     request_rates = {
         'resnet50': 30,
         'mobilenet_v2': 40,
@@ -180,6 +181,7 @@ if __name__ == "__main__":
     # ----configuration region ended----
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
+    default_full_config['shared_config']['use_non_stop_measure'] = use_non_stop_measure
 
     for model0, model1 in combinations:
         default_full_config['model0']['name'] = model0
