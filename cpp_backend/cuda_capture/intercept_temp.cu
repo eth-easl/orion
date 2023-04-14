@@ -475,9 +475,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		pthread_mutex_lock(mutexes[idx]);
 
 		// TODO: get kernel name correctly here
-		char* kernel_name = func_names[idx]->at(func_indexes[idx]);
-		DEBUG_PRINT("[INTERCEPTER] found a new kernel id %d, name is %s, func pointer is %p\n", func_indexes[idx], kernel_name, func);
-		print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
+		//char* kernel_name = func_names[idx]->at(func_indexes[idx]);
+		//DEBUG_PRINT("[INTERCEPTER] found a new kernel id %d, name is %s, func pointer is %p\n", func_indexes[idx], kernel_name, func);
+		//print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 
 		/*if (!strncmp(kernel_name, VECTORIZED_ELEMENTWISE_KERNEL, 41)) {
