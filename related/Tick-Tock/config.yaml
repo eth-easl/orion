@@ -32,7 +32,7 @@ resnet50:
   optimizer: SGD
   batch_size: 32
   num_workers: 2
-  num_iterations: 30
+  num_iterations: 300
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
@@ -50,7 +50,7 @@ mobilenet_v2:
   optimizer: SGD
   batch_size: 64
   num_workers: 2
-  num_iterations: 700
+  num_iterations: 300
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
@@ -58,9 +58,9 @@ bert:
   use_fp16: false # true or false; please stick to false or revise code otherwise
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
   squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 2
+  batch_size: 8
   num_workers: 2
-  arch: large # either base or large
+  arch: base # either base or large
   num_iterations: 300
   warm_up_iters: 10
   large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
@@ -77,6 +77,63 @@ transformer:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
+
+
+
+
+
+
+resnet50-1:
+  arch: resnet50
+  optimizer: SGD
+  batch_size: 4
+  num_workers: 2
+  num_iterations: 30
+  warm_up_iters: 10
+  num_requests: 500
+  num_warm_up_reqs: 10
+mobilenet_v2-1:
+  arch: mobilenet_v2
+  optimizer: SGD
+  batch_size: 4
+  num_workers: 2
+  num_iterations: 700
+  warm_up_iters: 10
+  num_requests: 500
+  num_warm_up_reqs: 10
+resnet101-1:
+  arch: resnet101
+  optimizer: SGD
+  batch_size: 4
+  num_workers: 2
+  num_iterations: 300
+  warm_up_iters: 10
+  num_requests: 500
+  num_warm_up_reqs: 10
+bert-1:
+  use_fp16: false # true or false; please stick to false or revise code otherwise
+  fp16_loss_scale: 0 # only used if use_fp16 is set to True
+  squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
+  batch_size: 2
+  num_workers: 2
+  arch: large # either base or large
+  num_iterations: 300
+  warm_up_iters: 10
+  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+  num_requests: 500
+  num_warm_up_reqs: 10
+transformer-1:
+  arch: base # either base or large
+  use_fp16: false
+  amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
+  apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
+  batch_size: 4
+  num_iterations: 300
+  warm_up_iters: 10
+  num_requests: 500
+  num_warm_up_reqs: 10
+
 
 # unused models
 retinanet:

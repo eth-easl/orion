@@ -101,13 +101,8 @@ if __name__ == "__main__":
 
     logging.info(f'{model0_mode} {model0_name} and {model1_mode} {model1_name} using {policy}')
     shared_config = config['shared_config']
-    if {model0_mode, model1_mode} == {'train', 'eval'} and policy == 'MPS-thread':
-        shared_config['use_non_stop_measure'] = True
-    else:
-        shared_config['use_non_stop_measure'] = False
 
     logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
-
     data_manager = DataManager(f'{args.log}.json')
 
     if policy == 'MPS-process':
@@ -129,6 +124,10 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
+    if model0_name[-2:] == '-1':
+        model0_name = model0_name[:-2]
+    if model1_name[-2:] == '-1':
+        model1_name = model1_name[:-2]
     model0_wrapper = model_to_wrapper[model0_name][model0_mode]
     model1_wrapper = model_to_wrapper[model1_name][model1_mode]
 

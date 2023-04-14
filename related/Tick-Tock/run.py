@@ -68,7 +68,7 @@ if __name__ == "__main__":
     model0_mode = 'train'
     model1_mode = 'eval'
 
-    policies = ['MPS-thread']
+    policies = ['MPS-process']
     use_dummy_data = True
     use_non_stop_measure = False
     request_rates = {
@@ -124,6 +124,12 @@ if __name__ == "__main__":
         ('transformer', 'resnet101'): (300, 675),
         ('transformer', 'bert'): (300, 211),
         # ('transformer', 'transformer'): 300
+
+        ('resnet50', 'resnet50-1'): (300, 499),
+        ('mobilenet_v2', 'mobilenet_v2-1'): (300, 479),
+        ('resnet101', 'resnet101-1'): (300, 471),
+        ('bert', 'bert-1'): (300, 229),
+        ('transformer', 'transformer-1'): (300, 434)
     }
 
     # model_pair_to_num_iters_train_train = {
@@ -175,7 +181,6 @@ if __name__ == "__main__":
     #
     # }
 
-    num_exprs = len(model_pair_to_num_iters_train_inf)
     combinations = list(model_pair_to_num_iters_train_inf.keys())
 
     # ----configuration region ended----
