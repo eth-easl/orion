@@ -42,9 +42,9 @@ def run(config, combination_name):
 
         logging.info(f"results for {model0} and {model1}")
         logging.info(f"duration for training: {round_func(dict_data['duration0'])}")
+        logging.info(f"duration for eval: {round_func(dict_data['duration1'])}")
         logging.info(f"p50 for evaluation: {round_func(dict_data['p50-1'])}")
         logging.info(f"p95 for evaluation: {round_func(dict_data['p95-1'])}")
-        logging.info(f"num reqs for evaluation: {round_func(dict_data['iterations1'])}")
     except:
         logging.info("the json data file cannot be opened")
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     model0_mode = 'train'
     model1_mode = 'eval'
 
-    policies = ['MPS-thread']
+    policies = ['MPS-process']
     use_dummy_data = True
     request_rates = {
         'resnet50': 30,
@@ -96,32 +96,32 @@ if __name__ == "__main__":
 
     model_pair_to_num_iters_train_inf = {
         # ('resnet50', 'resnet50'): 300,
-        ('resnet50', 'mobilenet_v2'): 300,
-        ('resnet50', 'resnet101'): 300,
-        ('resnet50', 'bert'): 700,
-        ('resnet50', 'transformer'): 700,
+        ('resnet50', 'mobilenet_v2'): (300, 594),
+        ('resnet50', 'resnet101'): (300, 282),
+        ('resnet50', 'bert'): (700, 247),
+        ('resnet50', 'transformer'): (700, 494),
 
-        ('mobilenet_v2', 'resnet50'): 300,
-        ('mobilenet_v2', 'resnet101'): 300,
-        ('mobilenet_v2', 'bert'): 700,
-        ('mobilenet_v2', 'transformer'): 700,
+        ('mobilenet_v2', 'resnet50'): (300, 366),
+        ('mobilenet_v2', 'resnet101'): (300, 236),
+        ('mobilenet_v2', 'bert'): (700, 220),
+        ('mobilenet_v2', 'transformer'): (700, 411),
 
-        ('resnet101', 'resnet50'): 300,
-        ('resnet101', 'mobilenet_v2'): 300,
+        ('resnet101', 'resnet50'): (300, 802),
+        ('resnet101', 'mobilenet_v2'): (300, 1016),
         # ('resnet101', 'resnet101'): 300,
-        ('resnet101', 'bert'): 400,
-        ('resnet101', 'transformer'): 400,
+        ('resnet101', 'bert'): (400, 222),
+        ('resnet101', 'transformer'): (400, 461),
 
-        ('bert', 'resnet50'): 300,
-        ('bert', 'mobilenet_v2'): 300,
-        ('bert', 'resnet101'): 300,
+        ('bert', 'resnet50'): (300, 1115),
+        ('bert', 'mobilenet_v2'): (300, 1447),
+        ('bert', 'resnet101'): (300, 646),
         # ('bert', 'bert'): 300,
-        ('bert', 'transformer'): 300,
+        ('bert', 'transformer'): (300, 462),
 
-        ('transformer', 'resnet50'): 300,
-        ('transformer', 'mobilenet_v2'): 300,
-        ('transformer', 'resnet101'): 300,
-        ('transformer', 'bert'): 300,
+        ('transformer', 'resnet50'): (300, 1085),
+        ('transformer', 'mobilenet_v2'): (300, 1448),
+        ('transformer', 'resnet101'): (300, 675),
+        ('transformer', 'bert'): (300, 211),
         # ('transformer', 'transformer'): 300
     }
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     # }
 
     num_exprs = len(model_pair_to_num_iters_train_inf)
-    combinations = list(model_pair_to_num_iters_train_inf.keys())[:int(num_exprs/2)]
+    combinations = list(model_pair_to_num_iters_train_inf.keys())
 
     # ----configuration region ended----
 
@@ -202,9 +202,10 @@ if __name__ == "__main__":
 
         for policy in policies:
             default_full_config['policy'] = policy
-            num_iters = model_pair_to_num_iters_train_inf[(model0, model1)]
+            num_iters, num_reqs = model_pair_to_num_iters_train_inf[(model0, model1)]
             # num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
             default_full_config[model0]['num_iterations'] = num_iters
+            default_full_config[model1]['num_requests'] = num_reqs
 
             default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
             default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]

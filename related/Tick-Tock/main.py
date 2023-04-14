@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     logging.info(f'{model0_mode} {model0_name} and {model1_mode} {model1_name} using {policy}')
     shared_config = config['shared_config']
-    if {model0_mode, model1_mode} == {'train', 'eval'}:
+    if {model0_mode, model1_mode} == {'train', 'eval'} and policy == 'MPS-thread':
         shared_config['use_non_stop_measure'] = True
     else:
         shared_config['use_non_stop_measure'] = False

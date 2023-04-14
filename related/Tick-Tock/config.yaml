@@ -76,6 +76,8 @@ transformer:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
+
+# unused models
 retinanet:
   dataset_name: openimages-mlperf # coco, openimages, or openimages-mlperf
   use_amp: false
@@ -85,8 +87,6 @@ retinanet:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
-
-# unused models
 nasnet:
   optimizer: SGD
   batch_size: 32
