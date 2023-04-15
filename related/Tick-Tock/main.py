@@ -173,8 +173,6 @@ if __name__ == "__main__":
         model1_wrapper(**model1_kwargs)
     else:
         raise NotImplementedError(f'unsupported policy {policy}')
-    # if shared_config['use_dummy_data'].enable_profiling:
-    #     torch.cuda.cudart().cudaProfilerStop()
 
     # post-processing: sum two durations
     if policy == 'temporal':

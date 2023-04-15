@@ -15,8 +15,6 @@ shared_config:
   wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
   coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
-  print_every: 100
-  enable_profiling: false
   use_dummy_data: true
   use_non_stop_measure: false
   request_rate: 4 # measured in 1/seconds. If 0 it means no sleep
