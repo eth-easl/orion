@@ -14,13 +14,14 @@ class DummyDataLoader():
         self.start_positions = torch.zeros((self.batchsize,)).to(torch.int64)
         self.end_positions = torch.ones((self.batchsize,)).to(torch.int64)
 
+
     def __iter__(self):
         return self
 
     def __next__(self):
         return self.input_ids, self.segment_ids, self.input_mask, self.start_positions, self.end_positions
 
-def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, tid):
+def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, client_barrier, tid):
 
     barriers[0].wait()
 
@@ -29,6 +30,7 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
     else:
         sleep_times = [0]*num_iters
 
+    '''
     model_config = {
         "attention_probs_dropout_prob": 0.1,
         "hidden_act": "gelu",
@@ -41,7 +43,23 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
         "num_hidden_layers": 24,
         "output_all_encoded_layers": False,
         "type_vocab_size": 2,
-        "vocab_size": 30528
+        "vocab_size": 30522
+    }
+    '''
+
+
+    model_config = {
+            "attention_probs_dropout_prob": 0.1,
+            "hidden_act": "gelu",
+            "hidden_dropout_prob": 0.1,
+            "hidden_size": 768,
+            "initializer_range": 0.02,
+            "intermediate_size": 3072,
+            "max_position_embeddings": 512,
+            "num_attention_heads": 12,
+            "num_hidden_layers": 12,
+            "type_vocab_size": 2,
+            "vocab_size": 30522
     }
 
     config = modeling.BertConfig.from_dict(model_config)
@@ -71,16 +89,15 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
     train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
-
+    
     for i in range(1):
         print("Start epoch: ", i)
 
         start = time.time()
         start_iter = time.time()
-        torch.cuda.synchronize()
-
+                                
         while batch_idx < num_iters:
-
+    
             print(f"submit!, batch_idx is {batch_idx}")
             #torch.cuda.profiler.cudart().cudaProfilerStart()
 
@@ -107,7 +124,12 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
             if (batch_idx == 1): # for backward
                 barriers[0].wait()
 
+            if batch_idx == 10:
+                barriers[0].wait()
+                start = time.time()
+
             #if batch_idx < num_iters:
             #    barriers[0].wait()
 
     print("Finished! Ready to join!")
+    barriers[0].wait()

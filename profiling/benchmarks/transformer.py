@@ -51,9 +51,9 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
     torch.cuda.synchronize()
     batch_idx = 0
 
-    while batch_idx < 10:
+    while batch_idx < 100:
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -68,7 +68,7 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
             loss.backward()
             optimizer.step()
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
@@ -79,5 +79,5 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
     print("Done!")
 
 if __name__ == "__main__":
-    transformer(4, 0, True, 'ncu')
+    transformer(8, 0, False, 'nsys')
 
