@@ -131,20 +131,23 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 	assert(*lp==0);
 
 	if (!reef) {
-		for (int i=0; i<num-1; i++) {
+		for (int i=0; i<2; i++) {
 			sched_streams[i] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
 			cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, 0);
 		}
 
+		sched_streams[2] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+		cudaStreamCreateWithPriority(sched_streams[2], cudaStreamNonBlocking, *hp);
+
 		sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, *hp);
+		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, 0);
 	}
 	else {
 		sched_streams[0] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[0], cudaStreamNonBlocking, *hp);
+		cudaStreamCreateWithPriority(sched_streams[0], cudaStreamNonBlocking, 0);
 
 		sched_streams[1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, 0);
+		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, *hp);
 	}
 	printf("exit\n");
 
@@ -339,10 +342,10 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 		case MEMCPY_RECORD: {
 			memcpy_record record = frecord.data.mrecord;
 			if (!record.async) {
-				printf("found a new memcpy record from idx %d!\n", idx);
+				//printf("found a new memcpy record from idx %d!\n", idx);
 				(*memcpy_function)(record.dst, record.src, record.count, record.kind);
 			} else {
-				printf("found a new memcpy-async record from idx %d, count is %d!\n", idx, record.count);
+				//printf("found a new memcpy-async record from idx %d, count is %d!\n", idx, record.count);
 				(*memcpy_async_function)(record.dst, record.src, record.count, record.kind, *sched_stream);
 			}
 			break;
@@ -607,11 +610,11 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			break;
 		}
 		default:
-			DEBUG_PRINT("UNSUPPORTED OPERATION - ABORT\n");
+			printf("UNSUPPORTED OPERATION - ABORT\n");
 			abort();
 
 	}
-	DEBUG_PRINT("Return from schedule!\n");
+	DEBUG_PRINT("Return from schedule, seen[%d] is %d!\n", idx, seen[idx]);
 	CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
 	//event_ids[evid] += 1;
 }
