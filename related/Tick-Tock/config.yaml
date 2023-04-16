@@ -17,7 +17,9 @@ shared_config:
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   use_dummy_data: true
   use_non_stop_measure: false
+  closed_inference_loop: true
   request_rate: 4 # measured in 1/seconds. If 0 it means no sleep
+  seed: 42
   percentile_positions:
     - 50
     - 90

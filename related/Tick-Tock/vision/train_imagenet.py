@@ -11,6 +11,7 @@ from utils.sync_control import *
 
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
     stream = torch.cuda.Stream(device=device)
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
@@ -33,6 +34,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
     my_stream = torch.cuda.Stream(device=device)
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)

@@ -127,7 +127,7 @@ def run(config, combination_name):
 
         logging.info(f"results for {model0} and {model1}")
         logging.info(f"duration for training: {round_func(train_duration)}")
-        logging.info(f"duration for eval: {round_func(eval_duration)}")
+        logging.info(f"inference iterations: {dict_data['iterations1']}")
 
         logging.info(f"p50 for evaluation: {round_func(dict_data['p50-1'])}")
         logging.info(f"p95 for evaluation: {round_func(dict_data['p95-1'])}")
@@ -154,9 +154,10 @@ if __name__ == "__main__":
     model0_mode = 'train'
     model1_mode = 'eval'
 
-    policy = 'temporal'
+    policy = 'MPS-thread'
     use_dummy_data = True
-    use_non_stop_measure = False
+    use_non_stop_measure = True
+    closed_inference_loop = False
     request_rates = {
         'resnet50': 30,
         'mobilenet_v2': 40,
@@ -181,13 +182,14 @@ if __name__ == "__main__":
         'transformer': 4
     }
 
-
-    combinations = list(model_pair_to_num_iters_train_inf.keys())
+    num_combinations = len(model_pair_to_num_iters_train_inf.keys())
+    combinations = list(model_pair_to_num_iters_train_inf.keys())[num_combinations//2: ]
 
     # ----configuration region ended----
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
     default_full_config['shared_config']['use_non_stop_measure'] = use_non_stop_measure
+    default_full_config['shared_config']['closed_inference_loop'] = closed_inference_loop
 
     for model0, model1 in combinations:
         default_full_config['model0']['name'] = model0

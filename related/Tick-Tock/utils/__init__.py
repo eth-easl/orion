@@ -35,27 +35,45 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
         intervals = random.exponential(scale=scale, size=(num_requests,))
     else:
         intervals = [0]*num_requests
-    seed = int(time.time())
-    np.random.seed(seed)
+
     percentile_positions = shared_config['percentile_positions']
     latency_history = []
 
     with torch.no_grad():
-        for iteration in range(num_requests):
-            if iteration == num_warm_up_reqs:
-                # start measurement
-                sync_info.pre_measurement_prep(tid)
-                entire_inference_start_time = time.time()
+        if shared_config['closed_inference_loop']:
+            for iteration in range(num_requests):
+                if iteration == num_warm_up_reqs:
+                    # start measurement
+                    sync_info.pre_measurement_prep(tid)
+                    entire_inference_start_time = time.time()
 
-            time.sleep(intervals[iteration])
-            # start func invocation
-            with torch.cuda.stream(stream):
-                start_time = time.time()
-                func()
-            stream.synchronize()
-            latency = time.time() - start_time
-            # convert to ms
-            latency_history.append(latency * 1000)
+                time.sleep(intervals[iteration])
+                # start func invocation
+                with torch.cuda.stream(stream):
+                    start_time = time.time()
+                    func()
+                stream.synchronize()
+                latency = time.time() - start_time
+                # convert to ms
+                latency_history.append(latency * 1000)
+        else:
+            next_startup = time.time()
+            iteration = 0
+            while iteration < num_requests:
+                if time.time() >= next_startup:
+
+                    if iteration == num_warm_up_reqs:
+                        sync_info.pre_measurement_prep(tid)
+                        entire_inference_start_time = time.time()
+                        # reset next_startup to have clear setup
+                        next_startup = entire_inference_start_time
+
+                    with torch.cuda.stream(stream):
+                        func()
+                    stream.synchronize()
+                    latency_history.append(1000 * (time.time() - next_startup))
+                    next_startup += intervals[iteration]
+                    iteration += 1
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)
@@ -85,31 +103,49 @@ def non_stop_measure(func, num_warm_up_reqs, tid, shared_config, stream, sync_in
     """
     request_rate = shared_config['request_rate']
 
-    seed = int(time.time())
-    np.random.seed(seed)
+
     percentile_positions = shared_config['percentile_positions']
     latency_history = []
 
     iteration = -1
     with torch.no_grad():
-        while sync_info.should_continue_loop():
-            iteration += 1
-            if iteration == num_warm_up_reqs:
-                # start measurement
-                sync_info.pre_measurement_prep(tid)
-                entire_inference_start_time = time.time()
+        if shared_config['closed_inference_loop']:
+            while sync_info.should_continue_loop():
+                iteration += 1
+                if iteration == num_warm_up_reqs:
+                    # start measurement
+                    sync_info.pre_measurement_prep(tid)
+                    entire_inference_start_time = time.time()
 
-            if request_rate > 0:
-                time.sleep(random.exponential(scale=1/request_rate))
+                if request_rate > 0:
+                    time.sleep(random.exponential(scale=1/request_rate))
 
-            # start func invocation
-            with torch.cuda.stream(stream):
-                start_time = time.time()
-                func()
-            stream.synchronize()
-            latency = time.time() - start_time
-            # convert to ms
-            latency_history.append(latency * 1000)
+                # start func invocation
+                with torch.cuda.stream(stream):
+                    start_time = time.time()
+                    func()
+                stream.synchronize()
+                latency = time.time() - start_time
+                # convert to ms
+                latency_history.append(latency * 1000)
+        else:
+            next_startup = time.time()
+            while sync_info.should_continue_loop():
+                if time.time() >= next_startup:
+                    iteration += 1
+                    if iteration == num_warm_up_reqs:
+                        sync_info.pre_measurement_prep(tid)
+                        entire_inference_start_time = time.time()
+                        # reset next_startup to have clear setup
+                        next_startup = entire_inference_start_time
+
+                    with torch.cuda.stream(stream):
+                        func()
+                    stream.synchronize()
+                    latency_history.append(1000 * (time.time() - next_startup))
+                    next_startup += random.exponential(scale=1/request_rate)
+
+
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)
@@ -130,4 +166,15 @@ def non_stop_measure(func, num_warm_up_reqs, tid, shared_config, stream, sync_in
         data_to_record[f'p{percentile_pos}-{tid}'] = percentiles[idx]
     # write all data to the data file
     sync_info.write_kvs(data_to_record)
+
+
+def seed_everything(seed: int):
+    import random, os
+    import numpy as np
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
