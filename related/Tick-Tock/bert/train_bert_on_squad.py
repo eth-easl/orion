@@ -52,19 +52,34 @@ def setup_model(model_config):
     #     'bert_config.json'
     # )
     # config = modeling.BertConfig.from_json_file(config_file)
-    config_dict ={
-      "attention_probs_dropout_prob": 0.1,
-      "hidden_act": "gelu",
-      "hidden_dropout_prob": 0.1,
-      "hidden_size": 768,
-      "initializer_range": 0.02,
-      "intermediate_size": 3072,
-      "max_position_embeddings": 512,
-      "num_attention_heads": 12,
-      "num_hidden_layers": 12,
-      "type_vocab_size": 2,
-      "vocab_size": 30522
-    }
+    if arch == 'base':
+        config_dict ={
+          "attention_probs_dropout_prob": 0.1,
+          "hidden_act": "gelu",
+          "hidden_dropout_prob": 0.1,
+          "hidden_size": 768,
+          "initializer_range": 0.02,
+          "intermediate_size": 3072,
+          "max_position_embeddings": 512,
+          "num_attention_heads": 12,
+          "num_hidden_layers": 12,
+          "type_vocab_size": 2,
+          "vocab_size": 30522
+        }
+    else:
+        config_dict = {
+            "attention_probs_dropout_prob": 0.1,
+            "hidden_act": "gelu",
+            "hidden_dropout_prob": 0.1,
+            "hidden_size": 1024,
+            "initializer_range": 0.02,
+            "intermediate_size": 4096,
+            "max_position_embeddings": 512,
+            "num_attention_heads": 16,
+            "num_hidden_layers": 24,
+            "type_vocab_size": 2,
+            "vocab_size": 30522
+        }
 
     config = modeling.BertConfig.from_dict(config_dict)
 
@@ -163,6 +178,7 @@ def setup(model_config, shared_config, device):
 
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    print('am i here?????')
     device = torch.device("cuda:0")
     stream = torch.cuda.Stream(device=device)
     model, data_loader, _ = setup(model_config, shared_config, device)
