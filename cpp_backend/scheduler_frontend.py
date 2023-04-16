@@ -57,28 +57,39 @@ class PyScheduler:
         timings=[]
         torch.cuda.profiler.cudart().cudaProfilerStart()
 
+        start_req = [0.0] * self._num_clients
+        DoubleAr = ctypes.c_double * self._num_clients
+        start_req_ar = DoubleAr(*start_req)
+        self._sched_lib.argtypes = [c_void_p, c_int, c_bool, c_int, c_bool, c_int, c_bool, POINTER(c_double)]
+
         if run_eval:
             if profile:
                 barriers[0].wait()
                 # run once to warm-up and setup
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, reef)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, 1, reef, start_req_ar)
                 torch.cuda.synchronize()
 
                 for j in range(num_clients):
                     if (additional_kernel_files[j] is not None):
-                        new_kernel_file = additional_kernel_files[0].encode('utf-8')
+                        new_kernel_file = additional_kernel_files[j].encode('utf-8')
                         self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
 
                 print("wait here")
                 barriers[0].wait() #FIXME
                 print("done!")
 
+                # warmup
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, 10, reef, start_req_ar)
+                torch.cuda.synchronize()
+                barriers[0].wait()
 
                 start = time.time()
                 print("call schedule")
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False, reef)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False, 0, reef, start_req_ar)
+                barriers[0].wait()
                 torch.cuda.synchronize()
                 print(f"Total time is {time.time()-start}")
+                print(start_req)
 
         else:
             for i in range(num_iters[0]):
@@ -90,9 +101,9 @@ class PyScheduler:
                     if (i==1):
                         for j in range(num_clients):
                             if (additional_kernel_files[j] is not None):
-                                new_kernel_file = additional_kernel_files[0].encode('utf-8')
+                                new_kernel_file = additional_kernel_files[j].encode('utf-8')
                                 self._sched_lib.setup_change(self._scheduler, j, new_kernel_file, additional_num_kernels[j])
-                                barriers[0].wait() #FIXME
+                        barriers[0].wait() #FIXME
 
                     start = time.time()
                     print("call schedule")

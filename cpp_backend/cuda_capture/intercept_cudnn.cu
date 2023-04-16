@@ -50,6 +50,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 		 pthread_mutex_lock(mutexes[idx]);
 
 		 DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
+
 		 kqueues[idx]->push(new_record);
 		 func_indexes[idx] += 1;
 		 pthread_mutex_unlock(mutexes[idx]);
@@ -356,6 +357,7 @@ cudnnStatus_t cudnnRNNForwardTraining(
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnRNNForwardTraining, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
+
 		kqueues[idx]->push(new_record);
 		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
@@ -563,6 +565,7 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardData!Index is %d\n", func_indexes[idx], idx);
+
 		kqueues[idx]->push(new_record);
 		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);

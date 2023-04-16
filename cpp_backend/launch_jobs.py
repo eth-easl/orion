@@ -63,6 +63,7 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
 
     num_barriers = num_clients+1 if profile else 2
     barriers = [threading.Barrier(num_barriers) for i in range(num_clients)]
+    client_barrier = threading.Barrier(num_clients)
     home_directory = os.path.expanduser( '~' )
     if run_eval:
         sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler_eval.so")
@@ -82,10 +83,13 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
     additional_num_kernels = [config_dict['additional_num_kernels'] if 'additional_num_kernels' in config_dict else None  for config_dict in config_dict_list]
     tids = []
     threads = []
+    start_times_list = []
     for i, config_dict in enumerate(config_dict_list):
         func = function_dict[config_dict['arch']]
         model_args = config_dict['args']
-        model_args.update({"num_iters":num_iters[i], "local_rank": 0, "barriers": barriers, "tid": i})
+        l = []
+        start_times_list.append(l)
+        model_args.update({"num_iters":num_iters[i], "start_times": l, "local_rank": 0, "barriers": barriers, "client_barrier": client_barrier, "tid": i})
 
         thread = threading.Thread(target=func, kwargs=model_args)
         thread.start()
@@ -107,7 +111,7 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
             num_iters,
             profile,
             run_eval,
-            False
+            True
         )
     )
 

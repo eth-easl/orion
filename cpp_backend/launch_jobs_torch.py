@@ -123,12 +123,12 @@ def launch_jobs(config_dict_list, mode, processes):
     torch.cuda.profiler.cudart().cudaProfilerStart()
     start = time.time()
 
-    for i in range(100):
-
-        start_barriers[0].wait()
+    #for i in range(50):
+    #    start_barriers[0].wait()
         #start_barriers[1].wait()
-        end_barriers[0].wait()
+        #end_barriers[0].wait()
         #end_barriers[1].wait()
+    end_barriers[0].wait()
     torch.cuda.synchronize()
     torch.cuda.profiler.cudart().cudaProfilerStop()
     print(f"Time for both is {time.time()-start} sec")

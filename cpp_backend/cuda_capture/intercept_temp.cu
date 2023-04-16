@@ -850,7 +850,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		union func_data new_func_data;
 		new_func_data.krecord = new_kernel_record;
 		func_record new_record = {KERNEL_RECORD, new_func_data};
-
 		kqueues[idx]->push(new_record);
 		func_indexes[idx] += 1;
 

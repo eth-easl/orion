@@ -17,11 +17,13 @@ import os
 import argparse
 import threading
 
+from measure_time import measure
+
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.rand([self.batchsize, 3, 224, 224]).contiguous()
-        self.target = torch.ones([self.batchsize]).to(torch.long)
+        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=False)
+        self.target = torch.ones([self.batchsize], pin_memory=False, dtype=torch.long)
 
     def __iter__(self):
         return self
@@ -55,13 +57,12 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, dummy_d
     else:
         sleep_times = [0]*num_iters
 
+    print(sleep_times)
+
     if default:
         s = torch.cuda.default_stream()
     else:
         s = torch.cuda.Stream()
-
-    timings = []
-
     print("-------------- thread id:  ", threading.get_native_id())
 
     #data = torch.rand([batchsize, 2048]).to(local_rank)
@@ -85,10 +86,20 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, dummy_d
 
     batch_idx, batch = next(train_iter)
 
-    gpu_data = batch[0].to(local_rank)
+    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
     output = model(gpu_data)
 
+    start_times = [0 for _ in range(num_iters)]
+    start_events = [torch.cuda.Event(enable_timing=True) for _ in range(num_iters)]
+    end_events = [torch.cuda.Event(enable_timing=True) for _ in range(num_iters)]
+    cvs = [threading.Event() for _ in range(num_iters)]
+    timings = [0 for _ in range(num_iters)]
+
+    timing_idx = 0
+
     print("Enter loop!")
+
+    next_startup = time.time()
 
     with torch.cuda.stream(s):
         for i in range(1):
@@ -96,34 +107,48 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, dummy_d
 
             start = time.time()
             while batch_idx < num_iters:
-
-                print(f"submit!, batch_idx is {batch_idx}")
+                #start_barriers[0].wait()
                 startiter = time.time()
-
-
                 if train:
-                    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     optimizer.zero_grad()
+                    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     output = model(gpu_data)
                     loss = criterion(output, gpu_target)
                     loss.backward()
                     optimizer.step()
+                    s.synchronize()
                 else:
                     with torch.no_grad():
-                        start_barriers[0].wait()
-                        gpu_data = batch[0].to(local_rank)
-                        output = model(gpu_data)
-                        s.synchronize()
-                        end_barriers[0].wait()
+                        cur_time = time.time()
+                        ###### OPEN LOOP #####
+                        if (cur_time >= next_startup):
+                            print(f"submit!, batch_idx is {batch_idx}")
+                            gpu_data = batch[0].to(local_rank)
+                            output = model(gpu_data)
+                            s.synchronize()
+                            timings[batch_idx] = time.time()-next_startup
+                            print(f"It took {timings[batch_idx]} sec")
+                            next_startup += sleep_times[batch_idx]
+                            batch_idx,batch = next(train_iter)
 
-                iter_time = time.time()-startiter
-                timings.append(iter_time)
+                        ###### CLOSED LOOP #####
+                        # print(f"submit!, batch_idx is {batch_idx}")
+                        # gpu_data = batch[0].to(local_rank)
+                        # output = model(gpu_data)
+                        # s.synchronize()
+                        # iter_time = time.time()-startiter
+                        # timings.append(iter_time)
+                        # print(f"It took {iter_time} sec")
+                        # batch_idx,batch = next(train_iter)
 
-                time.sleep(sleep_times[batch_idx])
-                print(f"{batch_idx} finished, took {iter_time} sec, now sleep for {sleep_times[batch_idx]} sec")
+                #iter_time = time.time()-startiter
+                #timings.append(iter_time)
+
+                #time.sleep(sleep_times[batch_idx])
+                #print(f"{batch_idx} finished, took {iter_time} sec, now sleep for {sleep_times[batch_idx]} sec")
 
                 #v = time.time()
-                batch_idx,batch = next(train_iter)
+
                 #batch_idx += 1
                 #print(f"It took {time.time()-v}")
 
@@ -136,4 +161,5 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, dummy_d
     p95 = np.percentile(timings, 95)
     p99 = np.percentile(timings, 99)
 
+    end_barriers[0].wait()
     print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
