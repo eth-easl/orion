@@ -89,11 +89,12 @@ class MPSSyncInfo(BasicSyncInfo):
         if isolation_level == 'thread':
             self.barrier = threading.Barrier(2)
             self.lock = threading.Lock()
+            self.inf_train_stop_signal = threading.Event()
         else:
             self.barrier = multiprocessing.Barrier(2)
             self.lock = multiprocessing.Lock()
+            self.inf_train_stop_signal = multiprocessing.Event()
         self.start_time = None
-        self.continue_loop = True
 
     def pre_measurement_prep(self, tid):
         self.barrier.wait()
@@ -102,7 +103,7 @@ class MPSSyncInfo(BasicSyncInfo):
 
     def post_measurement_prep(self, tid):
         # let the other part break out of the loop
-        self.continue_loop = False
+        self.inf_train_stop_signal.set()
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
@@ -117,4 +118,4 @@ class MPSSyncInfo(BasicSyncInfo):
             super().write_kvs(kv_pairs)
 
     def should_continue_loop(self):
-        return self.continue_loop
+        return not self.inf_train_stop_signal.is_set()

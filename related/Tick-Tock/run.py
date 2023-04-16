@@ -11,31 +11,31 @@ model_pair_to_num_iters_train_inf = {
     ('resnet50', 'resnet50'): (300, 499),
     ('resnet50', 'mobilenet_v2'): (300, 594),
     ('resnet50', 'resnet101'): (300, 282),
-    ('resnet50', 'bert'): (700, 247),
+    ('resnet50', 'bert'): (700, 235),
     ('resnet50', 'transformer'): (700, 494),
 
     ('mobilenet_v2', 'resnet50'): (300, 366),
     ('mobilenet_v2', 'mobilenet_v2'): (300, 479),
     ('mobilenet_v2', 'resnet101'): (300, 236),
-    ('mobilenet_v2', 'bert'): (700, 220),
+    ('mobilenet_v2', 'bert'): (700, 192),
     ('mobilenet_v2', 'transformer'): (700, 411),
 
     ('resnet101', 'resnet50'): (300, 802),
     ('resnet101', 'mobilenet_v2'): (300, 1016),
     ('resnet101', 'resnet101'): (300, 471),
-    ('resnet101', 'bert'): (400, 222),
+    ('resnet101', 'bert'): (400, 201),
     ('resnet101', 'transformer'): (400, 461),
 
     ('bert', 'resnet50'): (300, 1115),
     ('bert', 'mobilenet_v2'): (300, 1447),
     ('bert', 'resnet101'): (300, 646),
-    ('bert', 'bert'): (300, 229),
+    ('bert', 'bert'): (300, 208),
     ('bert', 'transformer'): (300, 462),
 
     ('transformer', 'resnet50'): (300, 1085),
     ('transformer', 'mobilenet_v2'): (300, 1448),
     ('transformer', 'resnet101'): (300, 675),
-    ('transformer', 'bert'): (300, 211),
+    ('transformer', 'bert'): (300, 185),
     ('transformer', 'transformer'): (300, 434)
 }
 
