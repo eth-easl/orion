@@ -39,6 +39,7 @@ int status;
 
 // reef
 int lp_idx = 0;
+bool** request_status;
 
 void Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 
@@ -191,6 +192,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients) {
 			CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
 			lp_idx = 0;
 		}
+		lp_idx += 1;
 	}
 	else if (frecords[0] != NULL && frecords[1] != NULL) {
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
@@ -202,7 +204,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients) {
 	}
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, double* start_req) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef) {
 
 	printf("here!\n");
 
@@ -234,15 +236,13 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			volatile int sz = client_buffers[i]->size();
 			if (sz > 0) {
 				frecords[i] = &(client_buffers[i]->front());
-				// if last one for that client, left locked
-				if (seen[i] == 0 && client_starts_set[i][num_client_cur_iters[i]] == false) {
+				int cur_iter = num_client_cur_iters[i];
+				if (seen[i] == 0 && client_starts_set[i][cur_iter] == false) {
 					client_starts[i] = std::chrono::high_resolution_clock::now();
-					client_starts_set[i][num_client_cur_iters[i]] = true;
+					client_starts_set[i][cur_iter] = true;
 					if (!total_client_set[i]) {
 						total_client_starts[i] = std::chrono::high_resolution_clock::now();
 						total_client_set[i] = true;
-						start_req[i] = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::system_clock::now().time_since_epoch()).count();
-						printf("set to %f\n", start_req[i]);
 					}
 				}
 				//if (seen[i] == num_client_kernels[i]-1)
@@ -353,6 +353,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					streams[i] = -1;
 					fidx[i] = 0;
 					pthread_mutex_unlock(client_mutexes[i]);
+					request_status[i][num_client_cur_iters[i]] = true;
 					num_client_cur_iters[i] += 1;
 					locked[i] = false;
 
@@ -386,7 +387,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 		float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - start_total).count();
 		duration /= 1000.0;
 		printf("Total loop took %f sec\n", duration);
-		process_eval(client_durations);
+		//process_eval(client_durations);
 	}
 
 	// printf("All clients finished!\n");
@@ -525,8 +526,14 @@ extern "C" {
 		client_starts = (std::chrono::time_point<std::chrono::high_resolution_clock>*)calloc(num_clients, sizeof(std::chrono::time_point<std::chrono::high_resolution_clock>));
 		total_client_starts = (std::chrono::time_point<std::chrono::high_resolution_clock>*)calloc(num_clients, sizeof(std::chrono::time_point<std::chrono::high_resolution_clock>));
 		client_starts_set = (bool**)malloc(num_clients*sizeof(bool*));
-		for (int i=0; i<num_clients; i++)
+		for (int i=0; i<num_clients; i++) {
 			client_starts_set[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
+		}
+
+		request_status = (bool**)dlsym(klib, "client_request_status");
+		for (int i=0; i<num_clients; i++)
+			request_status[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
+
 	}
 
 	void* sched_setup(Scheduler* scheduler, int num_clients, bool profile_mode, bool reef) {
@@ -551,11 +558,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, double* start_req) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, start_req);
+			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");

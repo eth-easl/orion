@@ -53,6 +53,8 @@ def seed_everything(seed: int):
 
 def launch_jobs(config_dict_list, profile, num_iters, run_eval):
 
+    seed_everything(42)
+
     print(config_dict_list)
     num_clients = len(config_dict_list)
     print(num_clients)
@@ -83,13 +85,10 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
     additional_num_kernels = [config_dict['additional_num_kernels'] if 'additional_num_kernels' in config_dict else None  for config_dict in config_dict_list]
     tids = []
     threads = []
-    start_times_list = []
     for i, config_dict in enumerate(config_dict_list):
         func = function_dict[config_dict['arch']]
         model_args = config_dict['args']
-        l = []
-        start_times_list.append(l)
-        model_args.update({"num_iters":num_iters[i], "start_times": l, "local_rank": 0, "barriers": barriers, "client_barrier": client_barrier, "tid": i})
+        model_args.update({"num_iters":num_iters[i], "local_rank": 0, "barriers": barriers, "client_barrier": client_barrier, "tid": i})
 
         thread = threading.Thread(target=func, kwargs=model_args)
         thread.start()
@@ -111,7 +110,7 @@ def launch_jobs(config_dict_list, profile, num_iters, run_eval):
             num_iters,
             profile,
             run_eval,
-            True
+            False
         )
     )
 

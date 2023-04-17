@@ -65,6 +65,7 @@ int func_indexes[2] = {0, 0};
 
 cudaStream_t client_streams[2];
 bool streams_set[2] = {false, false};
+bool* client_request_status[2] = {NULL, NULL};
 
 
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
@@ -168,6 +169,16 @@ void print_kernel_invocation(int i, dim3 gridDim, dim3 blockDim) {
 	}
 DEBUG_PRINT("\n");
 }
+
+extern "C" {
+	void block(int it) {
+		int idx = get_idx();
+		assert (idx >= 0);
+		volatile bool* status_ar = client_request_status[idx];
+		while (!status_ar[it]);
+	}
+}
+
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
