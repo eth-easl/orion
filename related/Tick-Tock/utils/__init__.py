@@ -23,13 +23,12 @@ class DummyDataLoader:
         return itertools.repeat(self.batch)
 
 
-def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info: BasicSyncInfo):
+def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_config, stream, sync_info: BasicSyncInfo):
     """
     Invoke the func {num_requests} times with first {num_warm_up_reqs} iterations as warm up.
     Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
     and finally write all data via {sync_info}. 
     """
-    request_rate = shared_config['request_rate']
     if request_rate > 0:
         scale = 1 / request_rate
         intervals = random.exponential(scale=scale, size=(num_requests,))
@@ -94,14 +93,13 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
     sync_info.write_kvs(data_to_record)
 
 
-def non_stop_measure(func, num_warm_up_reqs, tid, shared_config, stream, sync_info: BasicSyncInfo):
+def non_stop_measure(func, num_warm_up_reqs, request_rate, tid, shared_config, stream, sync_info: BasicSyncInfo):
     """
     Invoke the func continuously with first {num_warm_up_reqs} iterations as warm up until {sync_info} instructs
     it to stop.
     Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
     and finally write all data via {sync_info}.
     """
-    request_rate = shared_config['request_rate']
 
 
     percentile_positions = shared_config['percentile_positions']

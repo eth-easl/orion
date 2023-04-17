@@ -17,8 +17,7 @@ shared_config:
   wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
   use_dummy_data: true
   use_non_stop_measure: false
-  closed_inference_loop: true
-  request_rate: 4 # measured in 1/seconds. If 0 it means no sleep
+  closed_inference_loop: false
   seed: 42
   percentile_positions:
     - 50
@@ -36,6 +35,7 @@ resnet50:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
+  request_rate: 30 # measured in 1/seconds. If 0 it means no sleep
 resnet101:
   arch: resnet101
   optimizer: SGD
@@ -45,6 +45,7 @@ resnet101:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
+  request_rate: 18 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2:
   arch: mobilenet_v2
   optimizer: SGD
@@ -54,6 +55,7 @@ mobilenet_v2:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 bert:
   use_fp16: false # true or false; please stick to false or revise code otherwise
   fp16_loss_scale: 0 # only used if use_fp16 is set to True
@@ -67,6 +69,7 @@ bert:
   base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
   num_requests: 500
   num_warm_up_reqs: 10
+  request_rate: 4 # measured in 1/seconds. If 0 it means no sleep
 transformer:
   arch: base # either base or large
   use_fp16: false
@@ -77,6 +80,7 @@ transformer:
   warm_up_iters: 10
   num_requests: 500
   num_warm_up_reqs: 10
+  request_rate: 11 # measured in 1/seconds. If 0 it means no sleep
 
 
 

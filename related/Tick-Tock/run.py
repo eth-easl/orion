@@ -101,40 +101,58 @@ def generate_configs(default_config, **kwargs):
         yield default_config, unique_name
 
 
-def run(config, combination_name):
+def run(config, combination_name, times=1):
 
     config_file_name = f'gen_conf_{combination_name}.yaml'
-    log_file = f'log_{combination_name}.log'
+    model0 = config['model0']['name']
+    model1 = config['model1']['name']
+
     logging.info(f'dump config to {config_file_name}')
     with open(f'./{config_file_name}', 'w') as file:
         yaml.dump(config, file)
     # run python main.py
-    logging.info('training with this config...')
-    os.system(f"python main.py --log ./{log_file} --config ./{config_file_name}")
-    logging.info('training finished.')
+    logging.info(f'training with this config {times} times')
 
-    # report some statistics
-    json_file =f'{log_file}.json'
-    try:
-        with open(f'./{json_file}', 'r') as file:
-            dict_data = json.load(file)
+    train_durations = []
+    eval_durations = []
+    p50_latencies = []
+    p95_latencies = []
+    iterations = []
 
-        model0 = config['model0']['name']
-        model1 = config['model1']['name']
-        round_func = lambda val: round(val, 2)
-        train_duration = dict_data['duration0']
-        eval_duration = dict_data['duration1']
-
-        logging.info(f"results for {model0} and {model1}")
-        logging.info(f"duration for training: {round_func(train_duration)}")
-        logging.info(f"inference iterations: {dict_data['iterations1']}")
-
-        logging.info(f"p50 for evaluation: {round_func(dict_data['p50-1'])}")
-        logging.info(f"p95 for evaluation: {round_func(dict_data['p95-1'])}")
-    except:
-        logging.info("the json data file cannot be opened")
+    for i in range(times):
+        log_file = f'log_{i}_{combination_name}.log'
+        os.system(f"python main.py --log ./{log_file} --config ./{config_file_name}")
+        # report some statistics
+        json_file =f'{log_file}.json'
+        try:
+            with open(f'./{json_file}', 'r') as file:
+                dict_data = json.load(file)
 
 
+            train_duration = dict_data['duration0']
+            eval_duration = dict_data['duration1']
+
+            train_durations.append(train_duration)
+            eval_durations.append(eval_duration)
+            p50_latencies.append(dict_data['p50-1'])
+            p95_latencies.append(dict_data['p95-1'])
+            iterations.append(dict_data['iterations1'])
+
+        except:
+            logging.info("the json data file cannot be opened")
+
+
+    logging.info(f'{model0} with {model1}')
+    if times > 1:
+        logging.info(f'iterations mean {round(stats.mean(iterations), 0)}; std {stats.stdev(iterations)}')
+        logging.info(f'p50 mean {round(stats.mean(p50_latencies), 2)}; std {stats.stdev(p50_latencies)}')
+        logging.info(f'p95 mean {round(stats.mean(p95_latencies), 2)}; std {stats.stdev(p95_latencies)}')
+        logging.info(f'training duration mean {round(stats.mean(train_durations), 2)}; std {stats.stdev(train_durations)}')
+    else:
+        logging.info(f'iterations mean {round(stats.mean(iterations), 0)}; std {stats.stdev(iterations)}')
+        logging.info(f'p50 mean {round(stats.mean(p50_latencies), 2)}; std {stats.stdev(p50_latencies)}')
+        logging.info(f'p95 mean {round(stats.mean(p95_latencies), 2)}; std {stats.stdev(p95_latencies)}')
+        logging.info(f'training duration mean {round(stats.mean(train_durations), 2)}; std {stats.stdev(train_durations)}')
 
 
 if __name__ == "__main__":
@@ -184,7 +202,7 @@ if __name__ == "__main__":
 
     num_combinations = len(model_pair_to_num_iters_train_inf.keys())
     combinations = list(model_pair_to_num_iters_train_inf.keys())[num_combinations//2: ]
-
+    times = 1
     # ----configuration region ended----
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
@@ -197,7 +215,6 @@ if __name__ == "__main__":
         default_full_config['model1']['name'] = model1 if model0 != model1 else model1 + '-1'
         default_full_config['model1']['mode'] = model1_mode
         # model0 is trained, model1 is evaluated
-        default_full_config['shared_config']['request_rate'] = request_rates[model1]
 
         if model0 != model1:
             if model0 == 'bert':
@@ -209,6 +226,7 @@ if __name__ == "__main__":
 
             default_full_config['policy'] = policy
             num_iters, num_reqs = model_pair_to_num_iters_train_inf[(model0, model1)]
+            default_full_config[model1]['request_rate'] = request_rates[model1]
             # num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
             default_full_config[model0]['num_iterations'] = num_iters
             default_full_config[model1]['num_requests'] = num_reqs
@@ -217,7 +235,7 @@ if __name__ == "__main__":
             default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
-            run(default_full_config, combination_name)
+            run(default_full_config, combination_name, times=times)
         else:
             model1_with_suffix = model1 + '-1'
             if model0 == 'bert':
@@ -228,6 +246,7 @@ if __name__ == "__main__":
                 default_full_config[model1_with_suffix]['arch'] = 'large'
 
             default_full_config['policy'] = policy
+            default_full_config[model1_with_suffix]['request_rate'] = request_rates[model1]
             num_iters, num_reqs = model_pair_to_num_iters_train_inf[(model0, model1)]
             # num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
             default_full_config[model0]['num_iterations'] = num_iters
