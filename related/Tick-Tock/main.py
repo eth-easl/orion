@@ -121,6 +121,12 @@ if __name__ == "__main__":
         )
     elif policy == 'temporal':
         sync_info = BasicSyncInfo(data_manager, no_sync_control=True)
+    elif policy == 'time-slice':
+        sync_info = MPSSyncInfo(
+            data_manager=data_manager,
+            isolation_level='thread'
+        )
+        shared_config['stream'] = torch.cuda.Stream(device=torch.device("cuda:0"))
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
@@ -171,6 +177,15 @@ if __name__ == "__main__":
     elif policy == "temporal":
         model0_wrapper(**model0_kwargs)
         model1_wrapper(**model1_kwargs)
+    elif policy == 'time-slice':
+        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
+        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
+        thread0.start()
+        thread1.start()
+
+        thread0.join()
+        thread1.join()
+        shared_config['stream'] = None
     else:
         raise NotImplementedError(f'unsupported policy {policy}')
 

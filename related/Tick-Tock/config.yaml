@@ -1,5 +1,5 @@
 ---
-policy: MPS-thread # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
+policy: MPS-thread # "temporal", "tick-tock", "MPS-process", "MPS-thread", or "time-slice"
 model0:
   mode: train # train or eval
   name: mobilenet_v2 # these two names should strictly correspond to the model names below

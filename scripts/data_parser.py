@@ -49,6 +49,6 @@ num_reqs_df = pd.DataFrame(data=num_reqs_df_raw, columns=models_better_names, in
 
 
 # %%
+num_reqs_df.to_json('num_reqs.json', indent=4, orient='index')
 
-
-num_reqs_df.to_clipboard()
+# num_reqs_df.to_clipboard()

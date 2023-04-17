@@ -165,7 +165,11 @@ def setup(model_config, shared_config, device):
 def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    stream = torch.cuda.Stream(device=device)
+    if 'stream' not in shared_config:
+        stream = torch.cuda.Stream(device=device)
+    else:
+        stream = shared_config['stream']
+
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
 
@@ -191,7 +195,12 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
 def train_wrapper(sync_info, tid: int, model_config, shared_config):
     utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+
+    if 'stream' not in shared_config:
+        my_stream = torch.cuda.Stream(device=device)
+    else:
+        my_stream = shared_config['stream']
+
     model, data_loader, optimizer = setup(model_config, shared_config, device)
 
     model.train()
