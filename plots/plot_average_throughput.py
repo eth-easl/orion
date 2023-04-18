@@ -40,7 +40,7 @@ def process_num_reqs(csv_file):
             cell = df.at[model_row, model_col]
             num_reqs0 = int(cell.split('/')[0])
             num_reqs1 = int(cell.split('/')[1])
-            df.at[model_row, model_col] = num_reqs0 * batch_sizes[model_row] + num_reqs1 * batch_sizes[model_col]
+            df.at[model_row, model_col] = num_reqs0 + num_reqs1 - 20 # warm up
     return df
 
 # %%
@@ -102,7 +102,7 @@ ax.set_xticks(
     ticks=x_tick_positions,
     labels=models, fontsize=15
 )
-ax.set_ylabel('Average throughput (batch/sec)', fontsize=label_font_size)
+ax.set_ylabel('Average throughput (requests/sec)', fontsize=label_font_size)
 ax.set_xlabel('High-priority inference job', fontsize=label_font_size)
 
 plt.tight_layout()
