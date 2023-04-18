@@ -98,11 +98,11 @@ if __name__ == "__main__":
             logging.FileHandler(args.log, mode='a'),
         ]
     )
-    logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
 
     logging.info(f'{model0_mode} {model0_name} and {model1_mode} {model1_name} using {policy}')
     shared_config = config['shared_config']
 
+    logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
     data_manager = DataManager(f'{args.log}.json')
 
     if policy == 'MPS-process':
@@ -121,9 +121,23 @@ if __name__ == "__main__":
         )
     elif policy == 'temporal':
         sync_info = BasicSyncInfo(data_manager, no_sync_control=True)
+    elif policy == 'time-slice':
+        sync_info = MPSSyncInfo(
+            data_manager=data_manager,
+            isolation_level='thread'
+        )
+        shared_config['stream'] = torch.cuda.Stream(device=torch.device("cuda:0"))
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
+    if policy in ['MPS-process', 'MPS-thread', 'time-slice'] and model0_mode == 'eval' and model1_mode == 'eval':
+        if shared_config['distribution'] == 'uniform':
+            sync_info.offset = 1
+
+    if model0_name[-2:] == '-1':
+        model0_name = model0_name[:-2]
+    if model1_name[-2:] == '-1':
+        model1_name = model1_name[:-2]
     model0_wrapper = model_to_wrapper[model0_name][model0_mode]
     model1_wrapper = model_to_wrapper[model1_name][model1_mode]
 
@@ -167,10 +181,17 @@ if __name__ == "__main__":
     elif policy == "temporal":
         model0_wrapper(**model0_kwargs)
         model1_wrapper(**model1_kwargs)
+    elif policy == 'time-slice':
+        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
+        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
+        thread0.start()
+        thread1.start()
+
+        thread0.join()
+        thread1.join()
+        shared_config['stream'] = None
     else:
         raise NotImplementedError(f'unsupported policy {policy}')
-    # if shared_config['use_dummy_data'].enable_profiling:
-    #     torch.cuda.cudart().cudaProfilerStop()
 
     # post-processing: sum two durations
     if policy == 'temporal':

@@ -52,19 +52,34 @@ def setup_model(model_config):
     #     'bert_config.json'
     # )
     # config = modeling.BertConfig.from_json_file(config_file)
-    config_dict ={
-      "attention_probs_dropout_prob": 0.1,
-      "hidden_act": "gelu",
-      "hidden_dropout_prob": 0.1,
-      "hidden_size": 768,
-      "initializer_range": 0.02,
-      "intermediate_size": 3072,
-      "max_position_embeddings": 512,
-      "num_attention_heads": 12,
-      "num_hidden_layers": 12,
-      "type_vocab_size": 2,
-      "vocab_size": 30522
-    }
+    if arch == 'base':
+        config_dict ={
+          "attention_probs_dropout_prob": 0.1,
+          "hidden_act": "gelu",
+          "hidden_dropout_prob": 0.1,
+          "hidden_size": 768,
+          "initializer_range": 0.02,
+          "intermediate_size": 3072,
+          "max_position_embeddings": 512,
+          "num_attention_heads": 12,
+          "num_hidden_layers": 12,
+          "type_vocab_size": 2,
+          "vocab_size": 30522
+        }
+    else:
+        config_dict = {
+            "attention_probs_dropout_prob": 0.1,
+            "hidden_act": "gelu",
+            "hidden_dropout_prob": 0.1,
+            "hidden_size": 1024,
+            "initializer_range": 0.02,
+            "intermediate_size": 4096,
+            "max_position_embeddings": 512,
+            "num_attention_heads": 16,
+            "num_hidden_layers": 24,
+            "type_vocab_size": 2,
+            "vocab_size": 30522
+        }
 
     config = modeling.BertConfig.from_dict(config_dict)
 
@@ -163,8 +178,13 @@ def setup(model_config, shared_config, device):
 
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+    if 'stream' not in shared_config:
+        stream = torch.cuda.Stream(device=device)
+    else:
+        stream = shared_config['stream']
+
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
     num_requests = model_config['num_requests']
@@ -180,12 +200,21 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         segment_ids = segment_ids.to(device)
         model(input_ids, segment_ids, input_mask)
 
-    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+    if shared_config['use_non_stop_measure']:
+        utils.non_stop_measure(eval, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
+    else:
+        utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+
+    if 'stream' not in shared_config:
+        my_stream = torch.cuda.Stream(device=device)
+    else:
+        my_stream = shared_config['stream']
+
     model, dataloader, optimizer = setup(model_config, shared_config, device)
     model.train()
 

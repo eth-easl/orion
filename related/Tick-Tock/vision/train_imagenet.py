@@ -11,8 +11,12 @@ from utils.sync_control import *
 
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    stream = torch.cuda.Stream(device=device)
+    if 'stream' not in shared_config:
+        stream = torch.cuda.Stream(device=device)
+    else:
+        stream = shared_config['stream']
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.eval()
 
@@ -27,11 +31,20 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         data = data.to(device)
         model(data)
 
-    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info)
+    if shared_config['use_non_stop_measure']:
+        utils.non_stop_measure(eval, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
+    else:
+        utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+
+    if 'stream' not in shared_config:
+        my_stream = torch.cuda.Stream(device=device)
+    else:
+        my_stream = shared_config['stream']
+
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.train()
     num_iterations = model_config['num_iterations']
