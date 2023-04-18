@@ -130,6 +130,10 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
+    if policy in ['MPS-process', 'MPS-thread'] and model0_mode == 'eval' and model1_mode == 'eval':
+        if shared_config['distribution'] == 'uniform':
+            sync_info.offset = 1
+
     if model0_name[-2:] == '-1':
         model0_name = model0_name[:-2]
     if model1_name[-2:] == '-1':

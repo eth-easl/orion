@@ -26,7 +26,7 @@ num_reqs_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-for model0 in models[:2]:
+for model0 in models:
     for model1 in models:
         filename = file_name_template.substitute(
             model0=model0,
@@ -39,7 +39,7 @@ for model0 in models[:2]:
 
 
 
-        num_reqs = round(data['p95-1'], 2)
+        num_reqs = round(data['duration0'] - data['duration1'], 2)
         num_reqs_df_raw[model2id[model0]][model2id[model1]] = num_reqs
 
 num_reqs_df = pd.DataFrame(data=num_reqs_df_raw, columns=models_better_names, index=models_better_names)

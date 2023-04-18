@@ -1,11 +1,11 @@
 ---
-policy: MPS-thread # "temporal", "tick-tock", "MPS-process", "MPS-thread", or "time-slice"
+policy: temporal # "temporal", "tick-tock", "MPS-process", "MPS-thread", or "time-slice"
 model0:
-  mode: train # train or eval
-  name: mobilenet_v2 # these two names should strictly correspond to the model names below
+  mode: eval # train or eval
+  name: resnet50 # these two names should strictly correspond to the model names below
 model1:
   mode: eval # train or eval
-  name: bert
+  name: mobilenet_v2
 num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
 shared_config:
   imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -19,6 +19,7 @@ shared_config:
   use_non_stop_measure: false
   closed_inference_loop: false
   seed: 42
+  distribution: uniform # poisson or uniform
   percentile_positions:
     - 50
     - 90

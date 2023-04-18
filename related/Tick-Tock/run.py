@@ -134,7 +134,7 @@ if __name__ == "__main__":
     model0_mode = 'train'
     model1_mode = 'eval'
 
-    policy = 'time-slice'
+    policy = 'MPS-process'
     use_dummy_data = True
     use_non_stop_measure = False
     closed_inference_loop = False
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     }
 
     combinations = list(model_pair_to_num_iters_train_inf.keys())
-    times = 3
+    times = 1
     # ----configuration region ended----
 
     with open('./num_reqs.json', 'r') as f:

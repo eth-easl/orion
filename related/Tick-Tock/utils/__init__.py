@@ -31,7 +31,13 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     """
     if request_rate > 0:
         scale = 1 / request_rate
-        intervals = random.exponential(scale=scale, size=(num_requests,))
+        if shared_config['distribution'] == 'poisson':
+            intervals = random.exponential(scale=scale, size=(num_requests,))
+        elif shared_config['distribution'] == 'uniform':
+            intervals = [scale for _ in range(num_requests)]
+        else:
+            raise NotImplementedError('unsupported distribution')
+
     else:
         intervals = [0]*num_requests
 
@@ -107,7 +113,8 @@ def non_stop_measure(func, num_warm_up_reqs, request_rate, tid, shared_config, s
 
     percentile_positions = shared_config['percentile_positions']
     latency_history = []
-
+    scale = 1 / request_rate
+    distribution = shared_config['distribution']
     iteration = -1
     with torch.no_grad():
         if shared_config['closed_inference_loop']:
@@ -144,7 +151,14 @@ def non_stop_measure(func, num_warm_up_reqs, request_rate, tid, shared_config, s
                         func()
                     stream.synchronize()
                     latency_history.append(1000 * (time.time() - next_startup))
-                    next_startup += random.exponential(scale=1/request_rate)
+
+                    if distribution == 'poisson':
+                        next_startup += random.exponential(scale=scale)
+                    elif distribution == 'uniform':
+                        next_startup += scale
+                    else:
+                        raise NotImplementedError(f'unsupported distribution {distribution}')
+
                     duration = next_startup - time.time()
                     if duration > 0:
                         time.sleep(duration)
