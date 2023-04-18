@@ -90,6 +90,28 @@ model_pair_to_num_requests_infer_infer = {
 }
 
 
+model_pair_to_num_requests_infer_infer_uniform_high = {
+    ('resnet50', 'resnet50'): (1000, 1000),
+    ('resnet50', 'mobilenet_v2'): (1000, 1250),
+    ('resnet50', 'resnet101'): (1000, 500),
+    ('resnet50', 'bert'): (1000, 100),
+    ('resnet50', 'transformer'): (1000, 250),
+
+    ('mobilenet_v2', 'mobilenet_v2'): (1000, 1000),
+    ('mobilenet_v2', 'resnet101'): (1000, 400),
+    ('mobilenet_v2', 'bert'): (1000, 125),
+    ('mobilenet_v2', 'transformer'): (1000, 200),
+
+    ('resnet101', 'resnet101'): (1000, 1000),
+    ('resnet101', 'bert'): (1000, 200),
+    ('resnet101', 'transformer'): (1000, 500),
+
+    ('bert', 'bert'): (500, 500),
+    ('bert', 'transformer'): (400, 1000),
+
+    ('transformer', 'transformer'): (500, 500)
+}
+
 def generate_configs(default_config, **kwargs):
     for values in itertools.product(*kwargs.values()):
         for kw_id, kw in enumerate(kwargs.keys()):
@@ -131,19 +153,20 @@ if __name__ == "__main__":
         default_full_config = yaml.load(file, Loader=yaml.FullLoader)
 
     # ----configuration region started----
-    model0_mode = 'train'
+    model0_mode = 'eval'
     model1_mode = 'eval'
 
-    policy = 'MPS-process'
+    policy = 'time-slice'
     use_dummy_data = True
     use_non_stop_measure = False
     closed_inference_loop = False
+    distribution = 'uniform'
     request_rates = {
-        'resnet50': 30,
-        'mobilenet_v2': 40,
-        'resnet101': 18,
-        'bert': 4,
-        'transformer': 11
+        'resnet50': 80,
+        'mobilenet_v2': 100,
+        'resnet101': 40,
+        'bert': 8,
+        'transformer': 20
     }
 
     train_batch_sizes = {
@@ -162,7 +185,7 @@ if __name__ == "__main__":
         'transformer': 4
     }
 
-    combinations = list(model_pair_to_num_iters_train_inf.keys())
+    combinations = list(model_pair_to_num_requests_infer_infer_uniform_high.keys())
     times = 1
     # ----configuration region ended----
 
@@ -173,6 +196,7 @@ if __name__ == "__main__":
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
     default_full_config['shared_config']['use_non_stop_measure'] = use_non_stop_measure
     default_full_config['shared_config']['closed_inference_loop'] = closed_inference_loop
+    default_full_config['shared_config']['distribution'] = distribution
 
     for model0, model1 in combinations:
         default_full_config['model0']['name'] = model0
@@ -184,19 +208,20 @@ if __name__ == "__main__":
         if model0 != model1:
             if model0 == 'bert':
                 # for training use bert-base
-                default_full_config[model0]['arch'] = 'base'
+                default_full_config[model0]['arch'] = 'large'
             if model1 == 'bert':
                 # for evaluation use bert-large
                 default_full_config[model1]['arch'] = 'large'
 
             default_full_config['policy'] = policy
-            num_iters, num_reqs = model_pair_to_num_iters_train_inf[(model0, model1)]
+            num_reqs0, num_reqs1 = model_pair_to_num_requests_infer_infer_uniform_high[(model0, model1)]
+            default_full_config[model0]['request_rate'] = request_rates[model0]
             default_full_config[model1]['request_rate'] = request_rates[model1]
-            # num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
-            default_full_config[model0]['num_iterations'] = num_iters
-            default_full_config[model1]['num_requests'] = models2num_reqs[model0][model1]
 
-            default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
+            default_full_config[model0]['num_requests'] = num_reqs0
+            default_full_config[model1]['num_requests'] = num_reqs1
+
+            default_full_config[model0]['batch_size'] = eval_batch_sizes[model0]
             default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
@@ -205,20 +230,23 @@ if __name__ == "__main__":
             model1_with_suffix = model1 + '-1'
             if model0 == 'bert':
                 # for training use bert-base
-                default_full_config[model0]['arch'] = 'base'
+                default_full_config[model0]['arch'] = 'large'
             if model1 == 'bert':
                 # for evaluation use bert-large
                 default_full_config[model1_with_suffix]['arch'] = 'large'
 
             default_full_config['policy'] = policy
-            default_full_config[model1_with_suffix]['request_rate'] = request_rates[model1]
-            num_iters, num_reqs = model_pair_to_num_iters_train_inf[(model0, model1)]
-            # num_iters0, num_iters1 = model_pair_to_num_iters_train_train[(model0, model1)]
-            default_full_config[model0]['num_iterations'] = num_iters
-            default_full_config[model1_with_suffix]['num_requests'] = models2num_reqs[model0][model1]
+            num_reqs0, num_reqs1 = model_pair_to_num_requests_infer_infer_uniform_high[(model0, model1)]
 
-            default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
+            default_full_config[model0]['request_rate'] = request_rates[model0]
+            default_full_config[model1_with_suffix]['request_rate'] = request_rates[model1]
+
+            default_full_config[model0]['num_requests'] = num_reqs0
+            default_full_config[model1_with_suffix]['num_requests'] = num_reqs1
+
+            default_full_config[model0]['batch_size'] = eval_batch_sizes[model0]
             default_full_config[model1_with_suffix]['batch_size'] = eval_batch_sizes[model1]
+
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
             run(default_full_config, combination_name, times=times)

@@ -22,30 +22,58 @@ file_name_template = Template('log_0_train-${model0}-eval-${model1}-MPS-process-
 
 num_models = len(models)
 
-num_reqs_df_raw = [
+table_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-for model0 in models:
-    for model1 in models:
-        filename = file_name_template.substitute(
-            model0=model0,
-            model1=model1,
-        )
-        file_fullname = os.path.join(directory, filename)
-        with open(file_fullname, 'r') as f:
-            data = json.load(f)
+for model0_id in range(5):
+    for model1_id in range(5):
+        if model1_id >= model0_id:
+            model0 = models[model0_id]
+            model1 = models[model1_id]
+            filename = file_name_template.substitute(
+                model0=model0,
+                model1=model1,
+            )
+            file_fullname = os.path.join(directory, filename)
+
+            try :
+                with open(file_fullname, 'r') as f:
+                    data = json.load(f)
+            except:
+                print(f'{model0} with {model1} cannot be found')
+                continue
+
+            # cell = f"{round(data['p95-0'], 2)}/{round(data['p95-1'], 2)}"
+            # cell = f"{round(data['p50-0'], 2)}/{round(data['p50-1'], 2)}"
+            cell = round(data['duration'], 2)
+
+        else:
+            model0 = models[model1_id]
+            model1 = models[model0_id]
+            filename = file_name_template.substitute(
+                model0=model0,
+                model1=model1,
+            )
+            file_fullname = os.path.join(directory, filename)
+
+            try:
+                with open(file_fullname, 'r') as f:
+                    data = json.load(f)
+            except:
+                print(f'{model0} with {model1} cannot be found')
+                continue
+
+            # cell = f"{round(data['p50-1'], 2)}/{round(data['p50-0'], 2)}"
+            # cell = f"{round(data['p95-1'], 2)}/{round(data['p95-0'], 2)}"
+            cell = round(data['duration'], 2)
+        table_df_raw[model0_id][model1_id] = cell
 
 
-
-
-        num_reqs = round(data['duration0'] - data['duration1'], 2)
-        num_reqs_df_raw[model2id[model0]][model2id[model1]] = num_reqs
-
-num_reqs_df = pd.DataFrame(data=num_reqs_df_raw, columns=models_better_names, index=models_better_names)
+table_df = pd.DataFrame(data=table_df_raw, columns=models_better_names, index=models_better_names)
 
 
 # %%
 # num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
 
-num_reqs_df.to_clipboard()
+table_df.to_clipboard()

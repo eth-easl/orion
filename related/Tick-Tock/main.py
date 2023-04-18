@@ -130,7 +130,7 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
-    if policy in ['MPS-process', 'MPS-thread'] and model0_mode == 'eval' and model1_mode == 'eval':
+    if policy in ['MPS-process', 'MPS-thread', 'time-slice'] and model0_mode == 'eval' and model1_mode == 'eval':
         if shared_config['distribution'] == 'uniform':
             sync_info.offset = 1
 
