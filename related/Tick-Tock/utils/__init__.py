@@ -72,6 +72,9 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
                     stream.synchronize()
                     latency_history.append(1000 * (time.time() - next_startup))
                     next_startup += intervals[iteration]
+                    duration = next_startup - time.time()
+                    if duration > 0:
+                        time.sleep(duration)
                     iteration += 1
 
     inference_duration = time.time() - entire_inference_start_time
@@ -142,6 +145,9 @@ def non_stop_measure(func, num_warm_up_reqs, request_rate, tid, shared_config, s
                     stream.synchronize()
                     latency_history.append(1000 * (time.time() - next_startup))
                     next_startup += random.exponential(scale=1/request_rate)
+                    duration = next_startup - time.time()
+                    if duration > 0:
+                        time.sleep(duration)
 
 
 

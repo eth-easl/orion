@@ -17,8 +17,8 @@ model2id = {
 }
 
 
-directory = '/Users/sherlock/programs/gpu_share_data/inf-train-open-streams'
-file_name_template = Template('log_${times}_train-${model0}-eval-${model1}-MPS-thread-dummy-True.log.json')
+directory = '/Users/sherlock/programs/gpu_share_data/inf-train-open-MPS'
+file_name_template = Template('log_0_train-${model0}-eval-${model1}-MPS-process-dummy-True.log.json')
 
 num_models = len(models)
 
@@ -26,29 +26,26 @@ num_reqs_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-for model0 in models:
+for model0 in models[:2]:
     for model1 in models:
-        iterations = []
-        for times in range(3):
-            filename = file_name_template.substitute(
-                model0=model0,
-                model1=model1,
-                times=times
-            )
-            file_fullname = os.path.join(directory, filename)
-            with open(file_fullname, 'r') as f:
-                data = json.load(f)
+        filename = file_name_template.substitute(
+            model0=model0,
+            model1=model1,
+        )
+        file_fullname = os.path.join(directory, filename)
+        with open(file_fullname, 'r') as f:
+            data = json.load(f)
 
 
-            iterations.append(data['duration0'])
 
-        num_reqs = round(stats.mean(iterations), 2)
+
+        num_reqs = round(data['p95-1'], 2)
         num_reqs_df_raw[model2id[model0]][model2id[model1]] = num_reqs
 
 num_reqs_df = pd.DataFrame(data=num_reqs_df_raw, columns=models_better_names, index=models_better_names)
 
 
 # %%
-num_reqs_df.to_json('num_reqs.json', indent=4, orient='index')
+# num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
 
-# num_reqs_df.to_clipboard()
+num_reqs_df.to_clipboard()
