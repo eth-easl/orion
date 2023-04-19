@@ -64,7 +64,8 @@ method2file = {
     'Sequential': 'Sequential_time.csv',
     'Streams': 'Streams_time.csv',
     'MPS': 'MPS_time.csv',
-    'REEF': 'REEF_time.csv'
+    'REEF': 'REEF_time.csv',
+    'Orion': 'orion_time.csv'
 }
 
 label_font_size = 20

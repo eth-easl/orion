@@ -30,7 +30,8 @@ method2file = {
     'Sequential': 'sequential_p95.csv',
     'Streams': 'streams_p95.csv',
     'MPS': 'MPS_p95.csv',
-    'REEF': 'reef_p95.csv'
+    'REEF': 'reef_p95.csv',
+    'Orion': 'orion_latency.csv'
 }
 
 label_font_size = 20
