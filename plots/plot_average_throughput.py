@@ -30,7 +30,11 @@ batch_sizes = {
 # %%
 
 def process_num_reqs(csv_file):
-    '''Return entire number of batches.'''
+    '''
+    Return entire number of batches.
+    Assume originally each cell is val1/val2, this function returns a Dataframe whose cell is val1 + val2,
+    because we care about the total throughput.
+    '''
     df = pd.read_csv(csv_file)
     df = df.drop(df.columns[0], axis=1)
     df.index = models
@@ -60,12 +64,13 @@ def average_throughput(csv_file, workload_df):
 workload_df = process_num_reqs('num_reqs.csv')
 
 # %%
+# these are the data for "Time fo all requests"
 method2file = {
     'Sequential': 'Sequential_time.csv',
     'Streams': 'Streams_time.csv',
     'MPS': 'MPS_time.csv',
     'REEF': 'REEF_time.csv',
-    'Orion': 'orion_time.csv'
+    'Orion': 'Orion_time.csv'
 }
 
 label_font_size = 20
@@ -79,9 +84,11 @@ for method, file in method2file.items():
 
 # %%
 # methods.append('Ideal')
-single_total_time = [12.38, 9.9, 24.75, 123.75, 49.5]
+# sending {num_reqs_alone} requests, how long is the entire duration, for each model.
+single_total_time = [19.25, 14.8, 38.49, 192.45, 80.19]
+num_reqs_alone = 1000
 single_throughput = pd.Series(single_total_time, index=models)
-single_throughput = (1000 - 10) / single_throughput
+single_throughput = (num_reqs_alone - 10) / single_throughput # 10 is warm-up
 
 
 ideal_throughput = [(single_throughput + single_throughput[model]).mean() for model in models]

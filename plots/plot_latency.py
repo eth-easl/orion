@@ -13,6 +13,7 @@ model2id = {
 
 # %%
 
+# assume each cell is val1/val2, this function only extracts val2 and compute the mean across the column
 def average_latency(csv_file):
     df = pd.read_csv(csv_file)
     df = df.drop(df.columns[0], axis=1)
@@ -26,6 +27,8 @@ def average_latency(csv_file):
 
 
 # %%
+#: how to get these files:
+# Copy and paste the corresponding table to a separate sheet, and download the sheet as a csv file.
 method2file = {
     'Sequential': 'Sequential_p95.csv',
     'Streams': 'Streams_p95.csv',
@@ -43,7 +46,8 @@ for method, file in method2file.items():
     method2data[method] = average_latency(file)
 
 methods.append('Ideal')
-method2data['Ideal'] = pd.Series([16.23, 14.06, 26.52,98.31, 35.71], index=models)
+# these are the ideal p95 latency: the latency where the job is running alone
+method2data['Ideal'] = pd.Series([15.5, 12.1, 23.1, 101.2, 30.1], index=models)
 width = 0.15
 fig, ax = plt.subplots(figsize=(14, 8))
 x = np.arange(len(models))

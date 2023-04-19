@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 
-models = ['resnet50', 'mobilenet_v2', 'resNet101', 'bert', 'transformer']
-models_better_names = ['ResNet50', 'MobileNetV2', 'Resnet101', 'BERT', 'Transformer']
+models = ['resnet50', 'mobilenet_v2', 'resnet101', 'bert', 'transformer']
+models_better_names = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT', 'Transformer']
 
 model2id = {
     'resnet50': 0,
@@ -19,8 +19,8 @@ model2id = {
 }
 
 
-directory = '/Users/sherlock/programs/gpu_share_data/inf-inf-poisson/sequential'
-file_name_template = Template('log_0_eval-${model0}-eval-${model1}-time-slice-dummy-True.log.json')
+directory = '/Users/sherlock/programs/gpu_share_data/inf-train-uniform/sequential'
+file_name_template = Template('log_0_train-${model0}-eval-${model1}-time-slice-dummy-True.log.json')
 
 num_models = len(models)
 
@@ -30,46 +30,68 @@ table_df_raw = [
 
 for model0_id in range(5):
     for model1_id in range(5):
-        if model1_id >= model0_id:
-            model0 = models[model0_id]
-            model1 = models[model1_id]
-            filename = file_name_template.substitute(
-                model0=model0,
-                model1=model1,
-            )
-            file_fullname = os.path.join(directory, filename)
+        model0 = models[model0_id]
+        model1 = models[model1_id]
 
-            try :
-                with open(file_fullname, 'r') as f:
-                    data = json.load(f)
-            except:
-                print(f'{model0} with {model1} cannot be found')
-                continue
+        filename = file_name_template.substitute(
+            model0=model0,
+            model1=model1,
+        )
+        file_fullname = os.path.join(directory, filename)
 
-            # cell = f"{round(data['p95-0'], 2)}/{round(data['p95-1'], 2)}"
-            cell = f"{round(data['p50-0'], 2)}/{round(data['p50-1'], 2)}"
-            # cell = round(data['duration'], 2)
+        try:
+            with open(file_fullname, 'r') as f:
+                data = json.load(f)
+        except:
+            print(f'{model0} with {model1} cannot be found')
+            continue
 
-        else:
-            model0 = models[model1_id]
-            model1 = models[model0_id]
-            filename = file_name_template.substitute(
-                model0=model0,
-                model1=model1,
-            )
-            file_fullname = os.path.join(directory, filename)
-
-            try:
-                with open(file_fullname, 'r') as f:
-                    data = json.load(f)
-            except:
-                print(f'{model0} with {model1} cannot be found')
-                continue
-
-            cell = f"{round(data['p50-1'], 2)}/{round(data['p50-0'], 2)}"
-            # cell = f"{round(data['p95-1'], 2)}/{round(data['p95-0'], 2)}"
-            # cell = round(data['duration'], 2)
+        cell = round(data['duration'], 2)
         table_df_raw[model0_id][model1_id] = cell
+
+
+# for model0_id in range(5):
+#     for model1_id in range(5):
+#         if model1_id >= model0_id:
+#             model0 = models[model0_id]
+#             model1 = models[model1_id]
+#             filename = file_name_template.substitute(
+#                 model0=model0,
+#                 model1=model1,
+#             )
+#             file_fullname = os.path.join(directory, filename)
+#
+#             try :
+#                 with open(file_fullname, 'r') as f:
+#                     data = json.load(f)
+#             except:
+#                 print(f'{model0} with {model1} cannot be found')
+#                 continue
+#
+#             # cell = f"{round(data['p95-0'], 2)}/{round(data['p95-1'], 2)}"
+#             cell = f"{round(data['p50-0'], 2)}/{round(data['p50-1'], 2)}"
+#             # cell = round(data['duration'], 2)
+#
+#         else:
+#             model0 = models[model1_id]
+#             model1 = models[model0_id]
+#             filename = file_name_template.substitute(
+#                 model0=model0,
+#                 model1=model1,
+#             )
+#             file_fullname = os.path.join(directory, filename)
+#
+#             try:
+#                 with open(file_fullname, 'r') as f:
+#                     data = json.load(f)
+#             except:
+#                 print(f'{model0} with {model1} cannot be found')
+#                 continue
+#
+#             cell = f"{round(data['p50-1'], 2)}/{round(data['p50-0'], 2)}"
+#             # cell = f"{round(data['p95-1'], 2)}/{round(data['p95-0'], 2)}"
+#             # cell = round(data['duration'], 2)
+#         table_df_raw[model0_id][model1_id] = cell
 
 
 table_df = pd.DataFrame(data=table_df_raw, columns=models_better_names, index=models_better_names)
