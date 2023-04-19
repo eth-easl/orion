@@ -12,11 +12,11 @@ model2id = {
 }
 
 request_rates = {
-    'ResNet50': 80,
-    'MobilenetV2': 100,
-    'ResNet101': 40,
-    'BERT': 8,
-    'Transformer': 20
+    'ResNet50': 50,
+    'MobilenetV2': 65,
+    'ResNet101': 25,
+    'BERT': 5,
+    'Transformer': 12
 }
 
 batch_sizes = {
@@ -79,7 +79,8 @@ for method, file in method2file.items():
 
 # %%
 # methods.append('Ideal')
-single_throughput = pd.Series([12.38, 9.9, 24.75, 123.75, 49.5], index=models)
+single_total_time = [12.38, 9.9, 24.75, 123.75, 49.5]
+single_throughput = pd.Series(single_total_time, index=models)
 single_throughput = (1000 - 10) / single_throughput
 
 

@@ -27,11 +27,11 @@ def average_latency(csv_file):
 
 # %%
 method2file = {
-    'Sequential': 'sequential_p95.csv',
-    'Streams': 'streams_p95.csv',
+    'Sequential': 'Sequential_p95.csv',
+    'Streams': 'Streams_p95.csv',
     'MPS': 'MPS_p95.csv',
-    'REEF': 'reef_p95.csv',
-    'Orion': 'orion_latency.csv'
+    'REEF': 'REEF_p95.csv',
+    'Orion': 'Orion_p95.csv'
 }
 
 label_font_size = 20
@@ -43,7 +43,7 @@ for method, file in method2file.items():
     method2data[method] = average_latency(file)
 
 methods.append('Ideal')
-method2data['Ideal'] = pd.Series([6.72, 5.47, 11.27, 49.61, 18.96], index=models)
+method2data['Ideal'] = pd.Series([16.23, 14.06, 26.52,98.31, 35.71], index=models)
 width = 0.15
 fig, ax = plt.subplots(figsize=(14, 8))
 x = np.arange(len(models))
