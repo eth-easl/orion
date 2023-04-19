@@ -6,8 +6,10 @@ import statistics as stats
 import numpy as np
 import pandas as pd
 
-models = ['resnet50', 'mobilenet_v2', 'resnet101', 'bert', 'transformer']
-models_better_names = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT', 'Transformer']
+
+models = ['resnet50', 'mobilenet_v2', 'resNet101', 'bert', 'transformer']
+models_better_names = ['ResNet50', 'MobileNetV2', 'Resnet101', 'BERT', 'Transformer']
+
 model2id = {
     'resnet50': 0,
     'mobilenet_v2': 1,
@@ -17,8 +19,8 @@ model2id = {
 }
 
 
-directory = '/Users/sherlock/programs/gpu_share_data/inf-train-open-MPS'
-file_name_template = Template('log_0_train-${model0}-eval-${model1}-MPS-process-dummy-True.log.json')
+directory = '/Users/sherlock/programs/gpu_share_data/inf-inf-poisson/sequential'
+file_name_template = Template('log_0_eval-${model0}-eval-${model1}-time-slice-dummy-True.log.json')
 
 num_models = len(models)
 
@@ -45,8 +47,8 @@ for model0_id in range(5):
                 continue
 
             # cell = f"{round(data['p95-0'], 2)}/{round(data['p95-1'], 2)}"
-            # cell = f"{round(data['p50-0'], 2)}/{round(data['p50-1'], 2)}"
-            cell = round(data['duration'], 2)
+            cell = f"{round(data['p50-0'], 2)}/{round(data['p50-1'], 2)}"
+            # cell = round(data['duration'], 2)
 
         else:
             model0 = models[model1_id]
@@ -64,9 +66,9 @@ for model0_id in range(5):
                 print(f'{model0} with {model1} cannot be found')
                 continue
 
-            # cell = f"{round(data['p50-1'], 2)}/{round(data['p50-0'], 2)}"
+            cell = f"{round(data['p50-1'], 2)}/{round(data['p50-0'], 2)}"
             # cell = f"{round(data['p95-1'], 2)}/{round(data['p95-0'], 2)}"
-            cell = round(data['duration'], 2)
+            # cell = round(data['duration'], 2)
         table_df_raw[model0_id][model1_id] = cell
 
 
