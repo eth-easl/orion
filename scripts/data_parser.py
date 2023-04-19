@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 models = ['resnet50', 'mobilenet_v2', 'resnet101', 'bert', 'transformer']
-models_better_names = ['ResNet50', 'MobileNetV2', 'Resnet101', 'BERT', 'Transformer']
+models_better_names = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT', 'Transformer']
 model2id = {
     'resnet50': 0,
     'mobilenet_v2': 1,

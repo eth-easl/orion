@@ -156,26 +156,26 @@ if __name__ == "__main__":
     model0_mode = 'eval'
     model1_mode = 'eval'
 
-    policy = 'time-slice'
+    policy = 'MPS-process'
     use_dummy_data = True
     use_non_stop_measure = False
     closed_inference_loop = False
-    distribution = 'uniform'
+    distribution = 'poisson'
     request_rates = {
-        'resnet50': 80,
-        'mobilenet_v2': 100,
-        'resnet101': 40,
-        'bert': 8,
-        'transformer': 20
+        'resnet50': 50,
+        'mobilenet_v2': 65,
+        'resnet101': 25,
+        'bert': 5,
+        'transformer': 12
     }
 
-    train_batch_sizes = {
-        'resnet50': 32,
-        'mobilenet_v2': 64,
-        'resnet101': 32,
-        'bert': 8,
-        'transformer': 8
-    }
+    # train_batch_sizes = {
+    #     'resnet50': 32,
+    #     'mobilenet_v2': 64,
+    #     'resnet101': 32,
+    #     'bert': 8,
+    #     'transformer': 8
+    # }
 
     eval_batch_sizes = {
         'resnet50': 4,
@@ -187,10 +187,15 @@ if __name__ == "__main__":
 
     combinations = list(model_pair_to_num_requests_infer_infer_uniform_high.keys())
     times = 1
+
+    with open('./num_reqs0.json', 'r') as f:
+        models2num_reqs0 = json.load(f)
+
+    with open('./num_reqs1.json', 'r') as f:
+        models2num_reqs1 = json.load(f)
     # ----configuration region ended----
 
-    with open('./num_reqs.json', 'r') as f:
-        models2num_reqs = json.load(f)
+
 
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
@@ -214,12 +219,12 @@ if __name__ == "__main__":
                 default_full_config[model1]['arch'] = 'large'
 
             default_full_config['policy'] = policy
-            num_reqs0, num_reqs1 = model_pair_to_num_requests_infer_infer_uniform_high[(model0, model1)]
+            # num_reqs0, num_reqs1 = model_pair_to_num_requests_infer_infer_uniform_high[(model0, model1)]
             default_full_config[model0]['request_rate'] = request_rates[model0]
             default_full_config[model1]['request_rate'] = request_rates[model1]
 
-            default_full_config[model0]['num_requests'] = num_reqs0
-            default_full_config[model1]['num_requests'] = num_reqs1
+            default_full_config[model0]['num_requests'] = models2num_reqs0[model0][model1]
+            default_full_config[model1]['num_requests'] = models2num_reqs1[model0][model1]
 
             default_full_config[model0]['batch_size'] = eval_batch_sizes[model0]
             default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
@@ -236,13 +241,13 @@ if __name__ == "__main__":
                 default_full_config[model1_with_suffix]['arch'] = 'large'
 
             default_full_config['policy'] = policy
-            num_reqs0, num_reqs1 = model_pair_to_num_requests_infer_infer_uniform_high[(model0, model1)]
+            # num_reqs0, num_reqs1 = model_pair_to_num_requests_infer_infer_uniform_high[(model0, model1)]
 
             default_full_config[model0]['request_rate'] = request_rates[model0]
             default_full_config[model1_with_suffix]['request_rate'] = request_rates[model1]
 
-            default_full_config[model0]['num_requests'] = num_reqs0
-            default_full_config[model1_with_suffix]['num_requests'] = num_reqs1
+            default_full_config[model0]['num_requests'] = models2num_reqs0[model0][model1]
+            default_full_config[model1_with_suffix]['num_requests'] = models2num_reqs1[model0][model1]
 
             default_full_config[model0]['batch_size'] = eval_batch_sizes[model0]
             default_full_config[model1_with_suffix]['batch_size'] = eval_batch_sizes[model1]
