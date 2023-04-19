@@ -78,7 +78,9 @@ for method, file in method2file.items():
 
 # %%
 # methods.append('Ideal')
-single_throughput = pd.Series([4000 / 6.72, 4000 / 5.47, 4000/ 11.27, 2000/ 49.61, 4000/ 18.96], index=models)
+single_throughput = pd.Series([12.38, 9.9, 24.75, 123.75, 49.5], index=models)
+single_throughput = (1000 - 10) / single_throughput
+
 
 ideal_throughput = [(single_throughput + single_throughput[model]).mean() for model in models]
 ideal_throughput = pd.Series(ideal_throughput, index=models)
