@@ -200,10 +200,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
         segment_ids = segment_ids.to(device)
         model(input_ids, segment_ids, input_mask)
 
-    if shared_config['use_non_stop_measure']:
-        utils.non_stop_measure(eval, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
-    else:
-        utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
+    utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):

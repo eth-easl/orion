@@ -158,7 +158,6 @@ if __name__ == "__main__":
 
     policy = 'time-slice'
     use_dummy_data = True
-    use_non_stop_measure = False
     closed_inference_loop = False
     distribution = 'uniform'
     request_rates = {
@@ -197,7 +196,6 @@ if __name__ == "__main__":
 
 
     default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
-    default_full_config['shared_config']['use_non_stop_measure'] = use_non_stop_measure
     default_full_config['shared_config']['closed_inference_loop'] = closed_inference_loop
     default_full_config['shared_config']['distribution'] = distribution
 
