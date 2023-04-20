@@ -18,6 +18,16 @@ import argparse
 import threading
 from ctypes import *
 
+def seed_everything(seed: int):
+    import random, os
+    import numpy as np
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
 
 class DummyDataLoader():
     def __init__(self, batchsize):
@@ -53,13 +63,20 @@ def block(backend_lib, it):
     # block client until request served
     backend_lib.block(it)
 
+def check_stop(backend_lib):
+    return backend_lib.stop()
 
-def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, client_barrier, tid):
 
+def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+
+    seed_everything(42)
     print(model_name, batchsize, local_rank, barriers, tid)
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
     if rps > 0:
-        sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+        if uniform:
+            sleep_times = [1/rps]*num_iters
+        else:
+            sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
     else:
         sleep_times = [0] * num_iters
 
@@ -125,6 +142,9 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                         barriers[0].wait()
                         start = time.time()
                     #client_barrier.wait()
+                    if check_stop(backend_lib):
+                        print("---- STOP!")
+                        break
                 else:
                     with torch.no_grad():
                         cur_time = time.time()
@@ -143,8 +163,14 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                                 else:
                                     next_startup = time.time()
                                 batch_idx,batch = next(train_iter)
-                                if ((batch_idx == 1) or (batch_idx == 10)):
+                                if (batch_idx == 1 or (batch_idx == 10)):
                                     barriers[0].wait()
+                                    # hp starts after
+                                    if (batch_idx==10 and tid==1):
+                                        next_startup = time.time()
+                                dur = next_startup-time.time()
+                                if (dur>0):
+                                    time.sleep(dur)
                         else:
                             #### CLOSED LOOP ####
                             #client_barrier.wait()
@@ -154,16 +180,18 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, dummy_data, loca
                             print(f"Client {tid} finished! Wait!")
                             if ((batch_idx == 1) or (batch_idx == 10)):
                                 barriers[0].wait()
+                            batch_idx,batch = next(train_iter)
                             #client_barrier.wait()
 
 
-        timings = timings[2:]
+        barriers[0].wait()
+
+        timings = timings[10:]
+        timings = sorted(timings)
         p50 = np.percentile(timings, 50)
         p95 = np.percentile(timings, 95)
         p99 = np.percentile(timings, 99)
 
-        print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
-
+        if not train:
+            print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
         print("Finished! Ready to join!")
-
-        barriers[0].wait()

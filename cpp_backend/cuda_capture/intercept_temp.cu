@@ -66,6 +66,8 @@ int func_indexes[2] = {0, 0};
 cudaStream_t client_streams[2];
 bool streams_set[2] = {false, false};
 bool* client_request_status[2] = {NULL, NULL};
+bool client_stop[2] = {false, false};
+bool client_stop_ack[2] = {false, false};
 
 
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
@@ -176,6 +178,17 @@ extern "C" {
 		assert (idx >= 0);
 		volatile bool* status_ar = client_request_status[idx];
 		while (!status_ar[it]);
+	}
+
+	bool stop() {
+		int idx = get_idx();
+		assert (idx >= 0);
+		pthread_mutex_lock(mutexes[idx]);
+		bool res = client_stop[idx];
+		if (res)
+			client_stop_ack[idx] = true;
+		pthread_mutex_unlock(mutexes[idx]);
+		return res;
 	}
 }
 

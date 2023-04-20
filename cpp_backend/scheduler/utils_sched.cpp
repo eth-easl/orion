@@ -169,7 +169,7 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 void create_events(cudaEvent_t*** events, int num) {
 
 	for (int i=0; i<num; i++) {
-		events[i] = (cudaEvent_t**)malloc(10000*sizeof(cudaEvent_t*));
+		events[i] = (cudaEvent_t**)malloc(30000*sizeof(cudaEvent_t*));
 		for (int j=0; j<10000; j++) {
 			//printf("create %d, %d\n", i, j);
 			events[i][j] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
