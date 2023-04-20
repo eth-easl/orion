@@ -130,9 +130,14 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
-    if policy in ['MPS-process', 'MPS-thread', 'time-slice'] and model0_mode == 'eval' and model1_mode == 'eval':
-        if shared_config['distribution'] == 'uniform':
-            sync_info.offset = 1
+    if policy in ['MPS-process', 'MPS-thread', 'time-slice']:
+        workload_set = {model0_mode, model1_mode}
+        if workload_set == {'eval', 'eval'}:
+            if shared_config['distribution'] == 'uniform':
+                sync_info.offset = 1
+        elif workload_set == {'eval', 'train'}:
+            sync_info['non_stop_training'] = True
+
 
     if model0_name[-2:] == '-1':
         model0_name = model0_name[:-2]

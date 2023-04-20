@@ -49,6 +49,8 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
 
     warm_up_iters = model_config['warm_up_iters']
 
+    non_stop_training = 'non_stop_training' in shared_config and shared_config['non_stop_training']
+
     for batch_idx, batch in enumerate(train_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
@@ -80,13 +82,18 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
         # if shared_config['enable_profiling'] and batch_idx >= warm_up_iters:
         #     torch.cuda.nvtx.range_pop()
 
-        if batch_idx == num_iterations - 1:
-            # reached the last iteration
-            break
+        if non_stop_training:
+            if not sync_info.should_continue_loop():
+                break
+        else:
+            if batch_idx == num_iterations - 1:
+                # reached the last iteration
+                break
     my_stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
+    sync_info.write_kv(f'iteration{tid}', batch_idx)
     logging.info(f'tid {tid} it takes {duration} seconds to train imagenet')
     return duration
 
