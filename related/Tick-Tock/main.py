@@ -136,7 +136,7 @@ if __name__ == "__main__":
             if shared_config['distribution'] == 'uniform':
                 sync_info.offset = 1
         elif workload_set == {'eval', 'train'}:
-            sync_info['non_stop_training'] = True
+            shared_config['non_stop_training'] = True
 
 
     if model0_name[-2:] == '-1':

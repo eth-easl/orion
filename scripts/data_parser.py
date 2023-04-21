@@ -46,10 +46,22 @@ for model0_id in range(5):
             print(f'{model0} with {model1} cannot be found')
             continue
 
-        cell = round(data['duration'], 2)
+        cell = round(data['p95-1'], 2)
         table_df_raw[model0_id][model1_id] = cell
 
 
+
+
+
+table_df = pd.DataFrame(data=table_df_raw, columns=models_better_names, index=models_better_names)
+
+
+# %%
+# num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
+
+table_df.to_clipboard()
+
+# %%
 # for model0_id in range(5):
 #     for model1_id in range(5):
 #         if model1_id >= model0_id:
@@ -92,12 +104,3 @@ for model0_id in range(5):
 #             # cell = f"{round(data['p95-1'], 2)}/{round(data['p95-0'], 2)}"
 #             # cell = round(data['duration'], 2)
 #         table_df_raw[model0_id][model1_id] = cell
-
-
-table_df = pd.DataFrame(data=table_df_raw, columns=models_better_names, index=models_better_names)
-
-
-# %%
-# num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
-
-table_df.to_clipboard()

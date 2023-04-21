@@ -219,7 +219,6 @@ if __name__ == "__main__":
             # default_full_config[model0]['request_rate'] = request_rates[model0]
             default_full_config[model1]['request_rate'] = request_rates[model1]
 
-            default_full_config[model0]['num_iterations'] = 2000
             default_full_config[model1]['num_requests'] = models2num_reqs[model0][model1]
 
             default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
@@ -242,7 +241,6 @@ if __name__ == "__main__":
             # default_full_config[model0]['request_rate'] = request_rates[model0]
             default_full_config[model1_with_suffix]['request_rate'] = request_rates[model1]
 
-            default_full_config[model0]['num_iterations'] = 2000
             default_full_config[model1_with_suffix]['num_requests'] = models2num_reqs[model0][model1]
 
             default_full_config[model0]['batch_size'] = train_batch_sizes[model0]

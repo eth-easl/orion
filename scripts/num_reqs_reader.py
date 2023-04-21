@@ -31,7 +31,8 @@ num_reqs_df = pd.read_csv('./related/Tick-Tock/num_reqs.csv')
 num_reqs_df = num_reqs_df.drop(num_reqs_df.columns[0], axis=1)
 num_reqs_df.index = models
 num_reqs_df.columns = models
-
+num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
+# %%
 for model_row in models:
     for model_col in models:
         cell = num_reqs_df.at[model_row, model_col]

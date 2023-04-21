@@ -19,10 +19,10 @@ def average_latency(csv_file):
     df = df.drop(df.columns[0], axis=1)
     df.index = models
 
-    for model_row in models:
-        for model_col in models:
-            cell = df.at[model_row, model_col]
-            df.at[model_row, model_col] = float(cell.split('/')[1])
+    # for model_row in models:
+    #     for model_col in models:
+    #         cell = df.at[model_row, model_col]
+    #         df.at[model_row, model_col] = float(cell.split('/')[1])
     return df.mean()
 
 
@@ -34,7 +34,7 @@ method2file = {
     'Streams': 'Streams_p95.csv',
     'MPS': 'MPS_p95.csv',
     'REEF': 'REEF_p95.csv',
-    'Orion': 'Orion_p95.csv'
+    'Orion': 'ORION_p95.csv'
 }
 
 label_font_size = 20
@@ -45,14 +45,17 @@ method2data = {}
 for method, file in method2file.items():
     method2data[method] = average_latency(file)
 
+# %%
 methods.append('Ideal')
 # these are the ideal p95 latency: the latency where the job is running alone
-method2data['Ideal'] = pd.Series([15.5, 12.1, 23.1, 101.2, 30.1], index=models)
+method2data['Ideal'] = pd.Series([6.8, 5.5, 11.9, 49.9, 17.9], index=models)
 width = 0.15
 fig, ax = plt.subplots(figsize=(14, 8))
 x = np.arange(len(models))
+# ax.set_ylim([0, 120])
 for method_id, method in enumerate(methods):
-
+    if method == 'Sequential':
+        continue
     ax.bar(
         x + width * method_id, method2data[method], width,
         label=method,
