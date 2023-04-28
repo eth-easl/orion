@@ -140,7 +140,7 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 		cudaStreamCreateWithPriority(sched_streams[2], cudaStreamNonBlocking, *hp);
 
 		sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, 0);
+		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, *hp);
 	}
 	else {
 		sched_streams[0] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
@@ -381,7 +381,6 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
-
 			(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
 			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
 			event_ids[evid] += 1;
@@ -398,33 +397,32 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			//printf("Stream is %d\n", *sched_stream);
 			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
-
 			(*cudnn_bnorm_function)(
-					record.handle,
-					record.mode,
-					record.bnOps,
-					record.alpha,
-					record.beta,
-					record.xDesc,
-					record.xData,
-					record.zDesc,
-					record.zData,
-					record.yDesc,
-					record.yData,
-					record.bnScaleBiasMeanVarDesc,
-					record.bnScaleData,
-					record.bnBiasData,
-					record.exponentialAverageFactor,
-					record.resultRunningMeanData,
-					record.resultRunningVarianceData,
-					record.epsilon,
-					record.saveMean,
-					record.saveInvVariance,
-					record.activationDesc,
-					record.workspace,
-					record.workSpaceSizeInBytes,
-					record.reserveSpace,
-					record.reserveSpaceSizeInBytes
+						record.handle,
+						record.mode,
+						record.bnOps,
+						record.alpha,
+						record.beta,
+						record.xDesc,
+						record.xData,
+						record.zDesc,
+						record.zData,
+						record.yDesc,
+						record.yData,
+						record.bnScaleBiasMeanVarDesc,
+						record.bnScaleData,
+						record.bnBiasData,
+						record.exponentialAverageFactor,
+						record.resultRunningMeanData,
+						record.resultRunningVarianceData,
+						record.epsilon,
+						record.saveMean,
+						record.saveInvVariance,
+						record.activationDesc,
+						record.workspace,
+						record.workSpaceSizeInBytes,
+						record.reserveSpace,
+						record.reserveSpaceSizeInBytes
 			);
 			//cudnnSetStream(record.handle, 0);
 			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
@@ -439,7 +437,6 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
-
 			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
 			//cudnnSetStream(record.handle, 0);
 			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
@@ -497,38 +494,37 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnBatchNormalizationBackwardEx_record record = frecord.data.cudnnBNormBackRecord;
 			cudnnSetStream(record.handle, *sched_stream);
 			(*cudnn_bnorm_bw_function)(
-				record.handle,
-				record.mode,
-				record.bnOps,
-				record.alphaDataDiff,
-				record.betaDataDiff,
-				record.alphaParamDiff,
-				record.betaParamDiff,
-				record.xDesc,
-				record.xData,
-				record.yDesc,
-				record.yData,
-				record.dyDesc,
-				record.dyData,
-				record.dzDesc,
-				record.dzData,
-				record.dxDesc,
-				record.dxData,
-				record.dBnScaleBiasDesc,
-				record.bnScaleData,
-				record.bnBiasData,
-				record.dBnScaleData,
-				record.dBnBiasData,
-				record.epsilon,
-				record.savedMean,
-				record.savedInvVariance,
-				record.activationDesc,
-				record.workspace,
-				record.workSpaceSizeInBytes,
-				record.reserveSpace,
-				record.reserveSpaceSizeInBytes
+					record.handle,
+					record.mode,
+					record.bnOps,
+					record.alphaDataDiff,
+					record.betaDataDiff,
+					record.alphaParamDiff,
+					record.betaParamDiff,
+					record.xDesc,
+					record.xData,
+					record.yDesc,
+					record.yData,
+					record.dyDesc,
+					record.dyData,
+					record.dzDesc,
+					record.dzData,
+					record.dxDesc,
+					record.dxData,
+					record.dBnScaleBiasDesc,
+					record.bnScaleData,
+					record.bnBiasData,
+					record.dBnScaleData,
+					record.dBnBiasData,
+					record.epsilon,
+					record.savedMean,
+					record.savedInvVariance,
+					record.activationDesc,
+					record.workspace,
+					record.workSpaceSizeInBytes,
+					record.reserveSpace,
+					record.reserveSpaceSizeInBytes
 			);
-
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -539,21 +535,20 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnConvolutionBackwardData_record record = frecord.data.cudnnConvBackDataRecord;
 			cudnnSetStream(record.handle, *sched_stream);
 			DEBUG_PRINT("submit!\n");
-
 			(*cudnn_conv_bw_data_function)(
-				record.handle,
-				record.alpha,
-				record.wDesc,
-				record.w,
-				record.dyDesc,
-				record.dy,
-				record.convDesc,
-				record.algo,
-				record.workSpace,
-				record.workSpaceSizeInBytes,
-				record.beta,
-				record.dxDesc,
-				record.dx
+					record.handle,
+					record.alpha,
+					record.wDesc,
+					record.w,
+					record.dyDesc,
+					record.dy,
+					record.convDesc,
+					record.algo,
+					record.workSpace,
+					record.workSpaceSizeInBytes,
+					record.beta,
+					record.dxDesc,
+					record.dx
 			);
 
 			event_ids[evid] += 1;
@@ -566,19 +561,19 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnConvolutionBackwardFilter_record record = frecord.data.cudnnConvBackFilterRecord;
 			cudnnSetStream(record.handle, *sched_stream);
 			(*cudnn_conv_bw_filter_function)(
-				record.handle,
-				record.alpha,
-				record.xDesc,
-				record.x,
-				record.dyDesc,
-				record.dy,
-				record.convDesc,
-				record.algo,
-				record.workSpace,
-				record.workSpaceSizeInBytes,
-				record.beta,
-				record.dwDesc,
-				record.dw
+					record.handle,
+					record.alpha,
+					record.xDesc,
+					record.x,
+					record.dyDesc,
+					record.dy,
+					record.convDesc,
+					record.algo,
+					record.workSpace,
+					record.workSpaceSizeInBytes,
+					record.beta,
+					record.dwDesc,
+					record.dw
 			);
 
 			event_ids[evid] += 1;

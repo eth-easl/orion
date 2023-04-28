@@ -110,7 +110,7 @@ def launch_jobs(config_dict_list, profile, reef_depth, run_eval):
             num_iters,
             profile,
             run_eval,
-            True,
+            False,
             reef_depth
         )
     )

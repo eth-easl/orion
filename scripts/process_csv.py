@@ -88,9 +88,9 @@ for row in l:
             processed_kernel_names.append([x,  row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
 
     #Comment for NLP models
-    elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
-        idx += 1
-        processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
+    # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
+    #     idx += 1
+    #     processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
 
     elif 'volta_gcgemm_32x32_nt' in x:
         if found==0:

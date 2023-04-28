@@ -21,8 +21,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.ones((192, self.batchsize)).to(torch.int64)
-        self.target = torch.ones((192, self.batchsize)).to(torch.int64)
+        self.data = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
 
     def __iter__(self):
         return self
@@ -128,6 +128,8 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                     if open_loop:
                         if (cur_time >= next_startup):
                             print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                            if batch_idx==50:
+                                torch.cuda.profiler.cudart().cudaProfilerStart()
                             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
                             output, mems = model(data, target, mems)
                             block(backend_lib, batch_idx)

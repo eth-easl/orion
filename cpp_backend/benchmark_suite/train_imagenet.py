@@ -32,8 +32,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=False)
-        self.target = torch.ones([self.batchsize], pin_memory=False, dtype=torch.long)
+        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=True)
+        self.target = torch.ones([self.batchsize], pin_memory=True, dtype=torch.long)
 
     def __iter__(self):
         return self
@@ -132,9 +132,10 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                     loss = criterion(output, gpu_target)
                     loss.backward()
                     optimizer.step()
+                    block(backend_lib, batch_idx)
                     iter_time = time.time()-start_iter
                     timings.append(iter_time)
-                    print(f"Client {tid} finished! Wait!")
+                    print(f"Client {tid} finished! Wait! It took {timings[batch_idx]}")
                     batch_idx, batch = next(train_iter)
                     if (batch_idx == 1): # for backward
                         barriers[0].wait()
@@ -151,10 +152,15 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                         #### OPEN LOOP ####
                         if open_loop:
                             if (cur_time >= next_startup):
+                                #client_barrier.wait()
                                 print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                                if batch_idx==200:
+                                    torch.cuda.profiler.cudart().cudaProfilerStart()
                                 gpu_data = batch[0].to(local_rank)
                                 output = model(gpu_data)
                                 block(backend_lib, batch_idx)
+                                # if batch_idx==250:
+                                #     torch.cuda.profiler.cudart().cudaProfilerStop()
                                 req_time = time.time()-next_startup
                                 timings.append(req_time)
                                 print(f"Client {tid} finished! Wait! It took {req_time}")
@@ -171,17 +177,19 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                                 dur = next_startup-time.time()
                                 if (dur>0):
                                     time.sleep(dur)
+                                #client_barrier.wait()
                         else:
                             #### CLOSED LOOP ####
-                            #client_barrier.wait()
+                            client_barrier.wait()
                             print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             gpu_data = batch[0].to(local_rank)
                             output = model(gpu_data)
+                            block(backend_lib, batch_idx)
                             print(f"Client {tid} finished! Wait!")
                             if ((batch_idx == 1) or (batch_idx == 10)):
                                 barriers[0].wait()
                             batch_idx,batch = next(train_iter)
-                            #client_barrier.wait()
+                            client_barrier.wait()
 
 
         barriers[0].wait()

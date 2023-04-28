@@ -121,13 +121,13 @@ while i < num_rows:
             processed_kernel_names.append([x,  row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
     #Comment for NLP models
-    elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
-        processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+    # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
+    #     processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
-    # elif 'volta_gcgemm_32x32_nt' in x:
-    #     if found==0:
-    #         processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
-    #     found = 1
+    elif 'volta_gcgemm_32x32_nt' in x:
+        if found==0:
+            processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
+        found = 1
 
     # transformer
     elif 'volta_sgemm_32x128_tn' in x:
@@ -147,20 +147,21 @@ while i < num_rows:
         found = 0
         pass
 
-    elif 'volta_gcgemm_32x32_nt' in x:
-        if found==3:
-            print("here!")
-            conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
-            print(conv_info)
-            sms = [x[0] for x in conv_info]
-            dur_list = [x[1] for x in conv_info]
-            profiles = [x[2] for x in conv_info]
-            sms_max = max(sms)
-            dur = sum(dur_list)
-            profile = get_profile(profiles,  row["Roofline_prof"])
-            processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
-            conv_info=[]
-        found += 1
+    # elif 'volta_gcgemm_32x32_nt' in x:
+    #     # vision
+    #     if found==3:
+    #         print("here!")
+    #         conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
+    #         print(conv_info)
+    #         sms = [x[0] for x in conv_info]
+    #         dur_list = [x[1] for x in conv_info]
+    #         profiles = [x[2] for x in conv_info]
+    #         sms_max = max(sms)
+    #         dur = sum(dur_list)
+    #         profile = get_profile(profiles,  row["Roofline_prof"])
+    #         processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
+    #         conv_info=[]
+    #     found += 1
 
     else:
         tokens = x.split('<')

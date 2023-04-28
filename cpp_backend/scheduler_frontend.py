@@ -56,7 +56,6 @@ class PyScheduler:
 
         print(f"before starting, profile is {profile}")
         timings=[]
-        torch.cuda.profiler.cudart().cudaProfilerStart()
 
         if run_eval:
             if profile:
@@ -118,5 +117,3 @@ class PyScheduler:
                 timings.append(total_time)
             timings = timings[3:]
             print(f"Avg is {np.median(np.asarray(timings))}, Min is {min(timings)} sec")
-
-        torch.cuda.profiler.cudart().cudaProfilerStop()
