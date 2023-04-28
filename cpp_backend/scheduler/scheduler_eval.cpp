@@ -291,7 +291,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					schedule = true;
 				else if (seen[1]>0 && (op_info_0.sm_used <= max_sms) && (profiles[1]==-1 || (profiles[1] != op_info_0.profile)))
 					schedule = true;
-				if (schedule && large_found) {
+				if (schedule && large_found && event_ids[0]>=1) {
 					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
 					if (status == cudaSuccess) {
 						large_found = false;
@@ -304,6 +304,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				if (schedule) {
 					//if (op_info_0.duration > depth && num_client_cur_iters[1] < num_client_max_iters[1] && seen[1]==0) {
 						//block = true;
+					if ((frecords[0]->type != MALLOC_RECORD) && (frecords[0]->type != MEMCPY_RECORD) && (frecords[0]->type != MEMSET_RECORD) && (frecords[0]->type != FREE_RECORD))
+						sum += op_info_0.duration;
 					if (sum > depth && num_client_cur_iters[1] < num_client_max_iters[1] && seen[1]==0) {
 						large_found = true;
 					}
@@ -312,7 +314,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					//	CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[0], *(events[2][event_ids[2]-1]), 0));
 					schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 					status = 0;
-					sum += op_info_0.duration;
+					//printf("Sum is %d\n", sum);
 					pop_from_queue(client_buffers[0], client_mutexes[0], 0);
 					//if (block)
 					//	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
@@ -361,6 +363,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					if (i==0) {
 						lp_idx = 0;
 						penalty = 0;
+						sum = 0;
 					}
 
 					auto end = std::chrono::high_resolution_clock::now();
