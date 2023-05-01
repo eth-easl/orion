@@ -21,8 +21,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
-        self.target = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
+        self.data = torch.ones((192, self.batchsize), pin_memory=False).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize), pin_memory=False).to(torch.int64)
 
     def __iter__(self):
         return self

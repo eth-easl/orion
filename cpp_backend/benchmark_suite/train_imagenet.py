@@ -32,8 +32,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=True)
-        self.target = torch.ones([self.batchsize], pin_memory=True, dtype=torch.long)
+        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=False)
+        self.target = torch.ones([self.batchsize], pin_memory=False, dtype=torch.long)
 
     def __iter__(self):
         return self
@@ -84,8 +84,8 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
     print("-------------- thread id:  ", threading.get_native_id())
 
-    if (train and tid==1):
-        time.sleep(1)
+    # if (train and tid==1):
+    #     time.sleep(1)
 
     #data = torch.rand([batchsize, 3, 224, 224]).contiguous()
     #target = torch.ones([batchsize]).to(torch.long)

@@ -161,7 +161,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	// if (idx < 2)
 	// 	block(idx,  mutexes, kqueues);
 
-
 	// create record
 	cudnnBatchNormalizationForwardInference_record bn_record = {
 		handle,

@@ -129,6 +129,8 @@ def launch_jobs(config_dict_list, profile, reef_depth, run_eval):
 
 if __name__ == "__main__":
     torch.cuda.set_device(0)
+    # affinity_mask = {0,1,2,3}
+    # os.sched_setaffinity(0, affinity_mask)
     config_file = sys.argv[1]
     reef_depth = int(sys.argv[2])
     profile = True

@@ -2,17 +2,32 @@ import torch
 import threading
 import time
 import modeling
+import numpy as np
 
 from optimization import BertAdam
+
+from ctypes import *
+import os
+
+def seed_everything(seed: int):
+    import random, os
+    import numpy as np
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
 
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.input_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
-        self.segment_ids = torch.ones((self.batchsize, 384)).to(torch.int64)
-        self.input_mask = torch.ones((self.batchsize, 384)).to(torch.int64)
-        self.start_positions = torch.zeros((self.batchsize,)).to(torch.int64)
-        self.end_positions = torch.ones((self.batchsize,)).to(torch.int64)
+        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
+        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
+        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
+        self.start_positions = torch.zeros((self.batchsize,), pin_memory=False).to(torch.int64)
+        self.end_positions = torch.ones((self.batchsize,), pin_memory=False).to(torch.int64)
 
 
     def __iter__(self):
@@ -21,34 +36,47 @@ class DummyDataLoader():
     def __next__(self):
         return self.input_ids, self.segment_ids, self.input_mask, self.start_positions, self.end_positions
 
-def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers, client_barrier, tid):
 
-    barriers[0].wait()
+def block(backend_lib, it):
+    # block client until request served
+    backend_lib.block(it)
+
+
+def check_stop(backend_lib):
+    return backend_lib.stop()
+
+def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+
+    seed_everything(42)
+    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
 
     if rps > 0:
-        sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+        if uniform:
+            sleep_times = [1/rps]*num_iters
+        else:
+            sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
     else:
         sleep_times = [0]*num_iters
 
-    '''
-    model_config = {
-        "attention_probs_dropout_prob": 0.1,
-        "hidden_act": "gelu",
-        "hidden_dropout_prob": 0.1,
-        "hidden_size": 1024,
-        "initializer_range": 0.02,
-        "intermediate_size": 4096,
-        "max_position_embeddings": 512,
-        "num_attention_heads": 16,
-        "num_hidden_layers": 24,
-        "output_all_encoded_layers": False,
-        "type_vocab_size": 2,
-        "vocab_size": 30522
-    }
-    '''
-
-
-    model_config = {
+    barriers[0].wait()
+    
+    if (not train):
+        model_config = {
+            "attention_probs_dropout_prob": 0.1,
+            "hidden_act": "gelu",
+            "hidden_dropout_prob": 0.1,
+            "hidden_size": 1024,
+            "initializer_range": 0.02,
+            "intermediate_size": 4096,
+            "max_position_embeddings": 512,
+            "num_attention_heads": 16,
+            "num_hidden_layers": 24,
+            "output_all_encoded_layers": False,
+            "type_vocab_size": 2,
+            "vocab_size": 30522
+        }
+    else:
+        model_config = {
             "attention_probs_dropout_prob": 0.1,
             "hidden_act": "gelu",
             "hidden_dropout_prob": 0.1,
@@ -60,7 +88,7 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
             "num_hidden_layers": 12,
             "type_vocab_size": 2,
             "vocab_size": 30522
-    }
+        }
 
     config = modeling.BertConfig.from_dict(model_config)
     # Padding for divisibility by 8
@@ -90,6 +118,12 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
     
+    #  open loop
+    timings = []
+    next_startup = time.time()
+    open_loop = True
+
+
     for i in range(1):
         print("Start epoch: ", i)
 
@@ -98,10 +132,8 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
                                 
         while batch_idx < num_iters:
     
-            print(f"submit!, batch_idx is {batch_idx}")
-            #torch.cuda.profiler.cudart().cudaProfilerStart()
-
             if train:
+                print(f"Start iter {batch_idx}")
                 optimizer.zero_grad()
                 input_ids, segment_ids, input_mask, start_positions, end_positions = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank), batch[3].to(local_rank), batch[4].to(local_rank)
                 start_logits, end_logits = model(input_ids, segment_ids, input_mask)
@@ -112,24 +144,61 @@ def bert_loop(batchsize, train, num_iters, rps, dummy_data, local_rank, barriers
                 loss = (start_loss + end_loss) / 2
                 loss.backward()
                 optimizer.step()
+                batch_idx, batch = next(train_iter)
+                if (batch_idx == 1): # for backward
+                    barriers[0].wait()
+                if batch_idx == 10:
+                    barriers[0].wait()
+                if check_stop(backend_lib):
+                    print("---- STOP!")
+                    break
             else:
                 with torch.no_grad():
-                    input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
-                    output = model(input_ids, segment_ids, input_mask)
+                    cur_time = time.time()
+                    #### OPEN LOOP ####
+                    if open_loop:
+                        if (cur_time >= next_startup):
+                            print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                            if batch_idx==50:
+                                torch.cuda.profiler.cudart().cudaProfilerStart()
+                            input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
+                            output = model(input_ids, segment_ids, input_mask)
+                            block(backend_lib, batch_idx)
+                            req_time = time.time()-next_startup
+                            timings.append(req_time)
+                            print(f"Client {tid} finished! Wait! It took {req_time}")
+                            if batch_idx>=10:
+                                next_startup += sleep_times[batch_idx]
+                            else:
+                                next_startup = time.time()
+                            batch_idx,batch = next(train_iter)
+                            if ((batch_idx == 1) or (batch_idx == 10)):
+                                barriers[0].wait()
+                                if (batch_idx==10 and tid==1):
+                                    #time.sleep(1)
+                                    next_startup = time.time()
+                            dur = next_startup-time.time()
+                            if (dur>0):
+                                time.sleep(dur)
+                    else:
+                        ### CLOSED LOOP ###
+                        print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                        input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
+                        output = model(input_ids, segment_ids, input_mask)
+                        print(f"Client {tid} finished! Wait!")
+                        if ((batch_idx == 1) or (batch_idx == 10)):
+                            barriers[0].wait()
+                        batch_idx,batch = next(train_iter)
 
-            time.sleep(sleep_times[batch_idx])
-            print(f"{batch_idx} submitted! sent everything, sleep for {sleep_times[batch_idx]} sec")
 
-            batch_idx, batch = next(train_iter)
-            if (batch_idx == 1): # for backward
-                barriers[0].wait()
+    barriers[0].wait()
 
-            if batch_idx == 10:
-                barriers[0].wait()
-                start = time.time()
-
-            #if batch_idx < num_iters:
-            #    barriers[0].wait()
+    if not train:
+        timings = timings[50:]
+        timings = sorted(timings)
+        p50 = np.percentile(timings, 50)
+        p95 = np.percentile(timings, 95)
+        p99 = np.percentile(timings, 99)
+        print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
 
     print("Finished! Ready to join!")
-    barriers[0].wait()

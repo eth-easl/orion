@@ -11,15 +11,14 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
         "attention_probs_dropout_prob": 0.1,
         "hidden_act": "gelu",
         "hidden_dropout_prob": 0.1,
-        "hidden_size": 1024,
+        "hidden_size": 768,
         "initializer_range": 0.02,
-        "intermediate_size": 4096,
+        "intermediate_size": 3072,
         "max_position_embeddings": 512,
-        "num_attention_heads": 16,
-        "num_hidden_layers": 24,
-        "output_all_encoded_layers": False,
+        "num_attention_heads": 12,
+        "num_hidden_layers": 12,
         "type_vocab_size": 2,
-        "vocab_size": 30528
+        "vocab_size": 30522
     }
 
     config = modeling.BertConfig.from_dict(model_config)
@@ -57,9 +56,6 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
 
     while batch_idx < 1:
 
-        #if not do_eval:
-        #    optimizer.zero_grad()
-
         if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
@@ -70,14 +66,15 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
             with torch.no_grad():
                 output = model(input_ids, segment_ids, input_mask)
         else:
+            optimizer.zero_grad()
             start_logits, end_logits = model(input_ids, segment_ids, input_mask)
-            # ignored_index = start_logits.size(1)
-            # loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
-            # start_loss = loss_fct(start_logits, start_positions)
-            # end_loss = loss_fct(end_logits, end_positions)
-            # loss = (start_loss + end_loss) / 2
-            # loss.backward()
-            # optimizer.step()
+            ignored_index = start_logits.size(1)
+            loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
+            start_loss = loss_fct(start_logits, start_positions)
+            end_loss = loss_fct(end_logits, end_positions)
+            loss = (start_loss + end_loss) / 2
+            loss.backward()
+            optimizer.step()
 
         if batch_idx == 0:
             if profile == 'ncu':
@@ -90,4 +87,4 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
     print("Done!")
 
 if __name__ == "__main__":
-    bert(8, 0, False, 'nsys')
+    bert(8, 0,False, 'nsys')

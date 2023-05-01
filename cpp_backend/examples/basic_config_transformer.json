@@ -2,16 +2,17 @@
 
 	{
 		"arch": "transformer",
-		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_16_fb_0",
-        "additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_16_fb_1",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_8_fb0",
+		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_8_fb1",
 		"num_kernels": 4396,
-        "additional_num_kernels": 4354,
-		"num_iters": 10,
+		"additional_num_kernels": 4354,
+		"num_iters": 1000,
 		"args": {
-			"batchsize": 16,
-			"rps": 0,
-			"dummy_data": false,
-			"train": true
+			"batchsize": 4,
+			"rps": 8,
+			"dummy_data": true,
+			"uniform": false,
+			"train": false
 		}
 	}
 ]
