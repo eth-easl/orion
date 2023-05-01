@@ -11,3 +11,11 @@ model_kernels/*
 .DS_Store
 .idea/
 __pycache__/
+cpp_backend/examples/*
+cpp_backend/eval/*
+cpp_backend/model_kernels/*
+cpp_backend/results/*
+scripts/process_intercepter_output.py
+scripts/profiles/*
+scripts/process_merge.py
+scripts/compare.py

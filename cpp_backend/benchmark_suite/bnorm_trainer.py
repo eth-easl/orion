@@ -20,11 +20,11 @@ import threading
 class Model(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.bn = torch.nn.BatchNorm2d(64)
+        self.bn = torch.nn.BatchNorm2d(256)
 
     def forward(self, x):
         for i in range(25):
-            x = self.bn(x)
+            y = self.bn(x)
 
 
 def bnorm_loop(batchsize, train, local_rank, barriers, tid):
@@ -32,7 +32,7 @@ def bnorm_loop(batchsize, train, local_rank, barriers, tid):
     print(batchsize, local_rank, barriers, tid)
     barriers[0].wait()
 
-    data = torch.rand([batchsize, 64, 112, 112]).to(local_rank).contiguous()
+    data = torch.rand([batchsize, 256, 112, 112]).to(local_rank).contiguous()
     model = Model()
     model = model.to(0)
 

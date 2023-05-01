@@ -1,41 +1,41 @@
 Name,Profile,Memory_footprint,SM_usage,Duration
-Conv,1,0,49,25088
+Conv,1,0,49,28320
 BatchNorm,0,0,32,22784
 void at::native::vectorized_elementwise_kernel,-1,0,196,16544
-void at::native::,0,0,784,38688
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,784,38688
 BatchNorm,0,0,32,22912
 void at::native::vectorized_elementwise_kernel,-1,0,196,16640
-Conv,1,0,49,26208
+Conv,1,0,49,29536
 BatchNorm,0,0,16,18496
-Conv,0,0,147,45120
+Conv,0,0,147,48416
 BatchNorm,0,0,96,59136
 void at::native::vectorized_elementwise_kernel,-1,0,588,47392
-void at::native::,0,0,588,37920
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,588,37920
 BatchNorm,0,0,96,16128
 void at::native::vectorized_elementwise_kernel,-1,0,147,12800
 Conv,1,0,25,23552
 BatchNorm,0,0,24,7776
-Conv,1,0,74,26944
+Conv,1,0,74,30016
 BatchNorm,0,0,144,21408
 void at::native::vectorized_elementwise_kernel,-1,0,221,18464
-void at::native::,0,0,882,42912
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,882,42912
 BatchNorm,0,0,144,21216
 void at::native::vectorized_elementwise_kernel,-1,0,221,18528
 Conv,1,0,25,29984
 BatchNorm,0,0,24,7296
 void at::native::vectorized_elementwise_kernel,0,0,37,6176
-Conv,1,0,74,27168
+Conv,1,0,74,30208
 BatchNorm,0,0,144,21568
 void at::native::vectorized_elementwise_kernel,-1,0,221,18336
-void at::native::,0,0,221,17120
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,221,17120
 BatchNorm,0,0,72,7136
 void at::native::vectorized_elementwise_kernel,-1,0,56,6496
-Conv,1,0,7,32640
+Conv,1,0,7,35840
 BatchNorm,0,0,16,5312
 Conv,1,0,37,20192
 BatchNorm,0,0,96,9728
 void at::native::vectorized_elementwise_kernel,-1,0,74,7360
-void at::native::,0,0,294,17472
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,294,17472
 BatchNorm,0,0,96,9920
 void at::native::vectorized_elementwise_kernel,-1,0,74,7488
 Conv,1,0,7,26656
@@ -44,7 +44,7 @@ void at::native::vectorized_elementwise_kernel,0,0,13,3904
 Conv,1,0,37,19712
 BatchNorm,0,0,96,9632
 void at::native::vectorized_elementwise_kernel,-1,0,74,7392
-void at::native::,0,0,294,17504
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,294,17504
 BatchNorm,0,0,96,9824
 void at::native::vectorized_elementwise_kernel,-1,0,74,7488
 Conv,1,0,7,27008
@@ -53,68 +53,68 @@ void at::native::vectorized_elementwise_kernel,0,0,13,3904
 Conv,1,0,37,20704
 BatchNorm,0,0,96,9632
 void at::native::vectorized_elementwise_kernel,-1,0,74,7488
-void at::native::,0,0,74,8416
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,74,8416
 BatchNorm,0,0,24,6176
 void at::native::vectorized_elementwise_kernel,-1,0,19,4288
 Conv,1,0,4,25824
 BatchNorm,0,0,8,5216
-Conv,1,0,11,28736
+Conv,1,0,11,31840
 BatchNorm,0,0,48,7552
 void at::native::vectorized_elementwise_kernel,-1,0,37,5568
-void at::native::,0,0,147,10368
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10368
 BatchNorm,0,0,48,7488
 void at::native::vectorized_elementwise_kernel,-1,0,37,5440
 Conv,1,0,4,39520
 BatchNorm,0,0,8,5280
 void at::native::vectorized_elementwise_kernel,0,0,7,3552
-Conv,1,0,11,28672
+Conv,1,0,11,31744
 BatchNorm,0,0,48,7488
 void at::native::vectorized_elementwise_kernel,-1,0,37,5504
-void at::native::,0,0,147,10400
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10400
 BatchNorm,0,0,48,7488
 void at::native::vectorized_elementwise_kernel,-1,0,37,5408
 Conv,1,0,4,39584
 BatchNorm,0,0,8,5216
 void at::native::vectorized_elementwise_kernel,0,0,7,3520
-Conv,1,0,11,28928
+Conv,1,0,11,32032
 BatchNorm,0,0,48,7584
 void at::native::vectorized_elementwise_kernel,-1,0,37,5536
-void at::native::,0,0,147,10400
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10400
 BatchNorm,0,0,48,7520
 void at::native::vectorized_elementwise_kernel,-1,0,37,5440
 Conv,1,0,4,39584
 BatchNorm,0,0,8,5312
 void at::native::vectorized_elementwise_kernel,0,0,7,3488
-Conv,1,0,11,28640
+Conv,1,0,11,31712
 BatchNorm,0,0,48,7552
 void at::native::vectorized_elementwise_kernel,-1,0,37,5568
-void at::native::,0,0,147,10400
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10400
 BatchNorm,0,0,48,7552
 void at::native::vectorized_elementwise_kernel,-1,0,37,5504
 Conv,1,0,5,39776
 BatchNorm,0,0,12,5280
-Conv,1,0,18,35136
+Conv,1,0,18,38368
 BatchNorm,0,0,72,8832
 void at::native::vectorized_elementwise_kernel,-1,0,56,6816
-void at::native::,0,0,221,13888
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,221,13888
 BatchNorm,0,0,72,8832
 void at::native::vectorized_elementwise_kernel,-1,0,56,6368
 Conv,1,0,5,53280
 BatchNorm,0,0,12,5504
 void at::native::vectorized_elementwise_kernel,0,0,10,3872
-Conv,1,0,18,35072
+Conv,1,0,18,38176
 BatchNorm,0,0,72,8864
 void at::native::vectorized_elementwise_kernel,-1,0,56,6624
-void at::native::,0,0,221,14208
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,221,14208
 BatchNorm,0,0,72,8896
 void at::native::vectorized_elementwise_kernel,-1,0,56,6368
 Conv,1,0,5,53280
 BatchNorm,0,0,12,5344
 void at::native::vectorized_elementwise_kernel,0,0,10,3744
-Conv,1,0,18,35040
+Conv,1,0,18,38208
 BatchNorm,0,0,72,8896
 void at::native::vectorized_elementwise_kernel,-1,0,56,6560
-void at::native::,0,0,56,8896
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,56,8896
 BatchNorm,0,0,72,7584
 void at::native::vectorized_elementwise_kernel,-1,0,14,4032
 Conv,1,0,3,55168
@@ -122,7 +122,7 @@ BatchNorm,0,0,20,4736
 Conv,1,0,14,25568
 BatchNorm,0,0,120,10144
 void at::native::vectorized_elementwise_kernel,-1,0,23,4704
-void at::native::,0,0,92,8480
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,92,8480
 BatchNorm,0,0,120,10624
 void at::native::vectorized_elementwise_kernel,-1,0,23,4736
 Conv,1,0,3,83776
@@ -131,7 +131,7 @@ void at::native::vectorized_elementwise_kernel,0,0,4,3008
 Conv,1,0,14,25216
 BatchNorm,0,0,120,10144
 void at::native::vectorized_elementwise_kernel,-1,0,23,4672
-void at::native::,0,0,92,8480
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,92,8480
 BatchNorm,0,0,120,10784
 void at::native::vectorized_elementwise_kernel,-1,0,23,4704
 Conv,1,0,3,82944
@@ -140,12 +140,12 @@ void at::native::vectorized_elementwise_kernel,0,0,4,3008
 Conv,1,0,14,25504
 BatchNorm,0,0,120,10176
 void at::native::vectorized_elementwise_kernel,-1,0,23,4704
-void at::native::,0,0,92,8736
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,92,8736
 BatchNorm,0,0,120,10688
 void at::native::vectorized_elementwise_kernel,-1,0,23,4864
 Conv,1,0,5,85056
 BatchNorm,0,0,40,5792
-Conv,1,0,10,52768
+Conv,1,0,10,55904
 BatchNorm,0,0,160,12224
 void at::native::vectorized_elementwise_kernel,-1,0,31,5216
 void at::native::reduce_kernel,0,0,80,8768

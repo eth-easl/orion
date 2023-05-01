@@ -46,14 +46,14 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
         model.eval()
     else:
         model.train()
-        #optimizer = lamb.Lamb(model.parameters(), lr=0.1)
+        optimizer = lamb.Lamb(model.parameters(), lr=0.1)
 
     torch.cuda.synchronize()
     batch_idx = 0
 
-    while batch_idx < 10:
+    while batch_idx < 100:
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -64,11 +64,11 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
                 output = model(data, target, mems)
         else:
             loss, output = model(data, target, mems)
-            #loss = loss.float().mean().type_as(loss)
-            #loss.backward()
-            #optimizer.step()
+            loss = loss.float().mean().type_as(loss)
+            loss.backward()
+            optimizer.step()
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
@@ -79,5 +79,5 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
     print("Done!")
 
 if __name__ == "__main__":
-    transformer(32, 0, False, 'nsys')
+    transformer(8, 0, False, 'nsys')
 

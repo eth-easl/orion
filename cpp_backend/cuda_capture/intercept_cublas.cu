@@ -7,8 +7,8 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
 
-	if (idx < 2)
-		block(idx,  mutexes, kqueues);
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemm_record blassgemm_record = {
 		handle,
@@ -33,13 +33,12 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 
 	if (idx < 2) {
 
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
-
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 	}
 	else {
@@ -51,6 +50,9 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 		status = (*cublas_sgemm_func)(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
+
+		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
 
 	}
 
@@ -64,6 +66,9 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+
+	// if (idx < 2)
+	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemmStridedBatched_record record = {
 		handle,
@@ -92,13 +97,12 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 
 	if (idx < 2) {
 
-		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemmStridedBatched, handle is %p\n", func_indexes[idx], handle);
-
 		pthread_mutex_lock(mutexes[idx]);
+		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemmStridedBatched, handle is %p\n", func_indexes[idx], handle);
 		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
 		pthread_mutex_unlock(mutexes[idx]);
 
-		func_indexes[idx] += 1;
 		block(idx,  mutexes, kqueues);
 
 	}
@@ -112,6 +116,9 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 		status = (*cublas_sgemm_strided_func)(handle, transa, transb, m, n, k, alpha, A, lda, strideA, B, ldb, strideB, beta, C, ldc, strideC, batchCount);
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
+
+		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
+		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
 	}
 
 	return status;
