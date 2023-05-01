@@ -19,12 +19,24 @@ model2id = {
 }
 
 
-directory = '/Users/sherlock/programs/gpu_share_data/inf-train-uniform/sequential'
+directory = '/Users/sherlock/programs/gpu_share_data/inf-train-poisson2/sequential'
 file_name_template = Template('log_0_train-${model0}-eval-${model1}-time-slice-dummy-True.log.json')
 
 num_models = len(models)
 
-table_df_raw = [
+duration_df_raw = [
+    [0 for i in range(num_models)] for j in range(num_models)
+]
+
+p50_df_raw = [
+    [0 for i in range(num_models)] for j in range(num_models)
+]
+
+p95_df_raw = [
+    [0 for i in range(num_models)] for j in range(num_models)
+]
+
+iteration_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
@@ -46,20 +58,25 @@ for model0_id in range(5):
             print(f'{model0} with {model1} cannot be found')
             continue
 
-        cell = round(data['p95-1'], 2)
-        table_df_raw[model0_id][model1_id] = cell
+        duration_df_raw[model0_id][model1_id] = round(data['duration'], 2)
+        p50_df_raw[model0_id][model1_id] = round(data['p50-1'], 2)
+        p95_df_raw[model0_id][model1_id] = round(data['p95-1'], 2)
+        iteration_df_raw[model0_id][model1_id] = round(data['iteration0'], 2)
 
 
 
 
 
-table_df = pd.DataFrame(data=table_df_raw, columns=models_better_names, index=models_better_names)
+duration_df = pd.DataFrame(data=duration_df_raw, columns=models_better_names, index=models_better_names)
+p50_df = pd.DataFrame(data=p50_df_raw, columns=models_better_names, index=models_better_names)
+p95_df = pd.DataFrame(data=p95_df_raw, columns=models_better_names, index=models_better_names)
+iteration_df = pd.DataFrame(data=iteration_df_raw, columns=models_better_names, index=models_better_names)
 
 
 # %%
 # num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
 
-table_df.to_clipboard()
+p95_df.to_clipboard()
 
 # %%
 # for model0_id in range(5):
