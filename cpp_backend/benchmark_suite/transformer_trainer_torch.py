@@ -110,6 +110,8 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
                             print(f"It took {timings[batch_idx]} sec")
                             next_startup += sleep_times[batch_idx]
                             batch_idx,batch = next(train_iter)
+                            if (batch_idx==10):
+                                starttime = time.time()
 
             end_barriers[0].wait()
 
@@ -121,3 +123,4 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
         p99 = np.percentile(timings, 99)
 
         print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
+        print(f"Total time is {time.time()-starttime} sec")

@@ -64,10 +64,10 @@ char* model_names[2];
 int func_indexes[2] = {0, 0};
 
 cudaStream_t client_streams[2];
-bool streams_set[2] = {false, false};
-bool* client_request_status[2] = {NULL, NULL};
-bool client_stop[2] = {false, false};
-bool client_stop_ack[2] = {false, false};
+volatile bool streams_set[2] = {false, false};
+volatile bool* client_request_status[2] = {NULL, NULL};
+volatile bool client_stop[2] = {false, false};
+volatile bool client_stop_ack[2] = {false, false};
 
 
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
