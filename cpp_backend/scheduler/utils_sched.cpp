@@ -136,7 +136,7 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 		cudaStreamCreateWithPriority(sched_streams[0], cudaStreamNonBlocking, 0);
 
 		sched_streams[1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, *hp);
+		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, 0);
 
 		sched_streams[2] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
 		cudaStreamCreateWithPriority(sched_streams[2], cudaStreamNonBlocking, 0);
