@@ -274,7 +274,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			if (frecords[1] != NULL) { // high priority
 
 				op_info op_info_1 = op_info_vector[1][seen[1]];
-				if ((op_info_1.sm_used < max_sms) || (op_info_1.duration < 30000) && (frecords[1]->type != MALLOC_RECORD) && (frecords[1]->type != MEMCPY_RECORD) && (frecords[1]->type != MEMSET_RECORD) && (frecords[1]->type != FREE_RECORD)) {
+				if (((op_info_1.sm_used < max_sms) || (op_info_1.duration < 30000)) && (frecords[1]->type != MALLOC_RECORD) && (frecords[1]->type != MEMCPY_RECORD) && (frecords[1]->type != MEMSET_RECORD) && (frecords[1]->type != FREE_RECORD)) {
 					if (event_ids[2]>=1)
 						CHECK_CUDA_ERROR(cudaStreamWaitEvent(*(sched_streams[3]), *(events[2][event_ids[2]-1]), 0));
 					schedule_kernel(*(frecords[1]), sched_streams[3], 1, events[3][event_ids[3]], seen, event_ids, 3);
@@ -294,7 +294,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				bool schedule = false;
 				bool block = false;
 
-				if ((op_info_0.sm_used < max_sms || op_info_0.duration < 30000) && (frecords[0]->type != MALLOC_RECORD) && (frecords[0]->type != MEMCPY_RECORD) && (frecords[0]->type != MEMSET_RECORD) && (frecords[0]->type != FREE_RECORD)) {
+				if (((op_info_0.sm_used < max_sms || op_info_0.duration < 30000)) && (frecords[0]->type != MALLOC_RECORD) && (frecords[0]->type != MEMCPY_RECORD) && (frecords[0]->type != MEMSET_RECORD) && (frecords[0]->type != FREE_RECORD)) {
 					if (event_ids[0]>=1)
 						CHECK_CUDA_ERROR(cudaStreamWaitEvent(*(sched_streams[1]), *(events[0][event_ids[0]-1]), 0));
 					schedule_kernel(*(frecords[0]), sched_streams[1], 0, events[1][event_ids[1]], seen, event_ids, 1);
