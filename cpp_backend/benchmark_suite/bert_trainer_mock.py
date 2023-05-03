@@ -23,11 +23,11 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
-        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
-        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
-        self.start_positions = torch.zeros((self.batchsize,), pin_memory=False).to(torch.int64)
-        self.end_positions = torch.ones((self.batchsize,), pin_memory=False).to(torch.int64)
+        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
+        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
+        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
+        self.start_positions = torch.zeros((self.batchsize,), pin_memory=True).to(torch.int64)
+        self.end_positions = torch.ones((self.batchsize,), pin_memory=True).to(torch.int64)
 
 
     def __iter__(self):
@@ -60,6 +60,10 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
 
     barriers[0].wait()
     
+    if (train and tid==1):
+        time.sleep(1)
+        
+
     if (not train):
         model_config = {
             "attention_probs_dropout_prob": 0.1,
@@ -152,6 +156,8 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                 if check_stop(backend_lib):
                     print("---- STOP!")
                     break
+                if batch_idx==20:
+                    torch.cuda.profiler.cudart().cudaProfilerStart()
             else:
                 with torch.no_grad():
                     cur_time = time.time()

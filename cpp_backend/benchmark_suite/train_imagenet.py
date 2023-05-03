@@ -84,8 +84,8 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
     print("-------------- thread id:  ", threading.get_native_id())
 
-    # if (train and tid==1):
-    #     time.sleep(1)
+    if (train and tid==1):
+        time.sleep(1)
 
     #data = torch.rand([batchsize, 3, 224, 224]).contiguous()
     #target = torch.ones([batchsize]).to(torch.long)

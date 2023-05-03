@@ -54,6 +54,9 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
         sleep_times = [0] * num_iters
     barriers[0].wait()
 
+    if (train and tid==1):
+        time.sleep(1)
+
     model_config = {
         'n_token': 267735,
         'n_layer': 16,
