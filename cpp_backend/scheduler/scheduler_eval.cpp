@@ -35,6 +35,7 @@ cudaEvent_t*** events;
 int* streams;
 int* event_ids;
 int status;
+vector<int> max_sms_clients = {0, 0};
 
 // reef
 int lp_idx = 0;
@@ -216,7 +217,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 	}
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, int depth) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, int depth, int hp_limit) {
 
 	printf("here!\n");
 
@@ -239,6 +240,13 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 	bool large_found = false;
 	long sum = 0;
+
+	// BS
+	int sm_threshold = 0;
+	int low_sms = 0;
+	int high_sms = max_sms_clients[0]; // 0 is the lp client
+	float hp_iter_duration = 0.0; // 1 is the hp client
+	float hp_limit_float = (float)hp_limit;
 
 	while(1) {
 		vector<func_record*> frecords = {NULL, NULL};
@@ -287,13 +295,15 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				bool schedule = false;
 				bool block = false;
 
+				//printf("%d, %d, %d\n", low_sms, high_sms, sm_threshold);
+
 				if ((num_clients==1) || (seen[1] == 0) || (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD))
 					schedule = true;
 				else if (num_client_cur_iters[0] < 10 || num_client_cur_iters[1] >= num_client_max_iters[1]) {
 					// this could be removed
 					schedule = true;
 				}
-				else if (seen[1]>0 && (op_info_0.sm_used <= 40*max_sms) && (op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile)))
+				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) && (op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile)))
 					schedule = true;
 				if (schedule && large_found && event_ids[0]>=1) {
 					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
@@ -374,6 +384,15 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
+					if (i==1) {
+						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
+						hp_iter_duration += duration;
+						if ((num_client_cur_iters[i] % 10) == 0) {
+							float hp_avg_duration = hp_iter_duration/10.0;
+							printf("--------------------- Average iter duration for client 1 is %f ms, limit is %f ms\n", hp_avg_duration, hp_limit_float);
+							hp_iter_duration = 0;
+						}
+					}
 					//printf("Client %d finished iteration %d, it took %f ms, seen is %d\n", i, num_client_cur_iters[i], duration, seen[i]);
 				}
 				if (
@@ -482,6 +501,10 @@ extern "C" {
 		(*func_names_all[client_id]).clear();
 		op_info_vector[client_id].clear();
 		populate_kernel_info(func_names_all[client_id], file, op_info_vector[client_id]);
+		int max_sm_used = 0;
+		for (auto info: op_info_vector[client_id])
+			max_sm_used = max(max_sm_used, info.sm_used);
+		max_sms_clients[client_id] = max_sm_used;
 		num_client_kernels[client_id] = num_kernels;
 
 	}
@@ -534,6 +557,10 @@ extern "C" {
 			client_durations.push_back({});
 			printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[i], func_names_all[i]);
 			populate_kernel_info(func_names_all[i], files[i], op_info_vector[i]);
+			int max_sm_used = 0;
+			for (auto info: op_info_vector[i])
+				max_sm_used = max(max_sm_used, info.sm_used);
+			max_sms_clients[i] = max_sm_used;
 			printf("----------- SIZE: %d\n", op_info_vector[i].size());
 		}
 
@@ -583,11 +610,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, int reef_depth) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, int reef_depth, int hp_limit) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, reef_depth);
+			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, reef_depth, hp_limit);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");
