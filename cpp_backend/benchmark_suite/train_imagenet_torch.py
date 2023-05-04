@@ -123,7 +123,7 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                 # startiter = time.time()
                 if train:
                     print("here")
-                    start_barriers[0].wait()
+                    #start_barriers[0].wait()
                     start_iter = time.time()
                     optimizer.zero_grad()
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -134,9 +134,12 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                     s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
-                    end_barriers[0].wait()
+                    #end_barriers[0].wait()
                     if (batch_idx==10):
                         starttime = time.time()
+                    if batch_idx == 300:
+                        print(f"---------- Client {tid} finished! total time is {time.time()-starttime}")
+
                 else:
                     with torch.no_grad():
                         cur_time = time.time()
