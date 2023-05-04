@@ -36,6 +36,7 @@ int* streams;
 int* event_ids;
 int status;
 vector<int> max_sms_clients = {0, 0};
+vector<bool> is_train = {false, false};
 
 // reef
 int lp_idx = 0;
@@ -248,6 +249,12 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 	float hp_iter_duration = 0.0; // 1 is the hp client
 	float hp_limit_float = (float)hp_limit;
 
+	// if hp is inference, use max_sms + also there is no update phase
+	if (!is_train[1]) {
+		sm_threshold = max_sms;
+		update_start = INT_MAX;
+	}
+
 	while(1) {
 		vector<func_record*> frecords = {NULL, NULL};
 
@@ -340,6 +347,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 		int finished = 0;
 		for (int i=0; i<num_clients; i++) {
 			//printf("%d, %d, %d, %d, %d\n", i, seen[i], num_client_kernels[i], num_client_cur_iters[i], num_client_max_iters[i]);
+			//printf("%d, %d\n", is_train[0], is_train[1]);
+
 			if (
 				(num_client_cur_iters[i] == num_client_max_iters[i])
 				|| (warmup && (num_client_cur_iters[i]==warmup_iters))
@@ -384,7 +393,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
-					if (!reef && i==1) {
+					if (!reef && i==1 && is_train[1]) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
 						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
@@ -526,7 +535,8 @@ extern "C" {
 		char** models,
 		char** files,
 		int* num_kernels,
-		int* num_iters
+		int* num_iters,
+		bool* train
 	) {
 
 		struct passwd *pw = getpwuid(getuid());
@@ -572,6 +582,7 @@ extern "C" {
 				max_sm_used = max(max_sm_used, info.sm_used);
 			max_sms_clients[i] = max_sm_used;
 			printf("----------- SIZE: %d\n", op_info_vector[i].size());
+			is_train[i] = train[i];
 		}
 
 		fidx = (int*)dlsym(klib, "func_indexes");

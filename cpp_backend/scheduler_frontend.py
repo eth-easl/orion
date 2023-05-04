@@ -29,27 +29,32 @@ class PyScheduler:
         reef,
         reef_depth,
         hp_limit,
-        update_start
+        update_start,
+        train
     ):
 
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
         lib_names = [x.encode('utf-8') for x in kernel_files]
 
         # convert
-        IntAr = ctypes.c_int * self._num_clients
+        IntAr = c_int * self._num_clients
         tids_ar = IntAr(*tids)
         num_kernels_ar = IntAr(*num_kernels)
         num_iters_ar = IntAr(*num_iters)
 
-        CharAr = ctypes.c_char_p * self._num_clients
+        CharAr = c_char_p * self._num_clients
         model_names_ctypes_ar = CharAr(*model_names_ctypes)
         lib_names_ar = CharAr(*lib_names)
 
-        self._sched_lib.argtypes = [c_void_p, c_int, POINTER(c_int), POINTER(c_char_p), POINTER(c_char_p), POINTER(c_int)]
+        BoolAr = c_bool * self._num_clients
+        train_ar = BoolAr(*train)
+
+        print(train)
+        self._sched_lib.argtypes = [c_void_p, c_int, POINTER(c_int), POINTER(c_char_p), POINTER(c_char_p), POINTER(c_int), POINTER(c_bool)]
 
         print(model_names, lib_names, tids)
 
-        self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar, num_iters_ar)
+        self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar, num_iters_ar, train_ar)
 
         num_clients = len(tids)
         print(f"Num clients is {num_clients}")

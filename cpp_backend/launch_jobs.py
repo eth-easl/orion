@@ -81,7 +81,7 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
     additional_model_files = [config_dict['additional_kernel_file'] if 'additional_kernel_file' in config_dict else None for config_dict in config_dict_list]
     num_kernels = [config_dict['num_kernels'] for config_dict in config_dict_list]
     num_iters = [config_dict['num_iters'] for config_dict in config_dict_list]
-
+    train_list = [config_dict['args']['train'] for config_dict in config_dict_list]
     additional_num_kernels = [config_dict['additional_num_kernels'] if 'additional_num_kernels' in config_dict else None  for config_dict in config_dict_list]
     tids = []
     threads = []
@@ -113,7 +113,8 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
             False,
             reef_depth,
             hp_limit,
-            update_start
+            update_start,
+            train_list
         )
     )
 
