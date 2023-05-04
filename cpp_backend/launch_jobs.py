@@ -51,7 +51,7 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, run_eval):
+def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, run_eval):
 
     seed_everything(42)
 
@@ -112,7 +112,8 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, run_eval):
             run_eval,
             False,
             reef_depth,
-            hp_limit
+            hp_limit,
+            update_start
         )
     )
 
@@ -135,7 +136,8 @@ if __name__ == "__main__":
     config_file = sys.argv[1]
     reef_depth = int(sys.argv[2])
     hp_limit = int(sys.argv[3])
+    update_start = int(sys.argv[4])
     profile = True
     with open(config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict, profile, reef_depth, hp_limit, True)
+    launch_jobs(config_dict, profile, reef_depth, hp_limit, update_start, True)

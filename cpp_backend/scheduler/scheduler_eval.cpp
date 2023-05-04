@@ -217,7 +217,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 	}
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, int depth, int hp_limit) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, int depth, int hp_limit, int update_start) {
 
 	printf("here!\n");
 
@@ -242,9 +242,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 	long sum = 0;
 
 	// BS
-	int sm_threshold = 0;
 	int low_sms = 0;
 	int high_sms = max_sms_clients[0]; // 0 is the lp client
+	int sm_threshold = max_sms_clients[0]/2;
 	float hp_iter_duration = 0.0; // 1 is the hp client
 	float hp_limit_float = (float)hp_limit;
 
@@ -299,11 +299,11 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 				if ((num_clients==1) || (seen[1] == 0) || (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD))
 					schedule = true;
-				else if (num_client_cur_iters[0] < 10 || num_client_cur_iters[1] >= num_client_max_iters[1]) {
+				else if (num_client_cur_iters[0] <= 10 || num_client_cur_iters[1] >= num_client_max_iters[1]) {
 					// this could be removed
 					schedule = true;
 				}
-				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) && (op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile)))
+				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold ) &&  (seen[1] >= update_start || (op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
 					schedule = true;
 				if (schedule && large_found && event_ids[0]>=1) {
 					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
@@ -384,13 +384,23 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
-					if (i==1) {
+					if (!reef && i==1) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
-						if ((num_client_cur_iters[i] % 10) == 0) {
+						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
 							float hp_avg_duration = hp_iter_duration/10.0;
-							printf("--------------------- Average iter duration for client 1 is %f ms, limit is %f ms\n", hp_avg_duration, hp_limit_float);
+							printf("--------------------- Average iter duration for client 1 is %f ms, limit is %f ms, sm_threshold is %d\n", hp_avg_duration, hp_limit_float, sm_threshold);
 							hp_iter_duration = 0;
+
+							// TODO: add better stopping conditions
+							if (hp_avg_duration > hp_limit_float) {
+								high_sms = sm_threshold;
+								sm_threshold = (low_sms+high_sms)/2;
+							}
+							else {
+								low_sms = sm_threshold;
+								sm_threshold = (low_sms+high_sms)/2;
+							}
 						}
 					}
 					//printf("Client %d finished iteration %d, it took %f ms, seen is %d\n", i, num_client_cur_iters[i], duration, seen[i]);
@@ -610,11 +620,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, int reef_depth, int hp_limit) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, int reef_depth, int hp_limit, int update_start) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, reef_depth, hp_limit);
+			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, reef_depth, hp_limit, update_start);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");
