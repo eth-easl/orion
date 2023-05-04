@@ -122,12 +122,12 @@ def setup(model_config, shared_config, device):
     # else:
     optimizer = BertAdam(optimizer_grouped_parameters, lr=5e-5, warmup=0.1, t_total=100)
 
-
-    input_ids = torch.ones((batch_size, 384)).to(torch.int64)
-    segment_ids = torch.ones((batch_size, 384)).to(torch.int64)
-    input_mask = torch.ones((batch_size, 384)).to(torch.int64)
-    start_positions = torch.zeros((batch_size, )).to(torch.int64)
-    end_positions = torch.ones((batch_size, )).to(torch.int64)
+    pin_memory = shared_config['pin_memory']
+    input_ids = torch.ones((batch_size, 384), pin_memory=pin_memory).to(torch.int64)
+    segment_ids = torch.ones((batch_size, 384), pin_memory=pin_memory).to(torch.int64)
+    input_mask = torch.ones((batch_size, 384), pin_memory=pin_memory).to(torch.int64)
+    start_positions = torch.zeros((batch_size, ), pin_memory=pin_memory).to(torch.int64)
+    end_positions = torch.ones((batch_size, ), pin_memory=pin_memory).to(torch.int64)
     virtual_loader = utils.DummyDataLoader(batch=(input_ids, input_mask, segment_ids, start_positions, end_positions))
     # else:
     #     vocab_file = os.path.join(

@@ -148,9 +148,9 @@ def setup(model_config, shared_config, device):
     #         )
 
 
-
-    data = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
-    target = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+    pin_memory = shared_config['pin_memory']
+    data = torch.ones((model_consts['tgt_len'], batch_size), pin_memory=pin_memory).to(torch.int64)
+    target = torch.ones((model_consts['tgt_len'], batch_size), pin_memory=pin_memory).to(torch.int64)
     # The later two parts are not used in either training or inference. They are set to align its behavior with real loader.
     virtual_loader = utils.DummyDataLoader(batch=(data, target, 1, 1))
     # else:

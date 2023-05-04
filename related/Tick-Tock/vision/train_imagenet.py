@@ -109,10 +109,11 @@ def setup(model_config, shared_config, device):
     batch_size = model_config['batch_size']
     metric_fn = torch.nn.CrossEntropyLoss().to(device)
 
+    pin_memory = shared_config['pin_memory']
 
     train_loader = utils.DummyDataLoader(batch=(
-        torch.rand([batch_size, 3, 224, 224]),
-        torch.ones([batch_size]).to(torch.long)
+        torch.rand([batch_size, 3, 224, 224], pin_memory=pin_memory),
+        torch.ones([batch_size], pin_memory=pin_memory).to(torch.long)
     ))
     # else:
     #     if arch == 'inception_v3':

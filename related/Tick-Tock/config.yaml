@@ -5,11 +5,11 @@ model0:
   name: resnet101 # these two names should strictly correspond to the model names below
 model1:
   mode: train # train or eval
-  name: bert
+  name: transformer
 shared_config:
   closed_inference_loop: false
   distribution: uniform # poisson or uniform
-
+  pin_memory: true
 #  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
 #  cifar10_root: '/cluster/scratch/xianma/cifar10'
 #  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
@@ -24,25 +24,25 @@ shared_config:
 resnet50:
   arch: resnet50
   batch_size: 32
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
 resnet101:
   arch: resnet101
   batch_size: 32
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2:
   arch: mobilenet_v2
   batch_size: 64
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert:
   batch_size: 8
   arch: base # either base or large
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
 #  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
@@ -50,7 +50,7 @@ bert:
 transformer:
   arch: base # either base or large
   batch_size: 8
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
 
@@ -62,25 +62,25 @@ transformer:
 resnet50-1:
   arch: resnet50
   batch_size: 32
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
 resnet101-1:
   arch: resnet101
   batch_size: 32
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2-1:
   arch: mobilenet_v2
   batch_size: 64
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert-1:
   batch_size: 8
   arch: base # either base or large
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
 #  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
@@ -88,7 +88,7 @@ bert-1:
 transformer-1:
   arch: base # either base or large
   batch_size: 8
-  num_iterations: 2000
+  num_iterations: 1000
   num_requests: 1000
   request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
 
