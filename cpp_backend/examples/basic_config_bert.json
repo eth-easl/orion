@@ -6,13 +6,13 @@
 		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_8_fb1",
 		"num_kernels": 4777,
 		"additional_num_kernels": 4777,
-		"num_iters": 1000,
+		"num_iters": 300,
 		"args": {
-			"batchsize": 2,
-			"rps": 4,
+			"batchsize": 8,
+			"rps": 0,
 			"uniform": false,
 			"dummy_data": false,
-			"train": false
+			"train": true
 		}
 	}
 ]
