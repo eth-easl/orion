@@ -85,8 +85,8 @@ def setup(model_config, shared_config, device):
     # Otherwise it'll default to "promote" mode, and we'll get fp32 operations.
     # Note that running `--apex_amp_opt_level O2` will remove the need for this
     # code, but it is still valid.
-    if 'apex' in sys.modules:
-        amp.register_half_function(torch, 'einsum')
+    # if 'apex' in sys.modules:
+    #     amp.register_half_function(torch, 'einsum')
 
 
     arch = model_config['arch']
@@ -128,42 +128,42 @@ def setup(model_config, shared_config, device):
         'sample_softmax': sample_softmax,
     }
     model = MemTransformerLM(**MemTransformerLM_kwargs)
-    model.apply(functools.partial(weights_init, model_consts=model_consts))
+    # model.apply(functools.partial(weights_init, model_consts=model_consts))
     # ensure embedding init is not overridden by out_layer in case of weight sharing
-    model.word_emb.apply(functools.partial(weights_init, model_consts=model_consts))
+    # model.word_emb.apply(functools.partial(weights_init, model_consts=model_consts))
 
     # jitlamb optimizer
-    optimizer = lamb.JITLamb(model.parameters(), lr=model_consts['lr'], weight_decay=0.0)
+    optimizer = lamb.Lamb(model.parameters(), lr=0.1)
 
     model = model.to(device)
-    scaler = None
-    if model_config['use_fp16']:
-        if model_config['amp'] == 'pytorch':
-            scaler = torch.cuda.amp.GradScaler()
-        elif model_config['amp'] == 'apex':
-            model, optimizer = amp.initialize(
-                model,
-                optimizer,
-                opt_level=model_config['apex_amp_opt_level'],
-            )
+    # scaler = None
+    # if model_config['use_fp16']:
+    #     if model_config['amp'] == 'pytorch':
+    #         scaler = torch.cuda.amp.GradScaler()
+    #     elif model_config['amp'] == 'apex':
+    #         model, optimizer = amp.initialize(
+    #             model,
+    #             optimizer,
+    #             opt_level=model_config['apex_amp_opt_level'],
+    #         )
 
 
-    if shared_config['use_dummy_data']:
-        data = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
-        target = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
-        # The later two parts are not used in either training or inference. They are set to align its behavior with real loader.
-        virtual_loader = utils.DummyDataLoader(batch=(data, target, 1, 1))
-    else:
-        corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
-        tr_iter = corpus.get_iterator('train', batch_size, model_consts['tgt_len'], device=device, ext_len=ext_len)
-        train_iter = tr_iter.get_fixlen_iter()
-        virtual_loader = train_iter
+
+    data = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+    target = torch.ones((model_consts['tgt_len'], batch_size)).to(torch.int64)
+    # The later two parts are not used in either training or inference. They are set to align its behavior with real loader.
+    virtual_loader = utils.DummyDataLoader(batch=(data, target, 1, 1))
+    # else:
+    #     corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
+    #     tr_iter = corpus.get_iterator('train', batch_size, model_consts['tgt_len'], device=device, ext_len=ext_len)
+    #     train_iter = tr_iter.get_fixlen_iter()
+    #     virtual_loader = train_iter
 
     return model, virtual_loader, optimizer
 
 
 def eval_wrapper(sync_info, tid: int, model_config, shared_config):
-    utils.seed_everything(shared_config['seed'])
+    utils.seed_everything(42)
     device = torch.device("cuda:0")
     if 'stream' not in shared_config:
         stream = torch.cuda.Stream(device=device)
@@ -174,7 +174,7 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     model.eval()
 
     num_requests = model_config['num_requests']
-    num_warm_up_reqs = model_config['num_warm_up_reqs']
+    num_warm_up_reqs = 10
 
     loader_iterator = iter(data_loader)
 
@@ -190,7 +190,7 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
 
 
 def train_wrapper(sync_info, tid: int, model_config, shared_config):
-    utils.seed_everything(shared_config['seed'])
+    utils.seed_everything(42)
     device = torch.device("cuda:0")
 
     if 'stream' not in shared_config:
@@ -202,12 +202,12 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
 
     model.train()
 
-    enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
+    # enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
     mem = None
     clip = 0.25
 
     num_iterations = model_config['num_iterations']
-    warm_up_iters = model_config['warm_up_iters']
+    warm_up_iters = 10
 
 
     logging.info(f'transformer is set up with {num_iterations}')
@@ -242,7 +242,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 #         torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), clip)
                 # else:
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                # torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
 
                 # if model_config['use_fp16'] and model_config['amp'] == 'pytorch':
                 #     scaler.step(optimizer)

@@ -11,7 +11,7 @@ from utils.sync_control import *
 
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
-    utils.seed_everything(shared_config['seed'])
+    utils.seed_everything(42)
     device = torch.device("cuda:0")
     if 'stream' not in shared_config:
         stream = torch.cuda.Stream(device=device)
@@ -21,7 +21,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     model.eval()
 
     num_requests = model_config['num_requests']
-    num_warm_up_reqs = model_config['num_warm_up_reqs']
+    num_warm_up_reqs = 10
 
 
     train_loader_iter = iter(train_loader)
@@ -34,7 +34,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
-    utils.seed_everything(shared_config['seed'])
+    utils.seed_everything(42)
     device = torch.device("cuda:0")
 
     if 'stream' not in shared_config:
@@ -47,7 +47,7 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     num_iterations = model_config['num_iterations']
     logging.info(f'model is set up with num iterations {num_iterations}')
 
-    warm_up_iters = model_config['warm_up_iters']
+    warm_up_iters = 10
 
     non_stop_training = 'non_stop_training' in shared_config and shared_config['non_stop_training']
 
@@ -104,34 +104,34 @@ def setup(model_config, shared_config, device):
     logging.info(f'vision model with arch {arch}')
     model = models.__dict__[arch](num_classes=1000)
     model = model.to(device)
-    optimizer_func = getattr(torch.optim, model_config['optimizer'])
-    optimizer = optimizer_func(model.parameters(), lr=0.1)
+    # optimizer_func = getattr(torch.optim, model_config['optimizer'])
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
     batch_size = model_config['batch_size']
-    metric_fn = F.cross_entropy
+    metric_fn = torch.nn.CrossEntropyLoss().to(device)
 
-    if shared_config['use_dummy_data']:
-        train_loader = utils.DummyDataLoader(batch=(
-            torch.rand([batch_size, 3, 224, 224]).contiguous(),
-            torch.ones([batch_size]).to(torch.long)
-        ))
-    else:
-        if arch == 'inception_v3':
-            train_transform = transforms.Compose([
-                transforms.Resize(299),
-                transforms.CenterCrop(299),
-                transforms.ToTensor(),
-                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
-        else:
-            train_transform = transforms.Compose([
-                transforms.RandomResizedCrop(224),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
 
-        train_dataset = \
-            datasets.ImageFolder(shared_config['imagenet_root'], transform=train_transform)
-
-        train_loader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True, num_workers=model_config['num_workers'])
+    train_loader = utils.DummyDataLoader(batch=(
+        torch.rand([batch_size, 3, 224, 224]),
+        torch.ones([batch_size]).to(torch.long)
+    ))
+    # else:
+    #     if arch == 'inception_v3':
+    #         train_transform = transforms.Compose([
+    #             transforms.Resize(299),
+    #             transforms.CenterCrop(299),
+    #             transforms.ToTensor(),
+    #             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
+    #     else:
+    #         train_transform = transforms.Compose([
+    #             transforms.RandomResizedCrop(224),
+    #             transforms.RandomHorizontalFlip(),
+    #             transforms.ToTensor(),
+    #             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
+    #
+    #     train_dataset = \
+    #         datasets.ImageFolder(shared_config['imagenet_root'], transform=train_transform)
+    #
+    #     train_loader = torch.utils.data.DataLoader(
+    #         train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
     return model, optimizer, train_loader, metric_fn

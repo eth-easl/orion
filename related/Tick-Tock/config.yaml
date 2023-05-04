@@ -1,85 +1,57 @@
 ---
 policy: temporal # "temporal", "tick-tock", "MPS-process", "MPS-thread", or "time-slice"
 model0:
-  mode: eval # train or eval
-  name: transformer # these two names should strictly correspond to the model names below
+  mode: train # train or eval
+  name: resnet101 # these two names should strictly correspond to the model names below
 model1:
-  mode: eval # train or eval
-  name: mobilenet_v2
-num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
+  mode: train # train or eval
+  name: bert
 shared_config:
-  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
-  cifar10_root: '/cluster/scratch/xianma/cifar10'
-  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
-  squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
-  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
-  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
-  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
-  use_dummy_data: true
   closed_inference_loop: false
-  seed: 42
   distribution: uniform # poisson or uniform
-  percentile_positions:
-    - 50
-    - 90
-    - 95
-    - 99
+
+#  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
+#  cifar10_root: '/cluster/scratch/xianma/cifar10'
+#  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
+#  squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
+#  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
+#  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
+#  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
+
+
 
 # configuration for each model
 resnet50:
   arch: resnet50
-  optimizer: SGD
-  batch_size: 4
-  num_workers: 2
-  num_iterations: 300
-  warm_up_iters: 10
+  batch_size: 32
+  num_iterations: 2000
   num_requests: 1000
-  num_warm_up_reqs: 10
   request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
 resnet101:
   arch: resnet101
-  optimizer: SGD
-  batch_size: 4
-  num_workers: 2
-  num_iterations: 300
-  warm_up_iters: 10
+  batch_size: 32
+  num_iterations: 2000
   num_requests: 1000
-  num_warm_up_reqs: 10
   request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2:
   arch: mobilenet_v2
-  optimizer: SGD
-  batch_size: 4
-  num_workers: 2
-  num_iterations: 300
-  warm_up_iters: 10
+  batch_size: 64
+  num_iterations: 2000
   num_requests: 1000
-  num_warm_up_reqs: 10
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert:
-  use_fp16: false # true or false; please stick to false or revise code otherwise
-  fp16_loss_scale: 0 # only used if use_fp16 is set to True
-  squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 2
-  num_workers: 2
-  arch: large # either base or large
-  num_iterations: 300
-  warm_up_iters: 10
-  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
-  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+  batch_size: 8
+  arch: base # either base or large
+  num_iterations: 2000
   num_requests: 1000
-  num_warm_up_reqs: 10
   request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
 transformer:
   arch: base # either base or large
-  use_fp16: false
-  amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
-  apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
-  batch_size: 4
-  num_iterations: 300
-  warm_up_iters: 10
+  batch_size: 8
+  num_iterations: 2000
   num_requests: 1000
-  num_warm_up_reqs: 10
   request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
 
 
@@ -89,54 +61,36 @@ transformer:
 
 resnet50-1:
   arch: resnet50
-  optimizer: SGD
-  batch_size: 4
-  num_workers: 2
-  num_iterations: 30
-  warm_up_iters: 10
-  num_requests: 500
-  num_warm_up_reqs: 10
-mobilenet_v2-1:
-  arch: mobilenet_v2
-  optimizer: SGD
-  batch_size: 4
-  num_workers: 2
-  num_iterations: 700
-  warm_up_iters: 10
-  num_requests: 500
-  num_warm_up_reqs: 10
+  batch_size: 32
+  num_iterations: 2000
+  num_requests: 1000
+  request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
 resnet101-1:
   arch: resnet101
-  optimizer: SGD
-  batch_size: 4
-  num_workers: 2
-  num_iterations: 300
-  warm_up_iters: 10
-  num_requests: 500
-  num_warm_up_reqs: 10
+  batch_size: 32
+  num_iterations: 2000
+  num_requests: 1000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2-1:
+  arch: mobilenet_v2
+  batch_size: 64
+  num_iterations: 2000
+  num_requests: 1000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert-1:
-  use_fp16: false # true or false; please stick to false or revise code otherwise
-  fp16_loss_scale: 0 # only used if use_fp16 is set to True
-  squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 2
-  num_workers: 2
-  arch: large # either base or large
-  num_iterations: 300
-  warm_up_iters: 10
-  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
-  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
-  num_requests: 500
-  num_warm_up_reqs: 10
+  batch_size: 8
+  arch: base # either base or large
+  num_iterations: 2000
+  num_requests: 1000
+  request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
 transformer-1:
   arch: base # either base or large
-  use_fp16: false
-  amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
-  apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
-  batch_size: 4
-  num_iterations: 300
-  warm_up_iters: 10
-  num_requests: 500
-  num_warm_up_reqs: 10
+  batch_size: 8
+  num_iterations: 2000
+  num_requests: 1000
+  request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
 
 
 # unused models

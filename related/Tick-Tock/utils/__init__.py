@@ -24,6 +24,7 @@ class DummyDataLoader:
         return itertools.repeat(self.batch)
 
 
+percentile_positions = [50, 90, 95, 99]
 def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_config, stream, sync_info: BasicSyncInfo):
     """
     Invoke the func {num_requests} times with first {num_warm_up_reqs} iterations as warm up.
@@ -42,7 +43,6 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     else:
         intervals = [0]*num_requests
 
-    percentile_positions = shared_config['percentile_positions']
     latency_history = []
 
     with torch.no_grad():
@@ -112,7 +112,6 @@ def non_stop_measure(func, num_warm_up_reqs, request_rate, tid, shared_config, s
     """
 
 
-    percentile_positions = shared_config['percentile_positions']
     latency_history = []
     scale = 1 / request_rate
     distribution = shared_config['distribution']

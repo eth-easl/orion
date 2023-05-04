@@ -157,7 +157,7 @@ if __name__ == "__main__":
     model1_mode = 'eval'
 
     policy = 'time-slice'
-    use_dummy_data = True
+
     closed_inference_loop = False
     distribution = 'uniform'
     request_rates = {
@@ -195,7 +195,6 @@ if __name__ == "__main__":
 
 
 
-    default_full_config['shared_config']['use_dummy_data'] = use_dummy_data
     default_full_config['shared_config']['closed_inference_loop'] = closed_inference_loop
     default_full_config['shared_config']['distribution'] = distribution
 
@@ -224,7 +223,7 @@ if __name__ == "__main__":
             default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
             default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
 
-            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
+            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
             run(default_full_config, combination_name, times=times)
         else:
             model1_with_suffix = model1 + '-1'
@@ -247,7 +246,7 @@ if __name__ == "__main__":
             default_full_config[model1_with_suffix]['batch_size'] = eval_batch_sizes[model1]
 
 
-            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}-dummy-{use_dummy_data}'
+            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
             run(default_full_config, combination_name, times=times)
 
 
