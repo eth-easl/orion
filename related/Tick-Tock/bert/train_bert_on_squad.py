@@ -178,10 +178,11 @@ def setup(model_config, shared_config, device):
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     utils.seed_everything(42)
     device = torch.device("cuda:0")
-    if 'stream' not in shared_config:
-        stream = torch.cuda.Stream(device=device)
+
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
     else:
-        stream = shared_config['stream']
+        stream = torch.cuda.Stream(device=device)
 
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
@@ -205,10 +206,10 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     utils.seed_everything(42)
     device = torch.device("cuda:0")
 
-    if 'stream' not in shared_config:
-        my_stream = torch.cuda.Stream(device=device)
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
     else:
-        my_stream = shared_config['stream']
+        stream = torch.cuda.Stream(device=device)
 
     model, dataloader, optimizer = setup(model_config, shared_config, device)
     model.train()
@@ -219,20 +220,19 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     num_iterations = model_config['num_iterations']
     warm_up_iters = 10
 
-    non_stop_training = 'non_stop_training' in shared_config and shared_config['non_stop_training']
 
     logging.info(f'bert model is set up with {num_iterations}')
     for batch_idx, batch in enumerate(dataloader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            my_stream.synchronize()
+            stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
 
         batch = tuple(t.to(device) for t in batch)
-        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-            with torch.cuda.stream(my_stream):
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
+            with torch.cuda.stream(stream):
                 input_ids, input_mask, segment_ids, start_positions, end_positions = batch
                 start_logits, end_logits = model(input_ids, segment_ids, input_mask)
                 # if len(start_positions.size()) > 1:
@@ -244,8 +244,8 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
                 # start_positions.clamp_(0, ignored_index)
                 # end_positions.clamp_(0, ignored_index)
 
-        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-            with torch.cuda.stream(my_stream):
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
+            with torch.cuda.stream(stream):
                 loss_fct = torch.nn.CrossEntropyLoss(ignore_index=ignored_index)
                 start_loss = loss_fct(start_logits, start_positions)
                 end_loss = loss_fct(end_logits, end_positions)
@@ -263,7 +263,7 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
                 optimizer.step()
                 optimizer.zero_grad()
 
-        if non_stop_training:
+        if tid == 1:
             if not sync_info.should_continue_loop():
                 break
         else:
@@ -271,10 +271,10 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
                 # reached the last iteration
                 break
 
-    my_stream.synchronize()
+    stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
-    sync_info.write_kv(f'iteration{tid}', batch_idx)
+    sync_info.write_kv(f'iteration{tid}', batch_idx + 1)
     logging.info(f'tid {tid} it takes {duration} seconds to train bert')
     return duration

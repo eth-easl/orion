@@ -126,7 +126,7 @@ if __name__ == "__main__":
             data_manager=data_manager,
             isolation_level='thread'
         )
-        shared_config['stream'] = torch.cuda.Stream(device=torch.device("cuda:0"))
+        shared_config['default'] = True
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
@@ -194,7 +194,6 @@ if __name__ == "__main__":
 
         thread0.join()
         thread1.join()
-        shared_config['stream'] = None
     else:
         raise NotImplementedError(f'unsupported policy {policy}')
 

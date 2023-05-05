@@ -165,10 +165,11 @@ def setup(model_config, shared_config, device):
 def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     utils.seed_everything(42)
     device = torch.device("cuda:0")
-    if 'stream' not in shared_config:
-        stream = torch.cuda.Stream(device=device)
+
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
     else:
-        stream = shared_config['stream']
+        stream = torch.cuda.Stream(device=device)
 
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
@@ -193,10 +194,10 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     utils.seed_everything(42)
     device = torch.device("cuda:0")
 
-    if 'stream' not in shared_config:
-        my_stream = torch.cuda.Stream(device=device)
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
     else:
-        my_stream = shared_config['stream']
+        stream = torch.cuda.Stream(device=device)
 
     model, data_loader, optimizer = setup(model_config, shared_config, device)
 
@@ -211,26 +212,25 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
 
 
     logging.info(f'transformer is set up with {num_iterations}')
-    non_stop_training = 'non_stop_training' in shared_config and shared_config['non_stop_training']
 
     for batch_idx, (data, target, seq_len, _) in enumerate(data_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            my_stream.synchronize()
+            stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
 
         data = data.to(device)
         target = target.to(device)
-        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-            with torch.cuda.stream(my_stream):
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
+            with torch.cuda.stream(stream):
                 # with torch.cuda.amp.autocast(enable_autocast):
                 loss, mem = model(data, target, mem)
                 loss = loss.float().mean().type_as(loss)
 
-        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-            with torch.cuda.stream(my_stream):
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
+            with torch.cuda.stream(stream):
                 # if model_config['use_fp16']:
                 #     if model_config['amp'] == 'pytorch':
                 #         scaler.scale(loss).backward()
@@ -251,7 +251,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 optimizer.step()
                 model.zero_grad()
 
-        if non_stop_training:
+        if tid == 1:
             if not sync_info.should_continue_loop():
                 break
         else:
@@ -259,11 +259,11 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 # reached the last iteration
                 break
 
-    my_stream.synchronize()
+    stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
-    sync_info.write_kv(f'iteration{tid}', batch_idx)
+    sync_info.write_kv(f'iteration{tid}', batch_idx + 1)
     logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
     return duration
 

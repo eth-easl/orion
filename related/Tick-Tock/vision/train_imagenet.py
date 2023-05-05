@@ -13,10 +13,10 @@ from utils.sync_control import *
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     utils.seed_everything(42)
     device = torch.device("cuda:0")
-    if 'stream' not in shared_config:
-        stream = torch.cuda.Stream(device=device)
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
     else:
-        stream = shared_config['stream']
+        stream = torch.cuda.Stream(device=device)
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.eval()
 
@@ -37,10 +37,10 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     utils.seed_everything(42)
     device = torch.device("cuda:0")
 
-    if 'stream' not in shared_config:
-        my_stream = torch.cuda.Stream(device=device)
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
     else:
-        my_stream = shared_config['stream']
+        stream = torch.cuda.Stream(device=device)
 
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.train()
@@ -49,12 +49,10 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
 
     warm_up_iters = 10
 
-    non_stop_training = 'non_stop_training' in shared_config and shared_config['non_stop_training']
-
     for batch_idx, batch in enumerate(train_loader):
         if batch_idx == warm_up_iters:
             # finish previous work
-            my_stream.synchronize()
+            stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
@@ -63,37 +61,38 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
         #     torch.cuda.cudart().cudaProfilerStart()
 
         data, target = batch[0].to(device), batch[1].to(device)
-        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
             # if shared_config['enable_profiling'] and batch_idx >= warm_up_iters:
             #     torch.cuda.nvtx.range_push(f'thread {tid} starts FORWARD {batch_idx}')
-            with torch.cuda.stream(my_stream):
+            with torch.cuda.stream(stream):
                 output = model(data)
                 loss = metric_fn(output, target)
         # if shared_config['enable_profiling'] and batch_idx >= warm_up_iters:
         #     torch.cuda.nvtx.range_pop()
 
-        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
             # if shared_config['enable_profiling'] and batch_idx >= warm_up_iters:
             #     torch.cuda.nvtx.range_push(f'thread {tid} starts BACKWARD {batch_idx}')
-            with torch.cuda.stream(my_stream):
+            with torch.cuda.stream(stream):
                 loss.backward()
                 optimizer.step()
                 optimizer.zero_grad()
         # if shared_config['enable_profiling'] and batch_idx >= warm_up_iters:
         #     torch.cuda.nvtx.range_pop()
 
-        if non_stop_training:
+        if tid == 1:
             if not sync_info.should_continue_loop():
                 break
         else:
             if batch_idx == num_iterations - 1:
                 # reached the last iteration
                 break
-    my_stream.synchronize()
+
+    stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
-    sync_info.write_kv(f'iteration{tid}', batch_idx)
+    sync_info.write_kv(f'iteration{tid}', batch_idx + 1)
     logging.info(f'tid {tid} it takes {duration} seconds to train imagenet')
     return duration
 

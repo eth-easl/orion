@@ -19,24 +19,28 @@ model2id = {
 }
 
 
-directory = '/Users/sherlock/programs/gpu_share_data/inf-train-poisson2/sequential'
-file_name_template = Template('log_0_train-${model0}-eval-${model1}-time-slice-dummy-True.log.json')
+directory = '/Users/sherlock/programs/gpu_share_data/train-train-priorities-pinned/tick-tock'
+file_name_template = Template('log_0_train-${model0}-train-${model1}-tick-tock.log.json')
 
 num_models = len(models)
 
-duration_df_raw = [
+total_throughput_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-p50_df_raw = [
+throughput0_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-p95_df_raw = [
+throughput1_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-iteration_df_raw = [
+iteration1_df_raw = [
+    [0 for i in range(num_models)] for j in range(num_models)
+]
+
+total_time_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
@@ -58,25 +62,28 @@ for model0_id in range(5):
             print(f'{model0} with {model1} cannot be found')
             continue
 
-        duration_df_raw[model0_id][model1_id] = round(data['duration'], 2)
-        p50_df_raw[model0_id][model1_id] = round(data['p50-1'], 2)
-        p95_df_raw[model0_id][model1_id] = round(data['p95-1'], 2)
-        iteration_df_raw[model0_id][model1_id] = round(data['iteration0'], 2)
+        total_time = data['duration']
+        total_time_df_raw[model0_id][model1_id] = round(total_time, 2)
+
+        iteration1 = int(data['iteration1'])
+        throughput1_raw[model0_id][model1_id] = round((iteration1 - 10) / total_time, 2)
+        throughput0_raw[model0_id][model1_id] = round((1000 - 10) / total_time, 2)
+        total_throughput_df_raw[model0_id][model1_id] = round((iteration1 + 1000 - 10) / total_time, 2)
 
 
 
 
 
-duration_df = pd.DataFrame(data=duration_df_raw, columns=models_better_names, index=models_better_names)
-p50_df = pd.DataFrame(data=p50_df_raw, columns=models_better_names, index=models_better_names)
-p95_df = pd.DataFrame(data=p95_df_raw, columns=models_better_names, index=models_better_names)
-iteration_df = pd.DataFrame(data=iteration_df_raw, columns=models_better_names, index=models_better_names)
+total_throughput_df = pd.DataFrame(data=total_throughput_df_raw, columns=models_better_names, index=models_better_names)
+throughput0_df = pd.DataFrame(data=throughput0_raw, columns=models_better_names, index=models_better_names)
+throughput1_df = pd.DataFrame(data=throughput1_raw, columns=models_better_names, index=models_better_names)
+total_time_df = pd.DataFrame(data=total_time_df_raw, columns=models_better_names, index=models_better_names)
 
 
 # %%
 # num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
 
-p95_df.to_clipboard()
+total_time_df.to_clipboard()
 
 # %%
 # for model0_id in range(5):
