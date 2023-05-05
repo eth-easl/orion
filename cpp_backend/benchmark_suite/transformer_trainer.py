@@ -21,8 +21,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.ones((192, self.batchsize), pin_memory=False).to(torch.int64)
-        self.target = torch.ones((192, self.batchsize), pin_memory=False).to(torch.int64)
+        self.data = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
 
     def __iter__(self):
         return self
@@ -55,7 +55,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
     barriers[0].wait()
 
     if (train and tid==1):
-        time.sleep(1)
+        time.sleep(5)
 
     model_config = {
         'n_token': 267735,
@@ -109,21 +109,22 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
         timings = []
         while batch_idx < num_iters:
             if train:
-                print(f"Start iter {batch_idx}")
+                print(f"Client {tid}, start iter {batch_idx}")
                 data, target = batch[0].to(local_rank), batch[1].to(local_rank)
                 loss, mems = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
                 optimizer.step()
+                block(backend_lib, batch_idx)
                 batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward
                     barriers[0].wait()
-
                 if batch_idx == 10:
                     barriers[0].wait()
+                    print("After sync!!")
                 if check_stop(backend_lib):
-                        print("---- STOP!")
-                        break
+                    print("---- STOP!")
+                    break
             else:
                 with torch.no_grad():
                     cur_time = time.time()

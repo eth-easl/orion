@@ -61,7 +61,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
     barriers[0].wait()
     
     if (train and tid==1):
-        time.sleep(1)
+        time.sleep(5)
         
 
     if (not train):
@@ -148,6 +148,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                 loss = (start_loss + end_loss) / 2
                 loss.backward()
                 optimizer.step()
+                block(backend_lib, batch_idx)
                 batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward
                     barriers[0].wait()
