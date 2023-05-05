@@ -310,7 +310,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					// this could be removed
 					schedule = true;
 				}
-				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) &&  (seen[1] >= update_start || (op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
+				else if (seen[1] >= update_start && (op_info_0.sm_used <= sm_threshold && cudaEventQuery(*(events[1][update_start-1])) == cudaSuccess)) // && (op_info_0.sm_used <= 10*sm_threshold))
+					schedule = true;
+				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) &&  ((op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
 					schedule = true;
 				if (schedule && large_found && event_ids[0]>=1) {
 					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
