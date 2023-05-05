@@ -28,11 +28,11 @@ total_throughput_df_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-throughput0_raw = [
+hi_throughput_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
-throughput1_raw = [
+lo_throughput_raw = [
     [0 for i in range(num_models)] for j in range(num_models)
 ]
 
@@ -63,27 +63,29 @@ for model0_id in range(5):
             continue
 
         total_time = data['duration']
-        total_time_df_raw[model0_id][model1_id] = round(total_time, 2)
+        total_time_df_raw[model1_id][model0_id] = round(total_time, 2)
 
         iteration1 = int(data['iteration1'])
-        throughput1_raw[model0_id][model1_id] = round((iteration1 - 10) / total_time, 2)
-        throughput0_raw[model0_id][model1_id] = round((1000 - 10) / total_time, 2)
-        total_throughput_df_raw[model0_id][model1_id] = round((iteration1 + 1000 - 10) / total_time, 2)
+
+        hi_throughput_raw[model1_id][model0_id] = round((1000 - 10) / total_time, 2)
+        lo_throughput_raw[model1_id][model0_id] = round((iteration1 - 10) / total_time, 2)
+
+        total_throughput_df_raw[model1_id][model0_id] = round((iteration1 + 1000 - 10) / total_time, 2)
 
 
 
 
 
 total_throughput_df = pd.DataFrame(data=total_throughput_df_raw, columns=models_better_names, index=models_better_names)
-throughput0_df = pd.DataFrame(data=throughput0_raw, columns=models_better_names, index=models_better_names)
-throughput1_df = pd.DataFrame(data=throughput1_raw, columns=models_better_names, index=models_better_names)
+hi_throughput_df = pd.DataFrame(data=hi_throughput_raw, columns=models_better_names, index=models_better_names)
+lo_throughput_df = pd.DataFrame(data=lo_throughput_raw, columns=models_better_names, index=models_better_names)
 total_time_df = pd.DataFrame(data=total_time_df_raw, columns=models_better_names, index=models_better_names)
 
 
 # %%
 # num_reqs_df.to_json('./related/Tick-Tock/num_reqs.json', indent=4, orient='index')
 
-total_time_df.to_clipboard()
+total_throughput_df.to_clipboard()
 
 # %%
 # for model0_id in range(5):
