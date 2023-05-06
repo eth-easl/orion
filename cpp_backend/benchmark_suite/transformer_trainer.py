@@ -111,6 +111,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
             if train:
                 print(f"Client {tid}, start iter {batch_idx}")
                 data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+                optimizer.zero_grad()
                 loss, mems = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
