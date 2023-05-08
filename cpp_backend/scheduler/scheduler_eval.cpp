@@ -218,9 +218,35 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 	}
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, int depth, int hp_limit, int update_start) {
 
-	printf("here!\n");
+void Scheduler::schedule_sequential(vector<func_record*> frecords, int num_clients) {
+
+	if (num_clients==1) {
+		if (frecords[0] != NULL) {
+			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
+		}
+		return;
+	}
+
+	if (frecords[1] != NULL) {
+		if (num_client_cur_iters[1] <= 10 || seen[0]==0 || (frecords[1]->type == MALLOC_RECORD))  {
+			schedule_kernel(*(frecords[1]), sched_streams[0], 1, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[1], client_mutexes[1], 1);
+		}
+	}
+
+	if (frecords[0] != NULL) {
+		if (num_client_cur_iters[0] <= 10 || seen[1]==0 || (frecords[0]->type == MALLOC_RECORD))  {
+			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
+		}
+	}
+
+}
+
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, bool seq, int depth, int hp_limit, int update_start) {
+
 
 	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
 	int start0 = 0;
@@ -283,6 +309,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 		if (reef) {
 			schedule_reef(frecords, num_clients, depth);
+		}
+		else if (seq) {
+			schedule_sequential(frecords, num_clients);
 		}
 
 		else {
@@ -365,17 +394,27 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					DEBUG_PRINT("LOCK CLIENT %d\n", i);
 				}
 				bool ready = true;
-				if (event_ids[i] >= 1) {
-					if (cudaEventQuery(*(events[i][event_ids[i]-1])) != cudaSuccess)
-						ready &= false;
+				if (seq) {
+					if (event_ids[0] >= 1) {
+						if (cudaEventQuery(*(events[0][event_ids[0]-1])) != cudaSuccess)
+							ready &= false;
+					}
 				}
-				if (event_ids[i+2] >= 1) {
-					if (cudaEventQuery(*(events[i+2][event_ids[i+2]-1])) != cudaSuccess)
-						ready &= false;
+				else {
+					if (event_ids[i] >= 1) {
+						if (cudaEventQuery(*(events[i][event_ids[i]-1])) != cudaSuccess)
+							ready &= false;
+					}
+					if (event_ids[i+2] >= 1) {
+						if (cudaEventQuery(*(events[i+2][event_ids[i+2]-1])) != cudaSuccess)
+							ready &= false;
+					}
 				}
 				if (ready) {
 					// if yes, reset meta-structures for this client, and let it continue
 					seen[i] = 0;
+					if (seq)
+						event_ids[0] = 0;
 					event_ids[i] = 0;
 					event_ids[i+2] = 0;
 					streams[i] = -1;
@@ -395,6 +434,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
+					if (i==1)
+						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 					if (!reef && i==1 && is_train[1]) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
@@ -633,11 +674,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, int reef_depth, int hp_limit, int update_start) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, bool seq, int reef_depth, int hp_limit, int update_start) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, reef_depth, hp_limit, update_start);
+			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, seq, reef_depth, hp_limit, update_start);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");

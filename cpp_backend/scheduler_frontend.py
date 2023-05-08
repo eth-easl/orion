@@ -27,6 +27,7 @@ class PyScheduler:
         profile,
         run_eval,
         reef,
+        sequential,
         reef_depth,
         hp_limit,
         update_start,
@@ -68,7 +69,7 @@ class PyScheduler:
             if profile:
                 barriers[0].wait()
                 # run once to warm-up and setup
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, 1, reef, reef_depth, hp_limit, update_start)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, 1, reef, sequential, reef_depth, hp_limit, update_start)
                 torch.cuda.synchronize()
 
                 for j in range(num_clients):
@@ -81,13 +82,13 @@ class PyScheduler:
                 print("done!")
 
                 # warmup
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, 10, reef, reef_depth, hp_limit, update_start)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, True, 10, reef, sequential, reef_depth, hp_limit, update_start)
                 torch.cuda.synchronize()
                 barriers[0].wait()
 
                 start = time.time()
                 print("call schedule")
-                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False, 0, reef, reef_depth, hp_limit, update_start)
+                self._sched_lib.schedule(self._scheduler, num_clients, True, 0, False, 0, reef, sequential, reef_depth, hp_limit, update_start)
                 barriers[0].wait()
                 torch.cuda.synchronize()
                 print(f"Total time is {time.time()-start}")
