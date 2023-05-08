@@ -7,7 +7,6 @@ model1:
   mode: train # train or eval
   name: transformer
 shared_config:
-  closed_inference_loop: false
   distribution: uniform # poisson or uniform
   pin_memory: true
 #  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -25,25 +24,21 @@ resnet50:
   arch: resnet50
   batch_size: 32
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
 resnet101:
   arch: resnet101
   batch_size: 32
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2:
   arch: mobilenet_v2
   batch_size: 64
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert:
   batch_size: 8
   arch: base # either base or large
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
 #  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
 #  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
@@ -51,7 +46,6 @@ transformer:
   arch: base # either base or large
   batch_size: 8
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
 
 
@@ -63,25 +57,21 @@ resnet50-1:
   arch: resnet50
   batch_size: 32
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
 resnet101-1:
   arch: resnet101
   batch_size: 32
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2-1:
   arch: mobilenet_v2
   batch_size: 64
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert-1:
   batch_size: 8
   arch: base # either base or large
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
 #  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
 #  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
@@ -89,7 +79,6 @@ transformer-1:
   arch: base # either base or large
   batch_size: 8
   num_iterations: 1000
-  num_requests: 1000
   request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
 
 
@@ -101,7 +90,6 @@ retinanet:
   batch_size: 4
   num_iterations: 200
   warm_up_iters: 10
-  num_requests: 500
   num_warm_up_reqs: 10
 nasnet:
   optimizer: SGD

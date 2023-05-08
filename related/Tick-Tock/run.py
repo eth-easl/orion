@@ -174,7 +174,6 @@ if __name__ == "__main__":
 
     # ----configuration region ended----
 
-    # default_full_config['shared_config']['closed_inference_loop'] = closed_inference_loop
     # default_full_config['shared_config']['distribution'] = distribution
 
     for model0, model1 in combinations:

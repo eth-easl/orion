@@ -21,8 +21,8 @@ class BasicSyncInfo:
     def write_kvs(self, kv_pairs):
         self.data_manager.write_kvs(kv_pairs)
 
-    def should_continue_loop(self):
-        return True
+    def should_continue_loop(self, tid: int, current_iteration: int, total_iterations: int):
+        return current_iteration < total_iterations - 1
 
 
 class TickTockSyncInfo(BasicSyncInfo):
@@ -82,8 +82,9 @@ class TickTockSyncInfo(BasicSyncInfo):
         with self.lock:
             super().write_kvs(kv_pairs)
 
-class MPSSyncInfo(BasicSyncInfo):
-    def __init__(self, data_manager: DataManager, isolation_level, offset=0):
+
+class ConcurrentSyncInfo(BasicSyncInfo):
+    def __init__(self, data_manager: DataManager, isolation_level):
         super().__init__(data_manager, no_sync_control=True)
         assert isolation_level in ['thread', 'process']
         if isolation_level == 'thread':
@@ -95,14 +96,11 @@ class MPSSyncInfo(BasicSyncInfo):
             self.lock = multiprocessing.Lock()
             self.inf_train_stop_signal = multiprocessing.Event()
         self.start_time = None
-        self.offset = offset
 
     def pre_measurement_prep(self, tid):
         self.barrier.wait()
         if tid == 0:
             self.start_time = time.time()
-        else:
-            time.sleep(self.offset)
 
     def post_measurement_prep(self, tid):
         # let the other part break out of the loop
@@ -120,5 +118,10 @@ class MPSSyncInfo(BasicSyncInfo):
         with self.lock:
             super().write_kvs(kv_pairs)
 
-    def should_continue_loop(self):
-        return not self.inf_train_stop_signal.is_set()
+    def should_continue_loop(self, tid: int, current_iteration: int, total_iterations: int):
+        if tid == 0:
+            return super().should_continue_loop(tid, current_iteration, total_iterations)
+        else:
+            return not self.inf_train_stop_signal.is_set()
+
+

@@ -105,24 +105,24 @@ if __name__ == "__main__":
     logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
     data_manager = DataManager(f'{args.log}.json')
 
-    if policy == 'MPS-process':
-        sync_info = MPSSyncInfo(
+    if policy == 'MPS':
+        sync_info = ConcurrentSyncInfo(
             data_manager=data_manager,
             isolation_level='process'
         )
-    elif policy == 'tick-tock':
+    elif policy == 'TickTock':
         sync_info = TickTockSyncInfo(
             data_manager=data_manager
         )
-    elif policy == 'MPS-thread':
-        sync_info = MPSSyncInfo(
+    elif policy == 'Streams':
+        sync_info = ConcurrentSyncInfo(
             data_manager=data_manager,
             isolation_level='thread'
         )
-    elif policy == 'temporal':
+    elif policy == 'Isolated':
         sync_info = BasicSyncInfo(data_manager, no_sync_control=True)
-    elif policy == 'time-slice':
-        sync_info = MPSSyncInfo(
+    elif policy == 'Sequential':
+        sync_info = ConcurrentSyncInfo(
             data_manager=data_manager,
             isolation_level='thread'
         )
@@ -130,13 +130,6 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
-    if policy in ['MPS-process', 'MPS-thread', 'time-slice']:
-        workload_set = {model0_mode, model1_mode}
-        if workload_set == {'eval', 'eval'}:
-            if shared_config['distribution'] == 'uniform':
-                sync_info.offset = 1
-        elif workload_set == {'eval', 'train'}:
-            shared_config['non_stop_training'] = True
 
 
     if model0_name[-2:] == '-1':
@@ -159,7 +152,7 @@ if __name__ == "__main__":
         'shared_config': shared_config
     }
 
-    if policy == "MPS-process":
+    if policy == "MPS":
         process0 = multiprocessing.Process(target=model0_wrapper, kwargs=model0_kwargs)
         process1 = multiprocessing.Process(target=model1_wrapper, kwargs=model1_kwargs)
         process0.start()
@@ -167,26 +160,10 @@ if __name__ == "__main__":
 
         process0.join()
         process1.join()
-    elif policy == "MPS-thread":
-        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
-        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
-        thread0.start()
-        thread1.start()
-
-        thread0.join()
-        thread1.join()
-    elif policy == "tick-tock":
-        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
-        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
-        thread0.start()
-        thread1.start()
-
-        thread0.join()
-        thread1.join()
-    elif policy == "temporal":
+    elif policy == "Isolated":
         model0_wrapper(**model0_kwargs)
         model1_wrapper(**model1_kwargs)
-    elif policy == 'time-slice':
+    elif policy in {"Streams", 'TickTock', 'Sequential'}:
         thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
         thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
         thread0.start()
@@ -198,7 +175,7 @@ if __name__ == "__main__":
         raise NotImplementedError(f'unsupported policy {policy}')
 
     # post-processing: sum two durations
-    if policy == 'temporal':
+    if policy == 'Isolated':
         dict_data = data_manager.read_dict()
         duration = dict_data['duration0'] + dict_data['duration1']
         data_manager.write_kv('duration', duration)

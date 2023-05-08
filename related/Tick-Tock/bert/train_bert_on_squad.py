@@ -186,7 +186,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
 
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
-    num_requests = model_config['num_requests']
+    num_requests = model_config['num_iterations']
     num_warm_up_reqs = 10
 
     loader_iterator = iter(data_loader)
@@ -263,13 +263,8 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
                 optimizer.step()
                 optimizer.zero_grad()
 
-        if tid == 1:
-            if not sync_info.should_continue_loop():
-                break
-        else:
-            if batch_idx == num_iterations - 1:
-                # reached the last iteration
-                break
+        if not sync_info.should_continue_loop(tid, batch_idx, num_iterations):
+            break
 
     stream.synchronize()
     duration = time.time() - start_time

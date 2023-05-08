@@ -31,58 +31,48 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
     and finally write all data via {sync_info}. 
     """
+    distribution = shared_config['distribution']
     if request_rate > 0:
         scale = 1 / request_rate
-        if shared_config['distribution'] == 'poisson':
-            intervals = random.exponential(scale=scale, size=(num_requests,))
-        elif shared_config['distribution'] == 'uniform':
-            intervals = [scale for _ in range(num_requests)]
-        else:
-            raise NotImplementedError('unsupported distribution')
-
     else:
-        intervals = [0]*num_requests
+        scale = 0
 
     latency_history = []
 
     with torch.no_grad():
-        if shared_config['closed_inference_loop']:
-            for iteration in range(num_requests):
+        next_startup = time.time()
+        iteration = 0
+        while True:
+            if time.time() >= next_startup:
                 if iteration == num_warm_up_reqs:
-                    # start measurement
                     sync_info.pre_measurement_prep(tid)
+                    if request_rate > 0 and shared_config['distribution'] == 'uniform' and tid == 1:
+                        # delay be a bit to make sure both threads do not send requests at the same time
+                        time.sleep(1)
                     entire_inference_start_time = time.time()
+                    # reset next_startup to have clear setup
+                    next_startup = entire_inference_start_time
 
-                time.sleep(intervals[iteration])
-                # start func invocation
                 with torch.cuda.stream(stream):
-                    start_time = time.time()
                     func()
                 stream.synchronize()
-                latency = time.time() - start_time
-                # convert to ms
-                latency_history.append(latency * 1000)
-        else:
-            next_startup = time.time()
-            iteration = 0
-            while iteration < num_requests:
-                if time.time() >= next_startup:
+                latency_history.append(1000 * (time.time() - next_startup))
 
-                    if iteration == num_warm_up_reqs:
-                        sync_info.pre_measurement_prep(tid)
-                        entire_inference_start_time = time.time()
-                        # reset next_startup to have clear setup
-                        next_startup = entire_inference_start_time
+                if not sync_info.should_continue_loop(tid, iteration, num_requests):
+                    break
 
-                    with torch.cuda.stream(stream):
-                        func()
-                    stream.synchronize()
-                    latency_history.append(1000 * (time.time() - next_startup))
-                    next_startup += intervals[iteration]
-                    duration = next_startup - time.time()
-                    if duration > 0:
-                        time.sleep(duration)
-                    iteration += 1
+                if distribution == 'poisson':
+                    next_startup += random.exponential(scale=scale)
+                elif distribution == 'uniform':
+                    next_startup += scale
+                else:
+                    raise NotImplementedError(f'unsupported distribution {distribution}')
+
+                duration = next_startup - time.time()
+
+                if duration > 0:
+                    time.sleep(duration)
+                iteration += 1
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)
@@ -102,88 +92,6 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     # write all data to the data file
     sync_info.write_kvs(data_to_record)
 
-
-def non_stop_measure(func, num_warm_up_reqs, request_rate, tid, shared_config, stream, sync_info: BasicSyncInfo):
-    """
-    Invoke the func continuously with first {num_warm_up_reqs} iterations as warm up until {sync_info} instructs
-    it to stop.
-    Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
-    and finally write all data via {sync_info}.
-    """
-
-
-    latency_history = []
-    scale = 1 / request_rate
-    distribution = shared_config['distribution']
-    iteration = -1
-    with torch.no_grad():
-        if shared_config['closed_inference_loop']:
-            while sync_info.should_continue_loop():
-                iteration += 1
-                if iteration == num_warm_up_reqs:
-                    # start measurement
-                    sync_info.pre_measurement_prep(tid)
-                    entire_inference_start_time = time.time()
-
-                if request_rate > 0:
-                    time.sleep(random.exponential(scale=1/request_rate))
-
-                # start func invocation
-                with torch.cuda.stream(stream):
-                    start_time = time.time()
-                    func()
-                stream.synchronize()
-                latency = time.time() - start_time
-                # convert to ms
-                latency_history.append(latency * 1000)
-        else:
-            next_startup = time.time()
-            while sync_info.should_continue_loop():
-                if time.time() >= next_startup:
-                    iteration += 1
-                    if iteration == num_warm_up_reqs:
-                        sync_info.pre_measurement_prep(tid)
-                        entire_inference_start_time = time.time()
-                        # reset next_startup to have clear setup
-                        next_startup = entire_inference_start_time
-
-                    with torch.cuda.stream(stream):
-                        func()
-                    stream.synchronize()
-                    latency_history.append(1000 * (time.time() - next_startup))
-
-                    if distribution == 'poisson':
-                        next_startup += random.exponential(scale=scale)
-                    elif distribution == 'uniform':
-                        next_startup += scale
-                    else:
-                        raise NotImplementedError(f'unsupported distribution {distribution}')
-
-                    duration = next_startup - time.time()
-                    if duration > 0:
-                        time.sleep(duration)
-
-
-
-    inference_duration = time.time() - entire_inference_start_time
-    sync_info.post_measurement_prep(tid)
-    # discard the first {num_warm_up_reqs} latencies and the last latency as part if it was being processed when
-    # the other thread/process had finished
-    latency_history = latency_history[num_warm_up_reqs:-1]
-    mean_latency = mean(latency_history)
-    percentiles = np.percentile(latency_history, percentile_positions)
-
-    data_to_record = {
-        f'latencies{tid}': latency_history,
-        f'mean_latency{tid}': mean_latency,
-        f'duration{tid}': inference_duration,
-        f'iterations{tid}': iteration + 1
-    }
-    # record percentiles
-    for idx, percentile_pos in enumerate(percentile_positions):
-        data_to_record[f'p{percentile_pos}-{tid}'] = percentiles[idx]
-    # write all data to the data file
-    sync_info.write_kvs(data_to_record)
 
 
 def seed_everything(seed: int):

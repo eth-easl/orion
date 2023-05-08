@@ -174,7 +174,7 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
 
-    num_requests = model_config['num_requests']
+    num_requests = model_config['num_iterations']
     num_warm_up_reqs = 10
 
     loader_iterator = iter(data_loader)
@@ -190,7 +190,7 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 
-def train_wrapper(sync_info, tid: int, model_config, shared_config):
+def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
     utils.seed_everything(42)
     device = torch.device("cuda:0")
 
@@ -251,13 +251,8 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 optimizer.step()
                 model.zero_grad()
 
-        if tid == 1:
-            if not sync_info.should_continue_loop():
-                break
-        else:
-            if batch_idx == num_iterations - 1:
-                # reached the last iteration
-                break
+        if not sync_info.should_continue_loop(tid, batch_idx, num_iterations):
+            break
 
     stream.synchronize()
     duration = time.time() - start_time

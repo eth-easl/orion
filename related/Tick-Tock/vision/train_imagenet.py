@@ -20,7 +20,7 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.eval()
 
-    num_requests = model_config['num_requests']
+    num_requests = model_config['num_iterations']
     num_warm_up_reqs = 10
 
 
@@ -80,13 +80,8 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
         # if shared_config['enable_profiling'] and batch_idx >= warm_up_iters:
         #     torch.cuda.nvtx.range_pop()
 
-        if tid == 1:
-            if not sync_info.should_continue_loop():
-                break
-        else:
-            if batch_idx == num_iterations - 1:
-                # reached the last iteration
-                break
+        if not sync_info.should_continue_loop(tid, batch_idx, num_iterations):
+            break
 
     stream.synchronize()
     duration = time.time() - start_time
