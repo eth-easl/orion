@@ -7,7 +7,8 @@ model1:
   mode: train # train or eval
   name: transformer
 shared_config:
-  distribution: uniform # poisson or uniform
+  distribution: uniform # poisson, uniform, or trace
+  trace_path: './inter_arrival_times.json' # only used when distribution is trace
   pin_memory: true
 #  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
 #  cifar10_root: '/cluster/scratch/xianma/cifar10'

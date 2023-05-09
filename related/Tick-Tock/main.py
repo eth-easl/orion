@@ -60,15 +60,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', default='./config.yaml', help='Path to the yaml config file', type=str)
 parser.add_argument('--log', help='Path to the log file', type=str)
 
-def readable_model_name(model_name, model_config):
-    if model_name in  ['vision', 'vision1']:
-        readable_name = f"{model_config['arch']}-{model_config['batch_size']}"
-    elif model_name == 'bert':
-        readable_name = f"bert-{model_config['arch']}-{model_config['batch_size']}"
-    else:
-        readable_name = f"{model_name}-{model_config['batch_size']}"
-
-    return readable_name
 
 
 if __name__ == "__main__":

@@ -32,6 +32,11 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     and finally write all data via {sync_info}. 
     """
     distribution = shared_config['distribution']
+    if distribution == 'trace':
+        with open(shared_config['trace_path']) as f:
+            trace = json.load(f)
+        num_requests = len(trace)
+
     if request_rate > 0:
         scale = 1 / request_rate
     else:
@@ -65,6 +70,8 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
                     next_startup += random.exponential(scale=scale)
                 elif distribution == 'uniform':
                     next_startup += scale
+                elif distribution == 'trace':
+                    next_startup += trace[iteration]
                 else:
                     raise NotImplementedError(f'unsupported distribution {distribution}')
 
