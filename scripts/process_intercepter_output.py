@@ -8,4 +8,4 @@ with open(sys.argv[1], 'r') as f:
             intercepter_ops.append(line)
 
 for x in intercepter_ops:
-    print(x)
+    print(x[:-1])

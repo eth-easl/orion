@@ -1,0 +1,824 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+Conv,-1,1,1,7
+BatchNorm,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::reduce_kernel,-1,1,1,7
+void at::native::elementwise_kernel,-1,1,1,7
+void gemmSN_TN_kernel,-1,1,1,7

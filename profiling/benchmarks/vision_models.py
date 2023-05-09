@@ -28,21 +28,40 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
     model = models.__dict__[model_name](num_classes=1000)
     model = model.to(local_rank)
 
-    print(data.shape)
+    '''
+    train_dir = "/mnt/data/home/fot/imagenet/imagenet-raw-euwest4/"
+    train_transform =  transforms.Compose([
+                                transforms.RandomResizedCrop(224),
+                                transforms.RandomHorizontalFlip(),
+                                transforms.ToTensor(),
+                                transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))])
+    train_dataset = \
+            datasets.ImageFolder(train_dir,transform=train_transform)
+
+    train_loader = torch.utils.data.DataLoader(
+                    train_dataset, batch_size=batchsize, num_workers=8)
+
+    train_iter = enumerate(train_loader)
+    '''
 
     if do_eval:
         model.eval()
     else:
         model.train()
-        #optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
-        #criterion =  torch.nn.CrossEntropyLoss().to(local_rank)
+        optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
+        criterion =  torch.nn.CrossEntropyLoss().to(local_rank)
 
     batch_idx = 0
     torch.cuda.synchronize()
+    start = time.time()
 
-    while batch_idx < 10:
 
-        if batch_idx == 9:
+    for batch_idx in range(1): #batch in train_iter:
+
+        #data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+
+        print(f"Main thread id is {threading.get_native_id()}")
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -52,20 +71,24 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
             with torch.no_grad():
                 output = model(data)
         else:
+            optimizer.zero_grad()
             output = model(data)
-            #loss = criterion(output, target)
-            #loss.backward()
-            #optimizer.step()
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
                 torch.cuda.profiler.cudart().cudaProfilerStop()
 
-        batch_idx += 1
+        #batch_idx += 1
+
+        print(f"Iteration took {time.time()-start} sec")
+        start = time.time()
 
     print("Done!")
 
 if __name__ == "__main__":
-    vision('resnet50', 32, 0, False, 'nsys')
+    vision('mobilenet_v2', 96, 0, False, 'nsys')

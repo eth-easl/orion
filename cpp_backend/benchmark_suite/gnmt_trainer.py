@@ -4,9 +4,9 @@ import time
 
 from seq2seq.models.gnmt import GNMT
 
-def gnmt_loop(batchsize, train, local_rank, barrier, tid):
+def gnmt_loop(batchsize, train, local_rank, barriers, tid):
 
-    barrier.wait()
+    barriers[0].wait()
 
     model_config = {
 
@@ -54,8 +54,7 @@ def gnmt_loop(batchsize, train, local_rank, barrier, tid):
             #print(output.shape)
             batch_idx += 1
 
-            start_iter = time.time()
+            if batch_idx < 1:
+                    barriers[0].wait()
 
     print("Epoch took: ", time.time()-start)
-    while(True):
-        pass

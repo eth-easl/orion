@@ -42,7 +42,7 @@ def gnmt(batchsize, local_rank, do_eval=True, profile=None):
         #if not do_eval:
         #    optimizer.zero_grad()
 
-        if batch_idx == 9:
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':

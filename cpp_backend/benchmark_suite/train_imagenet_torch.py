@@ -17,59 +17,170 @@ import os
 import argparse
 import threading
 
-def imagenet_loop(model_name, batchsize, train, local_rank, start_barriers, end_barriers, tid):
+from measure_time import measure
 
-    # do only forward for now, experimental
-    start_barriers[tid].wait()
+def seed_everything(seed: int):
+    import random, os
+    import numpy as np
 
-    if True:
-        print("-------------- thread id:  ", threading.get_native_id())
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
-        data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
-        #data = torch.rand([batchsize, 2048]).to(local_rank)
-        model = models.__dict__[model_name](num_classes=1000)
-        model = model.to(0)
+class DummyDataLoader():
+    def __init__(self, batchsize):
+        self.batchsize = batchsize
+        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=False)
+        self.target = torch.ones([self.batchsize], pin_memory=False, dtype=torch.long)
 
-        if train:
-            model.train()
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.data, self.target
+
+class RealDataLoader():
+    def __init__(self, batchsize):
+        train_transform =  transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))]
+        )
+        train_dataset = \
+                datasets.ImageFolder("/mnt/data/home/fot/imagenet/imagenet-raw-euwest4",transform=train_transform)
+        self.train_loader = torch.utils.data.DataLoader(
+                train_dataset, batch_size=batchsize, num_workers=12)
+
+    def __iter__(self):
+        print("Inside iter")
+        return iter(self.train_loader)
+
+def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform, dummy_data, local_rank, start_barriers, end_barriers, tid):
+
+    seed_everything(42)
+    start_barriers[0].wait()
+
+    if rps > 0:
+        if uniform:
+            sleep_times = [1/rps]*num_iters
         else:
-            model.eval()
+            sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    else:
+        sleep_times = [0]*num_iters
 
-        print("Enter loop!")
+    print(sleep_times)
 
-        timings=[]
-        for i in range(10):
+    if default:
+        s = torch.cuda.default_stream()
+    else:
+        s = torch.cuda.Stream()
+    print("-------------- thread id:  ", threading.get_native_id())
+
+    #data = torch.rand([batchsize, 2048]).to(local_rank)
+    model = models.__dict__[model_name](num_classes=1000)
+    model = model.to(0)
+
+    if train:
+        model.train()
+        optimizer =  torch.optim.SGD(model.parameters(), lr=0.1)
+        criterion =  torch.nn.CrossEntropyLoss().to(local_rank)
+    else:
+        model.eval()
+
+    if dummy_data:
+        train_loader = DummyDataLoader(batchsize)
+    else:
+        train_loader = RealDataLoader(batchsize)
+
+    train_iter = enumerate(train_loader)
+    print(tid, train_iter)
+
+    batch_idx, batch = next(train_iter)
+
+    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
+    output = model(gpu_data)
+
+    start_times = [0 for _ in range(num_iters)]
+    start_events = [torch.cuda.Event(enable_timing=True) for _ in range(num_iters)]
+    end_events = [torch.cuda.Event(enable_timing=True) for _ in range(num_iters)]
+    cvs = [threading.Event() for _ in range(num_iters)]
+    timings = [0 for _ in range(num_iters)]
+
+    timing_idx = 0
+
+    print("Enter loop!")
+
+    next_startup = time.time()
+
+    with torch.cuda.stream(s):
+        for i in range(1):
             print("Start epoch: ", i)
 
             start = time.time()
-            start_iter = time.time()
-
-            batch_idx = 0
-
-            while batch_idx < 1:
-
-                print(f"submit!, batch_idx is {batch_idx}")
-                torch.cuda.profiler.cudart().cudaProfilerStart()
-
+            while batch_idx < num_iters:
+                # #start_barriers[0].wait()
+                # startiter = time.time()
                 if train:
-                    output = model(data)
+                    start_iter = time.time()
+                    optimizer.zero_grad()
+                    gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
+                    output = model(gpu_data)
+                    loss = criterion(output, gpu_target)
+                    loss.backward()
+                    optimizer.step()
+                    s.synchronize()
+                    print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
+                    batch_idx,batch = next(train_iter)
+                    if (batch_idx==10):
+                        starttime = time.time()
                 else:
                     with torch.no_grad():
-                        output = model(data)
+                        cur_time = time.time()
+                        ###### OPEN LOOP #####
+                        if (cur_time >= next_startup):
+                            gpu_data = batch[0].to(local_rank)
+                            output = model(gpu_data)
+                            s.synchronize()
+                            timings[batch_idx] = time.time()-next_startup
+                            print(f"Client {tid}, request {batch_idx} took {timings[batch_idx]} sec")
+                            batch_idx,batch = next(train_iter)
+                            next_startup += sleep_times[batch_idx-1]
+                            dur = next_startup-time.time()
+                            if dur > 0:
+                                time.sleep(dur)
 
-                torch.cuda.profiler.cudart().cudaProfilerStop()
+                        ###### CLOSED LOOP #####
+                        # print(f"submit!, batch_idx is {batch_idx}")
+                        # gpu_data = batch[0].to(local_rank)
+                        # output = model(gpu_data)
+                        # s.synchronize()
+                        # iter_time = time.time()-startiter
+                        # timings.append(iter_time)
+                        # print(f"It took {iter_time} sec")
+                        # batch_idx,batch = next(train_iter)
 
-                batch_idx += 1
+                #iter_time = time.time()-startiter
+                #timings.append(iter_time)
 
-                start_iter = time.time()
+                #time.sleep(sleep_times[batch_idx])
+                #print(f"{batch_idx} finished, took {iter_time} sec, now sleep for {sleep_times[batch_idx]} sec")
 
-            print("Epoch done!")
-            end_barriers[tid].wait()
-            if i < 9:
-                start_barriers[tid].wait()
+                #v = time.time()
 
-        # timings = timings[2:]
-        # print(f"Avg is {np.median(np.asarray(timings))} sec")
-        print("Finished! Ready to join!")
+                #batch_idx += 1
+                #print(f"It took {time.time()-v}")
 
-#imagenet_loop('resnet50', 32, True, 0, None, 0)
+                # if batch_idx < num_iters-1:
+                #     start_barriers[tid].wait()
+
+
+    timings = timings[10:]
+    p50 = np.percentile(timings, 50)
+    p95 = np.percentile(timings, 95)
+    p99 = np.percentile(timings, 99)
+
+    end_barriers[0].wait()
+    print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")

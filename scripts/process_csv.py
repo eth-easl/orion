@@ -40,33 +40,78 @@ for i, row in df.iterrows():
             processed_kernel_names.append("cublas_sgemm")
 
 '''
-for i, row in df.iterrows():
+found = 0
+idx = 0
+l = df.to_dict('records')
+print(len(l))
+
+for row in l:
     x = row['Name']
     if ('memset' in x) or ('memcpy' in x):
         continue
     #processed_kernel_names.append(x)
 
     if 'cudnn' in x and 'LSTM' not in x:
-        if 'bn_fw' in x:
+        if ('bn_fw' in x) or ('bn_bw' in x):
             processed_kernel_names.append(['BatchNorm', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
-        elif ('scudnn' in x) or ('implicit_convolve_sgemm' in x):
+            idx += 1
+        elif (
+            ('scudnn' in x)
+            or ('implicit_convolve_sgemm' in x)
+            or ('explicit_convolve_sgemm' in x)
+            or ('dgrad_engine' in x)
+            or ('wgrad_alg0_engine' in x)
+            or ('wgrad_alg1_engine_NHWC' in x)
+            or ('dgrad2d_alg1_1' in x)
+            or ('wgrad2d_grouped_direct_kernel' in x)
+            or ('dgrad2d_grouped_direct_kernel' in x)
+            or ('conv2d_grouped_direct_kernel' in x)
+            or ('convolve_common_engine_float_NHWC' in x)
+        ):
+            idx += 1
             processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
         elif ('cudnn::winograd' in x) or ('cudnn::gemm' in x):
             # part of cudnn mm
             pass
+        elif (
+            ('scalePackedTensor_kernel') in x
+            or ('fft' in x)
+            or ('nhwcToFoldedNhwcKernel' in x)
+            or ('foldedNhwcToNhwcKernel' in x)
+            or ('nhwcAddPaddingKernel' in x)
+            or ('im2col4d_kernel' in x)
+        ):
+            # part of conv backward
+            pass
         else:
+            idx += 1
             processed_kernel_names.append([x,  row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
 
-    elif 'volta_sgemm_128x64_nn' in x:
-        processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
+    #Comment for NLP models
+    # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
+    #     idx += 1
+    #     processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
+
+    elif 'volta_gcgemm_32x32_nt' in x:
+        if found==0:
+            processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
+        found = 1
 
     elif 'splitKreduce_kernel' in x:
         # part of cublas mm
+        found = 0
         pass
+
+    # elif ('vectorized_elementwise_kernel' in x) and (idx>228) and (found >= 1): # model-specific
+    #     found += 1
+    #     if found == 3:
+    #         found = 0
 
     else:
         tokens = x.split('<')
         #print(tokens[0])
+        found = 0
+        idx += 1
         processed_kernel_names.append([tokens[0],  row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
 
 for i,x in enumerate(processed_kernel_names):
@@ -76,11 +121,9 @@ for i,x in enumerate(processed_kernel_names):
 with open(output_file_name, 'w') as f:
     f.write("Name,Profile,Memory_footprint,SM_usage,Duration\n");
     for x in processed_kernel_names:
-        if 'Conv' in x[0]:
-            f.write(x[0] + ',1,1,1000,700\n')
-        elif 'BatchNorm' in x[0]:
-            f.write(x[0] + ',0,1,1,400\n')
-        else:
-            f.write(x[0] + ',-1,1,1,7\n')
-
-
+        #if 'Conv' in x[0]:
+        #    f.write(x[0] + ',1,1,1000,700\n')
+        #elif 'BatchNorm' in x[0]:
+        #    f.write(x[0] + ',0,1,1,400\n')
+        #else:
+        f.write(x[0] + ',-1,1,1,7\n')
