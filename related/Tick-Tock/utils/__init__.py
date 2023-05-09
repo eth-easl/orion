@@ -32,15 +32,21 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     and finally write all data via {sync_info}. 
     """
     distribution = shared_config['distribution']
-    if distribution == 'trace':
-        with open(shared_config['trace_path']) as f:
-            trace = json.load(f)
-        num_requests = len(trace)
 
-    if request_rate > 0:
-        scale = 1 / request_rate
+    if request_rate == 0:
+        intervals = [0] * num_requests
     else:
-        scale = 0
+        scale = 1 / request_rate
+        if distribution == 'trace':
+            with open(shared_config['trace_path']) as f:
+                intervals = json.load(f)
+        elif distribution == 'poisson':
+            intervals = random.exponential(scale=scale, size=(num_requests,))
+        elif distribution == 'uniform':
+            intervals = [scale] * num_requests
+        else:
+            raise NotImplementedError(f'unsupported distribution {distribution}')
+
 
     latency_history = []
 
@@ -66,14 +72,7 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
                 if not sync_info.should_continue_loop(tid, iteration, num_requests):
                     break
 
-                if distribution == 'poisson':
-                    next_startup += random.exponential(scale=scale)
-                elif distribution == 'uniform':
-                    next_startup += scale
-                elif distribution == 'trace':
-                    next_startup += trace[iteration]
-                else:
-                    raise NotImplementedError(f'unsupported distribution {distribution}')
+                next_startup += intervals[iteration]
 
                 duration = next_startup - time.time()
 
