@@ -9,23 +9,20 @@ tasks = data['tasks']
 
 
 # %%
-traces = [task['load']['trace'] for task in tasks]
+raw_traces = [task['load']['trace'] for task in tasks if task['load']['type'] == 'trace']
 
 # %%
-num_traces = [len(trace) for trace in traces]
+# prepend a "0" to the beginning of each trace
+traces = [[0] + trace for trace in raw_traces]
+num_traces = [len(trace) for trace in raw_traces]
 
 # %%
 import pandas as pd
-from matplotlib import pyplot as plt
-traces = [pd.Series(trace) for trace in traces]
+pd_traces = [pd.Series(trace, dtype=int) for trace in traces]
 
-inter_arrival_times = [trace.diff().dropna() for trace in traces]
+inter_arrival_times = [trace.diff().dropna().to_list() for trace in pd_traces]
 
 # %%
-label=[f'Trace {i}' for i in range(len(inter_arrival_times))]
-plt.hist(inter_arrival_times, density=True, bins=100, cumulative=True, histtype='step', label=label)
-plt.legend()
-plt.xlabel('Inter-arrival time (ms)')
-plt.ylabel('probability')
-plt.title('Cumulative Distribution Function of inter-arrival time from each trace')
-plt.show()
+entire_inter_arrival_times = [int(item) for sublist in inter_arrival_times for item in sublist]
+with open('scripts/inter_arrival_times.json', 'w') as f:
+    json.dump(entire_inter_arrival_times, f)
