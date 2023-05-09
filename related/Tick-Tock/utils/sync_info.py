@@ -90,11 +90,11 @@ class ConcurrentSyncInfo(BasicSyncInfo):
         if isolation_level == 'thread':
             self.barrier = threading.Barrier(2)
             self.lock = threading.Lock()
-            self.inf_train_stop_signal = threading.Event()
+            self.stop_signal = threading.Event()
         else:
             self.barrier = multiprocessing.Barrier(2)
             self.lock = multiprocessing.Lock()
-            self.inf_train_stop_signal = multiprocessing.Event()
+            self.stop_signal = multiprocessing.Event()
         self.start_time = None
 
     def pre_measurement_prep(self, tid):
@@ -104,7 +104,7 @@ class ConcurrentSyncInfo(BasicSyncInfo):
 
     def post_measurement_prep(self, tid):
         # let the other part break out of the loop
-        self.inf_train_stop_signal.set()
+        self.stop_signal.set()
         self.barrier.wait()
         if tid == 0:
             duration = time.time() - self.start_time
@@ -122,6 +122,6 @@ class ConcurrentSyncInfo(BasicSyncInfo):
         if tid == 0:
             return super().should_continue_loop(tid, current_iteration, total_iterations)
         else:
-            return not self.inf_train_stop_signal.is_set()
+            return not self.stop_signal.is_set()
 
 
