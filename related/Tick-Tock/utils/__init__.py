@@ -40,6 +40,7 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
         if distribution == 'trace':
             with open(shared_config['trace_path']) as f:
                 intervals = json.load(f)
+            num_requests = len(intervals)
         elif distribution == 'poisson':
             intervals = random.exponential(scale=scale, size=(num_requests,))
         elif distribution == 'uniform':
