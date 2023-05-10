@@ -92,6 +92,7 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
         f'latencies{tid}': latency_history,
         f'mean_latency{tid}': mean_latency,
         f'duration{tid}': inference_duration,
+        f'iterations{tid}': iteration + 1,
     }
     # record percentiles
     for idx, percentile_pos in enumerate(percentile_positions):

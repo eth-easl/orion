@@ -79,9 +79,9 @@ if __name__ == "__main__":
 
     models = ['resnet50', 'mobilenet_v2', 'resnet101', 'bert', 'transformer']
     combinations = itertools.product(models, models)
-    times = 2
-    start_id = 1
-    distribution = 'uniform'
+    times = 1
+    start_id = 0
+    distribution = 'trace'
 
 
     # ----configuration region ended----
