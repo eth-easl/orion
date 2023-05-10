@@ -15,7 +15,7 @@ from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
 from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
 from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
 from transformer.train_transformer import train_wrapper as transformer_train_wrapper, eval_wrapper as transformer_eval_wrapper
-from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper, eval_wrapper as retinanet_eval_wrapper
+from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
 
 model_to_wrapper = {
     'nasnet': {
@@ -52,7 +52,7 @@ model_to_wrapper = {
     },
     'retinanet': {
         'train': retinanet_train_wrapper,
-        'eval': retinanet_eval_wrapper,
+        'eval': None
     }
 }
 

@@ -1,5 +1,5 @@
 ---
-policy: temporal # "temporal", "tick-tock", "MPS-process", "MPS-thread", or "time-slice"
+policy: MPS # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
 model0:
   mode: train # train or eval
   name: resnet101 # these two names should strictly correspond to the model names below
