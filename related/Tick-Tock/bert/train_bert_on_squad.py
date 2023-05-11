@@ -270,6 +270,6 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
-    sync_info.write_kv(f'iteration{tid}', batch_idx + 1)
+    sync_info.write_kv(f'iterations{tid}', batch_idx + 1)
     logging.info(f'tid {tid} it takes {duration} seconds to train bert')
     return duration
