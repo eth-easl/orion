@@ -173,5 +173,5 @@ if __name__ == "__main__":
 
     notifier.notify(
         subject=f'The experiment training {model0_name} and {model1_name} with {policy} is finished!',
-        body=utils.dict2pretty_str(config)
+        body=utils.dict2pretty_str(data_manager.read_dict())
     )

@@ -139,6 +139,31 @@ if __name__ == "__main__":
 
                 combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
                 run(default_full_config, combination_name, times=times, start_id=start_id)
+        else:
+            # eval-eval
+            default_full_config['model0']['name'] = model0
+            default_full_config['model0']['mode'] = model0_mode
+            default_full_config['model1']['name'] = model1
+            default_full_config['model1']['mode'] = model1_mode
+            default_full_config['policy'] = policy
+
+            if model0 == 'bert':
+                # for evaluation use bert-large
+                default_full_config[model0]['arch'] = 'large'
+            if model1 == 'bert':
+                # for training use bert-base
+                default_full_config[model1]['arch'] = 'large'
+
+            default_full_config[model0]['request_rate'] = request_rates[model0]
+            default_full_config[model1]['request_rate'] = request_rates[model1]
+
+            default_full_config[model0]['num_iterations'] = num_reqs[model0]
+
+            default_full_config[model0]['batch_size'] = eval_batch_sizes[model0]
+            default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
+
+            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
+            run(default_full_config, combination_name, times=times)
 
 
     notifier.notify(
