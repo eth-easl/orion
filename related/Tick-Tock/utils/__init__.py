@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 import json
 import itertools
@@ -23,35 +24,62 @@ class DummyDataLoader:
         return itertools.repeat(self.batch)
 
 
-def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sync_info: BasicSyncInfo):
+percentile_positions = [50, 90, 95, 99]
+def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_config, stream, sync_info: BasicSyncInfo):
     """
     Invoke the func {num_requests} times with first {num_warm_up_reqs} iterations as warm up.
     Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
     and finally write all data via {sync_info}. 
     """
-    request_rate = shared_config['request_rate']
-    scale = 1 / request_rate
-    seed = int(time.time())
-    np.random.seed(seed)
-    intervals = random.exponential(scale=scale, size=(num_requests, ))
-    percentile_positions = shared_config['percentile_positions']
+    distribution = shared_config['distribution']
+
+    if request_rate == 0:
+        intervals = [0] * num_requests
+    else:
+        scale = 1 / request_rate
+        if distribution == 'trace':
+            with open(shared_config['trace_path']) as f:
+                intervals = json.load(f)
+            num_requests = len(intervals)
+        elif distribution == 'poisson':
+            intervals = random.exponential(scale=scale, size=(num_requests,))
+        elif distribution == 'uniform':
+            intervals = [scale] * num_requests
+        else:
+            raise NotImplementedError(f'unsupported distribution {distribution}')
+
+
     latency_history = []
 
     with torch.no_grad():
-        for iter in range(num_requests):
-            if iter == num_warm_up_reqs:
-                # start measurement
-                sync_info.pre_measurement_prep(tid)
-                entire_inference_start_time = time.time()
+        next_startup = time.time()
+        iteration = 0
+        while True:
+            if time.time() >= next_startup:
+                if iteration == num_warm_up_reqs:
+                    sync_info.pre_measurement_prep(tid)
+                    if request_rate > 0 and shared_config['distribution'] == 'uniform' and tid == 1:
+                        # delay be a bit to make sure both threads do not send requests at the same time
+                        time.sleep(1)
+                    entire_inference_start_time = time.time()
+                    # reset next_startup to have clear setup
+                    next_startup = entire_inference_start_time
 
-            time.sleep(intervals[iter])
-            # start func invocation
-            start_time = time.time()
-            with torch.cuda.stream(stream):
-                func()
-            stream.synchronize()
-            latency = time.time() - start_time
-            latency_history.append(latency)
+                with torch.cuda.stream(stream):
+                    func()
+                stream.synchronize()
+                latency_history.append(1000 * (time.time() - next_startup))
+
+                if not sync_info.should_continue_loop(tid, iteration, num_requests):
+                    break
+
+                next_startup += intervals[iteration]
+
+                duration = next_startup - time.time()
+
+                if duration > 0:
+                    time.sleep(duration)
+                iteration += 1
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)
@@ -64,6 +92,7 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
         f'latencies{tid}': latency_history,
         f'mean_latency{tid}': mean_latency,
         f'duration{tid}': inference_duration,
+        f'iterations{tid}': iteration + 1,
     }
     # record percentiles
     for idx, percentile_pos in enumerate(percentile_positions):
@@ -71,4 +100,15 @@ def measure(func, num_requests, num_warm_up_reqs, tid, shared_config, stream, sy
     # write all data to the data file
     sync_info.write_kvs(data_to_record)
 
+
+
+def seed_everything(seed: int):
+    import random, os
+    import numpy as np
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
