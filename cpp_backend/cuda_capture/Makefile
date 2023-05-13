@@ -1,7 +1,7 @@
-NVCC=/usr/local/cuda-10.2/bin/nvcc
+NVCC=g++ #/usr/local/cuda-11.0/bin/nvcc
 
-libinttemp.so: utils_interc.cu intercept_cudnn.cu intercept_cublas.cu intercept_temp.cu
-	$(NVCC) -Xcompiler -fPIC -O3 -DINCLUDE_TORCH_CUDA -g  -o libinttemp.so --shared --extended-lambda  utils_interc.cu intercept_cudnn.cu intercept_cublas.cu intercept_temp.cu -I $(HOME)/pytorch/aten/src/ATen/native/cuda -I $(HOME)/pytorch/ -I $(HOME)/pytorch/aten/src/  -L $(HOME)/pytorch/build/lib -lshm -lcudart -lcudnn -lcublas
+libinttemp.so: utils_interc.cpp intercept_cudnn.cpp intercept_cublas.cpp intercept_temp.cpp
+	$(NVCC) -fPIC -O3 -I/usr/local/cuda-11.3/include  -g  -o libinttemp.so --shared utils_interc.cpp intercept_cudnn.cpp intercept_cublas.cpp intercept_temp.cpp -lcudart
 
 all:
 	make libinttemp.so

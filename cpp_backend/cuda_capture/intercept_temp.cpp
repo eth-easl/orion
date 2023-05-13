@@ -1,51 +1,6 @@
 #include "intercept_temp.h"
 
 using namespace std;
-/*using at::native::ReduceOp;
-using at::_isnan;
-
-template <typename acc_t>
-struct MaxNanFunctor {
-       	__device__ __forceinline__ acc_t operator()(acc_t a, acc_t b) const {
-		return (at::_isnan(a) || a > b) ? a : b;
-	}
-};
-
-template <typename acc_t>
-struct MinNanFunctor {
-	  __device__ __forceinline__ acc_t operator()(acc_t a, acc_t b) const {
-		return (at::_isnan(a) || a < b) ? a : b;
-	  }
-};
-
-template <typename T>
-T* create_new_reduce_arg(void* args0) {
-
-	T* reduce_arg = (T*)args0;
-	T* new_reduce_arg = (T*)malloc(sizeof(T));
-	char* dst0 = (char*)(reduce_arg->dst[0]);
-	char* dst1 = (char*)(reduce_arg->dst[1]);
-
-	*new_reduce_arg = T(
-		reduce_arg->ops,
-		reduce_arg->config,
-		reduce_arg->input_calc,
-		reduce_arg->output_calc,
-		reduce_arg->src,
-		dst0,
-		dst1, //check this
-		reduce_arg->acc_buf,
-		reduce_arg->cta_buf,
-		reduce_arg->semaphores,
-		reduce_arg->ident,
-		reduce_arg->noutputs,
-		reduce_arg->base_idx
-	);
-
-	return new_reduce_arg;
-
-}*/
-
 
 queue<func_record> kqueue0;
 queue<func_record> kqueue1;
@@ -207,7 +162,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		assert (malloc_func != NULL);
 	}
 
-	if (idx < 2) {
+	/*if (idx < 2) {
 
 		//wait for all kernels or memory operations to finish
 		block(idx,  mutexes, kqueues);
@@ -226,13 +181,14 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		DEBUG_PRINT("[IDX %d] Exit malloc!\n", idx);
 	}
 
-	else {
+	else {*/
 		//CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 		err = (*malloc_func)(devPtr, size);
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
+		printf("%p\n", *devPtr);
 		CHECK_CUDA_ERROR(err_all);
-	}
+	//}
 
 	return err;
 
@@ -889,6 +845,8 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		err = (*kernel_func)(func, gridDim, blockDim, args, sharedMem, stream);
 		//DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
+
+		DEBUG_PRINT("SUBMITTED!!!\n");
 
 		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
 		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors

@@ -1,8 +1,8 @@
 CC=g++
-NVCC=/usr/local/cuda-10.2/bin/nvcc
+NVCC=/usr/local/cuda-11.3/bin/nvcc
 CFLAGS=-O3
-CUDAINCLUDE=/usr/local/cuda-10.2/include/
-CUDALIB=/usr/local/cuda-10.2/lib64
+CUDAINCLUDE=/usr/local/cuda-11.3/include/
+CUDALIB=/usr/local/cuda-11.3/lib64
 
 utils_sched.o: utils_sched.cpp
 	$(NVCC) $(CFLAGS) -Xcompiler  -fPIC -x cu -shared -c utils_sched.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread
