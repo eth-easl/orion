@@ -78,8 +78,10 @@ while i < num_rows:
     #processed_kernel_names.append(x)
 
     x = x.replace("<unnamed>", "(anonymous namespace)")
+    print(x)
 
     if 'cudnn' in x and 'LSTM' not in x:
+        print(x)
         if ('bn_fw' in x) or ('bn_bw' in x):
             processed_kernel_names.append(['BatchNorm', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
         elif (
@@ -94,6 +96,8 @@ while i < num_rows:
             or ('dgrad2d_grouped_direct_kernel' in x)
             or ('conv2d_grouped_direct_kernel' in x)
             or ('convolve_common_engine_float_NHWC' in x)
+            or ('cutlass_cudnn::Kernel' in x)
+            or ('xmma_cudnn::gemm::kernel' in x)
         ):
             conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
             print(conv_info)
@@ -108,8 +112,11 @@ while i < num_rows:
         elif (
             ('cudnn::winograd' in x)
             or ('cudnn::gemm' in x)
+            or ('computeOffsetsKernel' in x)
             or ('scalePackedTensor_kernel') in x
             or ('fft' in x)
+            or ('nchwToNhwcKernel' in x)
+            or ('nhwcToNchwKernel' in x)
             or ('nhwcToFoldedNhwcKernel' in x)
             or ('foldedNhwcToNhwcKernel' in x)
             or ('nhwcAddPaddingKernel' in x)
@@ -120,32 +127,47 @@ while i < num_rows:
         else:
             processed_kernel_names.append([x,  row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
+    elif ('sm80_xmma' in x or 'implicit_convolve_sgemm' in x):
+        conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
+        print(conv_info)
+        sms = [x[0] for x in conv_info]
+        dur_list = [x[1] for x in conv_info]
+        profiles = [x[2] for x in conv_info]
+        sms_max = max(sms)
+        dur = sum(dur_list)
+        profile = get_profile(profiles,  row["Roofline_prof"])
+        processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
+        conv_info=[]
+
     #Comment for NLP models
     # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
-    #     processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+    #      processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
     elif 'volta_gcgemm_32x32_nt' in x:
         if found==0:
             processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
         found = 1
 
-    # transformer
-    elif 'volta_sgemm_32x128_tn' in x:
-        # check next row
-        next_row = l[i+1]
-        sms = row["SM_needed"]
-        duration = row["Duration(ns)"]
-        profile = row["Roofline_prof"]
-        # if 'splitKreduce_kernel' in next_row['Kernel_Name']:
-        #     sms = max(sms, next_row["SM_needed"])
-        #     duration += next_row["Duration(ns)"]
-        #     profile = get_profile([profile, next_row["Roofline_prof"]], profile)
-        processed_kernel_names.append([x, profile, 0, sms, duration])
-
     elif 'splitKreduce_kernel' in x:
         # part of cublas mm
         found = 0
         pass
+
+
+    #transformer
+    # elif 'volta_sgemm_32x128_tn' in x or 'ampere_sgemm_32x128_tn':
+    #     # check next row
+    #     if i < num_rows-1:
+    #         next_row = l[i+1]
+    #         sms = row["SM_needed"]
+    #         duration = row["Duration(ns)"]
+    #         profile = row["Roofline_prof"]
+    #         if 'splitKreduce_kernel' in next_row['Kernel_Name']:
+    #             sms = max(sms, next_row["SM_needed"])
+    #             duration += next_row["Duration(ns)"]
+    #             profile = get_profile([profile, next_row["Roofline_prof"]], profile)
+    #     processed_kernel_names.append([x, profile, 0, sms, duration])
+
 
     # elif 'volta_gcgemm_32x32_nt' in x:
     #     # vision
