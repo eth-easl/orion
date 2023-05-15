@@ -10,20 +10,25 @@ int get_idx() {
 		//DEBUG_PRINT("-------------------my tid is %d, tids is %d, %d, %d, %d, %d \n", tid, thread_ids[0], thread_ids[1], thread_ids[2], thread_ids[3], thread_ids[4]);
 		//printf("tid is %d\n", tid);
 		int idx = -1;
-		if ((tid == thread_ids[0]) || (tid == thread_ids[3]))
-			idx = 0;
-		else if ((tid == thread_ids[1]) || (tid == thread_ids[4]))
-			idx = 1;
-		else if (tid == thread_ids[2])
-			idx = 2;
-		else if (thread_ids[3] == 0) {
-			thread_ids[3] = tid;
-			idx = 0;
+		int clients = *num_total_clients;
+		int num_tids = 2*clients+1;
+
+		for (int i=0; i<num_tids; i++) {
+			if (tid == thread_ids[i]) {
+				idx = i%(clients+1);
+				break;
+			}
 		}
-		else if (thread_ids[4] == 0) {
-			thread_ids[4] = tid;
-			idx = 1;
+		if (idx == -1) {
+			// set threads for backward pass
+			for (int i=clients+1; i<num_tids; i++) {
+				if (thread_ids[i] == 0) {
+					thread_ids[i] = tid;
+					idx = i%(clients+1);
+				}
+			}
 		}
+
 		if (idx > -1) {
 			cpu_set_t  mask;
 			CPU_ZERO(&mask);

@@ -31,7 +31,7 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t handle, cublasOperation_t transa, c
 	new_func_data.cublasSgemmRecord = blassgemm_record;
 	func_record new_record = {CUBLAS_SGEMM_RECORD, new_func_data};
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm_v2, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
@@ -92,7 +92,7 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	new_func_data.cublasSgemmRecord = blassgemm_record;
 	func_record new_record = {CUBLAS_SGEMM_RECORD, new_func_data};
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemm, handle is %p, index %d, m is %d, n is %d, k is %d\n", func_indexes[idx], handle, idx, m, n, k);
@@ -156,7 +156,7 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 	new_func_data.cublasSgemmStridedRecord = record;
 	func_record new_record = {CUBLAS_SGEMM_STRIDED_RECORD, new_func_data};
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasSgemmStridedBatched, handle is %p\n", func_indexes[idx], handle);

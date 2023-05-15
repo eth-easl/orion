@@ -54,12 +54,10 @@ class PyScheduler:
 
         print(model_names, lib_names, tids)
 
-        self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar, num_iters_ar, train_ar)
+        self._sched_lib.setup(self._scheduler, self._num_clients, tids_ar, model_names_ctypes_ar, lib_names_ar, num_kernels_ar, num_iters_ar, train_ar, reef)
 
         num_clients = len(tids)
         print(f"Num clients is {num_clients}")
-
-        self._sched_lib.sched_setup(self._scheduler, num_clients, profile, reef)
 
         print(f"before starting, profile is {profile}")
         timings=[]

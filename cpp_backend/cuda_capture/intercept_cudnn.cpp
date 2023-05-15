@@ -48,7 +48,7 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	func_record new_record = {CUDNN_CONV_RECORD, new_func_data};
 
 	// push or run
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 		 pthread_mutex_lock(mutexes[idx]);
 
 		 DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnConvolutionForward, CUDNN handle is %p\n", idx, func_indexes[idx], handle, idx);
@@ -122,7 +122,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 
 	// push or run
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudnnBatchNormalizationForwardTrainingEx, handle is %p\n", idx, func_indexes[idx], handle);
@@ -186,7 +186,7 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	new_func_data.cudnnBNormInfRecord = bn_record;
 	func_record new_record = {CUDNN_BNORM_INF_RECORD, new_func_data};
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationForwardInference, handle is %p, index is %d\n", func_indexes[idx], handle, idx);
@@ -220,7 +220,7 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
 	        //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
@@ -317,7 +317,7 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
 	        //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
@@ -460,7 +460,7 @@ cudnnStatus_t cudnnBatchNormalizationBackwardEx (
 	new_func_data.cudnnBNormBackRecord = record;
 	func_record new_record = {CUDNN_BNORM_BACKWARD_RECORD, new_func_data};
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnBatchNormalizationBackwardEx!Index is %d\n", func_indexes[idx], idx);
@@ -544,7 +544,7 @@ cudnnStatus_t cudnnConvolutionBackwardData(
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 		cudnnConvolutionBackwardData_record record = {
 			handle,
 			alpha,
@@ -642,7 +642,7 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 	new_func_data.cudnnConvBackFilterRecord = new_conv_record;
 	func_record new_record = {CUDNN_CONV_FILTER_RECORD, new_func_data};
 
-	if (idx < 2) {
+	if (idx < *num_total_clients) {
 
 		pthread_mutex_lock(mutexes[idx]);
 		DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cudnnConvolutionBackwardFilter!Index is %d\n", func_indexes[idx], idx);

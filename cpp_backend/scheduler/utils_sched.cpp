@@ -111,12 +111,9 @@ void process_eval(vector<vector<float>> &client_durations) {
 
 
 void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, int idx) {
-	//if (seen[idx] < num_client_kernels[idx])
 	pthread_mutex_lock(client_mutex);
 	client_queue->pop();
-	//if (seen[idx] < num_client_kernels[idx])
 	pthread_mutex_unlock(client_mutex);
-	//printf("exit pop!\n");
 }
 
 void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
@@ -130,49 +127,29 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 	DEBUG_PRINT("Highest stream priority is %d, lowest stream priority is %d\n", *hp, *lp);
 	assert(*lp==0);
 
+	for (int i=0; i<num-1; i++) {
+		sched_streams[i] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, 0);
+	}
+
+	// client num-1 is high priority
 	if (!reef) {
-
-		sched_streams[0] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[0], cudaStreamNonBlocking, 0);
-
-		sched_streams[1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, 0);
-
-		sched_streams[2] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[2], cudaStreamNonBlocking, 0);
-
 		sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
 		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, *hp);
 	}
 	else {
-		sched_streams[0] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[0], cudaStreamNonBlocking, 0);
-
-		sched_streams[1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, 0);
+		sched_streams[num-1] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+		cudaStreamCreateWithPriority(sched_streams[num-1], cudaStreamNonBlocking, 0);
 	}
-	printf("exit\n");
-
-
-	// for (int i=0; i<num; i++) {
-	// 	sched_streams[i] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-	// 	if (i==2 || i==3)
-	// 		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, *hp);
-	// 	else
-	// 		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, *lp);
-	// }
-
-	// sched_streams[num] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-	// cudaStreamCreateWithPriority(sched_streams[num], cudaStreamNonBlocking, *hp);
-
 
 }
 
 void create_events(cudaEvent_t*** events, int num) {
 
+	// per-stream event
 	for (int i=0; i<num; i++) {
 		events[i] = (cudaEvent_t**)malloc(30000*sizeof(cudaEvent_t*));
-		for (int j=0; j<10000; j++) {
+		for (int j=0; j<30000; j++) {
 			//printf("create %d, %d\n", i, j);
 			events[i][j] = (cudaEvent_t*)malloc(sizeof(cudaEvent_t));
 			CHECK_CUDA_ERROR(cudaEventCreateWithFlags(events[i][j], cudaEventDisableTiming));
@@ -258,75 +235,6 @@ void register_functions() {
 	*(void **)(&cublas_sgemm_strided_function) = dlsym(RTLD_DEFAULT, "cublasSgemmStridedBatched");
 	assert(&cublas_sgemm_strided_function != NULL);
 
-}
-
-
-void wait_for_stream(int idx, int profile, int current_prio, int prev_prio, cudaStream_t* sched_stream, cudaEvent_t*** events, int num_events, int* event_ids) {
-
-	if (prev_prio >= 0 && current_prio != prev_prio) {
-		// wait
-		if (idx==0) {
-			if (current_prio==1 && event_ids[0]>0) {
-				// hp stream waits for lp stream 0
-				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[0][event_ids[0]-1]), 0));
-			}
-			else if (event_ids[num_events-1]>0) {
-				// lp stream 0 waits for hp stream
-				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream,*(events[num_events-1][event_ids[num_events-1]-1]), 0));
-			}
-		}
-		else {
-			if (current_prio==1 && event_ids[1]>0) {
-				// hp stream waits for lp stream 1
-				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[1][event_ids[1]-1]), 0));
-			}
-			else if (event_ids[num_events-1]>0) {
-				// lp stream 1 waits for hp stream
-				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[num_events-1][event_ids[num_events-1]-1]), 0));
-			}
-		}
-	}
-
-	// if (idx == 0) {
-	// 	if (profile!=0) {
-	// 		if (event_ids[0]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[0][event_ids[0]-1]), 0));
-	// 		if (event_ids[3]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[3][event_ids[3]-1]), 0));
-	// 	}
-	// 	else {
-	// 		if (event_ids[1]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[1][event_ids[1]-1]), 0));
-	// 		if (event_ids[2]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[2][event_ids[2]-1]), 0));
-	// 	}
-	// }
-	// else {
-	// 	if (profile!=0) {
-	// 		if (event_ids[2]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[2][event_ids[2]-1]), 0));
-	// 		if (event_ids[1]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[1][event_ids[1]-1]), 0));
-	// 	}
-	// 	else {
-	// 		if (event_ids[3]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[3][event_ids[3]-1]), 0));
-	// 		if (event_ids[0]>0)
-	// 			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[0][event_ids[0]-1]), 0));
-	// 	}
-	// }
-
-}
-
-
-void wait_all_streams(int idx, cudaStream_t* sched_stream, cudaEvent_t*** events, int num_events, int* event_ids) {
-
-	for (int i=0; i<num_events; i++) {
-		if (i != idx && event_ids[i]>0) {
-			//printf("Wait at %d, index %d, %p\n", i, event_ids[i], *(events[i][event_ids[i]-1]));
-			CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_stream, *(events[i][event_ids[i]-1]), 0));
-		}
-	}
 }
 
 void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event, int* seen, int* event_ids, int evid) {
@@ -614,217 +522,4 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 	DEBUG_PRINT("Return from schedule, seen[%d] is %d!\n", idx, seen[idx]);
 	CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
 	//event_ids[evid] += 1;
-}
-
-
-void schedule_pair_kernel_padding(
-	vector<func_record*> &frecords,
-	queue<struct func_record>** &cbuffers,
-	pthread_mutex_t** &cmutexes,
-	vector<vector<op_info>> &op_info_vector,
-	int* seen, int max_sms,
-	cudaStream_t** sched_streams,
-	int* streams,
-	cudaEvent_t*** events,
-	int num_events,
-	int* event_ids
-) {
-	// kernel padding inspired by REEF
-	// we assume 0 is the "real-time", and runs always in hp
-
-	op_info op_info_0 = op_info_vector[0][seen[0]];
-	op_info op_info_1 = op_info_vector[1][seen[1]];
-
-	//printf("Run together!\n");
-
-	if (event_ids[1] > 1)
-		CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[0], *(events[1][event_ids[1]-1]), 0));
-
-	if (event_ids[0] > 1)
-		CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[1], *(events[0][event_ids[0]-1]), 0));
-
-	if ((frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == FREE_RECORD)) {
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		//cudaStreamSynchronize(*(sched_streams[0]));
-	}
-	else if ((frecords[1]->type == MALLOC_RECORD) || (frecords[1]->type == MEMCPY_RECORD) || (frecords[1]->type == FREE_RECORD)) {
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		streams[1] = 0;
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-		//cudaStreamSynchronize(*(sched_streams[1]));
-	}
-	else if (op_info_1.duration > op_info_0.duration || op_info_0.sm_used >= max_sms) {
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		//cudaStreamSynchronize(*(sched_streams[0]));
-	}
-	else if (op_info_1.sm_used < op_info_0.sm_used) {
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		//cudaStreamSynchronize(*(sched_streams[0]));
-	}
-	else {
-		// run both
-		//printf("COLOCATE!\n");
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		streams[1] = 0;
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-
-		//cudaStreamSynchronize(*(sched_streams[0]));
-		//cudaStreamSynchronize(*(sched_streams[1]));
-	}
-}
-
-
-void schedule_pair(
-	vector<func_record*> &frecords,
-	queue<struct func_record>** &cbuffers,
-	pthread_mutex_t** &cmutexes,
-	vector<vector<op_info>> &op_info_vector,
-	int* seen, int max_sms,
-	cudaStream_t** sched_streams,
-	int* streams,
-	cudaEvent_t*** events,
-	int num_events,
-	int* event_ids
-) {
-
-	//printf("%d,%d,%d, %d\n", event_ids[0], event_ids[1], event_ids[2], num_events-1);
-
-	op_info op_info_0 = op_info_vector[0][seen[0]];
-	op_info op_info_1 = op_info_vector[1][seen[1]];
-
-	//wait_all_streams(0, sched_streams[0], events, num_events, event_ids);
-	//wait_all_streams(1, sched_streams[1], events, num_events, event_ids);
-	//wait_all_streams(num_events-1, sched_streams[num_events-1], events, num_events, event_ids);
-
-	// printf("Inside colocate, idx_0: %d, prof0: %d, sms0: %d, idx_1: %d, prof1: %d, sms1: %d\n",
-	// 		seen[0], op_info_0.profile, op_info_0.sm_used, seen[1], op_info_1.profile, op_info_1.sm_used);
-
-
-	// check if memcpy, malloc, free (device synchronization is performed there)
-	if ((frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == FREE_RECORD)) {
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-	}
-	else if ((frecords[1]->type == MALLOC_RECORD) || (frecords[1]->type == MEMCPY_RECORD) || (frecords[1]->type == FREE_RECORD)) {
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		streams[1] = 0;
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-	}
-	// // if kernel is very small, run alone
-	else if (op_info_0.duration < 10000.0) {
-		wait_for_stream(0, 0, 1, streams[0], sched_streams[num_events-1], events, num_events, event_ids);
-		// if (status != 0)
-		// 	wait_all_streams(0, sched_streams[0], events, num_events, event_ids);
-		status = 0;
-		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
-		streams[0] = 1;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
-	}
-	else if (op_info_1.duration < 10000.0) {
-		wait_for_stream(1, 0, 1, streams[1], sched_streams[num_events-1], events, num_events, event_ids);
-		// if (status != 1)
-		// 	wait_all_streams(1, sched_streams[1], events, num_events, event_ids);
-		status = 1;
-		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
-		streams[1] = 1;
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
-
-	}
-	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used < max_sms) {
-		//printf("COLOCATE, all in lp!\n");
-		// if (status != 2) {
-		// 	wait_all_streams(0, sched_streams[0], events, num_events, event_ids);
-		// 	wait_all_streams(1, sched_streams[1], events, num_events, event_ids);
-		// }
-		// status = 2;
-		wait_for_stream(0, 0, 0, streams[0], sched_streams[0], events, num_events, event_ids);
-		wait_for_stream(1, 0, 0, streams[1], sched_streams[1], events, num_events, event_ids);
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		streams[0] = 0;
-		streams[1] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-		//cudaStreamSynchronize(*(sched_streams[0]));
-		//cudaStreamSynchronize(*(sched_streams[1]));
-	}
-	else if (op_info_0.profile > -1 && (op_info_0.profile == op_info_1.profile)) {
-		// if (status != 0)
-		// 	wait_all_streams(0, sched_streams[0], events, num_events, event_ids);
-		wait_for_stream(0, 0, 1, streams[0], sched_streams[num_events-1], events, num_events, event_ids);
-		status = 0;
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		streams[0] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		//cudaStreamSynchronize(*(sched_streams[0]));
-	}
-	else if (op_info_0.sm_used >= max_sms && op_info_1.sm_used < max_sms) {
-		// if (status != 3) {
-		// 	wait_all_streams(0, sched_streams[0], events, num_events, event_ids);
-		// 	wait_all_streams(num_events-1, sched_streams[num_events-1], events, num_events, event_ids);
-		// }
-		// status = 3;
-		wait_for_stream(0, 0, 0, streams[0], sched_streams[0], events, num_events, event_ids);
-		wait_for_stream(1, 0, 1, streams[1], sched_streams[num_events-1], events, num_events, event_ids);
-		//printf("COLOCATE, 0 in lp, 1 in hp\n");
-		//sleep_kernel(100000, *(sched_streams[num_events-1]));
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		schedule_kernel(*(frecords[1]), sched_streams[num_events-1], 1, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
-		streams[0] = 0;
-		streams[1] = 1;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-		//cudaStreamSynchronize(*(sched_streams[0]));
-		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
-	}
-
-	else if (op_info_0.sm_used < max_sms && op_info_1.sm_used >= max_sms) {
-		//printf("COLOCATE,  0 in hp, 1 in lp\n");
-		// if (status != 4) {
-		// 	wait_all_streams(num_events-1, sched_streams[num_events-1], events, num_events, event_ids);
-		// 	wait_all_streams(1, sched_streams[1], events, num_events, event_ids);
-		// }
-		// status = 4;
-		wait_for_stream(0, 0, 1, streams[0], sched_streams[num_events-1], events, num_events, event_ids);
-		wait_for_stream(1, 0, 0, streams[1], sched_streams[1], events, num_events, event_ids);
-		//sleep_kernel(100000, *(sched_streams[num_events-1]));
-		schedule_kernel(*(frecords[0]), sched_streams[num_events-1], 0, events[num_events-1][event_ids[num_events-1]], seen, event_ids, num_events-1);
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		streams[0] = 1;
-		streams[1] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-		//cudaStreamSynchronize(*(sched_streams[num_events-1]));
-		//cudaStreamSynchronize(*(sched_streams[0]));
-	}
-	else {
-		// if (status != 0) {
-		// 	wait_all_streams(0, sched_streams[0], events, num_events, event_ids);
-		// 	wait_all_streams(1, sched_streams[1], events, num_events, event_ids);
-		// }
-		wait_for_stream(0, 0, 0, streams[0], sched_streams[0], events, num_events, event_ids);
-		wait_for_stream(1, 0, 0, streams[1], sched_streams[1], events, num_events, event_ids);
-		status = 3;
-		//wait_all_streams(0, sched_streams[0], events, num_events);
-		schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-
-		streams[0] = 0;
-		streams[1] = 0;
-		pop_from_queue(cbuffers[0], cmutexes[0], 0);
-		pop_from_queue(cbuffers[1], cmutexes[1], 1);
-	}
 }

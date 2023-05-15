@@ -726,23 +726,17 @@ typedef struct func_record {
 
 
 // globals
-extern queue<func_record> kqueue0;
-extern queue<func_record> kqueue1;
-extern pthread_mutex_t mutex0;
-extern pthread_mutex_t mutex1;
+extern volatile pid_t* thread_ids; // 2*N threads + scheduler
 
-extern vector<char*> fnames0;
-extern vector<char*> fnames1;
-extern volatile pid_t thread_ids[5]; // 2*N threads + scheduler
+extern queue<func_record>** kqueues;
+extern pthread_mutex_t** mutexes;
 
-extern queue<func_record>* kqueues[2];
-extern pthread_mutex_t* mutexes[2];
-extern vector<char*>* func_names[2];
-extern char* model_names[2];
+extern int* func_indexes;
+extern int* num_total_clients;
 
-extern int func_indexes[2];
-
-extern cudaStream_t client_streams[2];
+extern volatile bool** client_request_status;
+extern volatile bool* client_stop;
+extern volatile bool* client_stop_ack;
 
 // functions
 extern cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);
