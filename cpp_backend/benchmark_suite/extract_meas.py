@@ -46,3 +46,26 @@ for i in range(5):
 
 for i in range(5):
      print(f"{iters[5*i]},{iters[5*i+1]},{iters[5*i+2]},{iters[5*i+3]},{iters[5*i+4]}")
+
+
+# print("--------- High Priority Throughput:")
+# hp_th = []
+# for i in range(len(tt)):
+#     hp_th.append(round(1000/tt[i],2))
+# for i in range(5):
+#      print(f"{hp_th[5*i]},{hp_th[5*i+1]},{hp_th[5*i+2]},{hp_th[5*i+3]},{hp_th[5*i+4]}")
+
+# print("--------- Low Priority Throughput:")
+# hp_th = []
+# for i in range(len(tt)):
+#     hp_th.append(round(iters[i]/tt[i],2))
+# for i in range(5):
+#      print(f"{hp_th[5*i]},{hp_th[5*i+1]},{hp_th[5*i+2]},{hp_th[5*i+3]},{hp_th[5*i+4]}")
+
+
+print("--------- Total Throughput:")
+hp_th = []
+for i in range(len(tt)):
+    hp_th.append(round((iters[i]+1000)/tt[i],2))
+for i in range(5):
+     print(f"{hp_th[5*i]},{hp_th[5*i+1]},{hp_th[5*i+2]},{hp_th[5*i+3]},{hp_th[5*i+4]}")

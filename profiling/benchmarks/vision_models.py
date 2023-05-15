@@ -20,10 +20,11 @@ import threading
 
 print(torchvision.__file__)
 
+
 def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
 
-    data = torch.rand([batchsize, 3, 224, 224]).to(local_rank)
-    target = torch.ones([batchsize]).to(torch.long).to(local_rank)
+    data = torch.ones([batchsize, 3, 224, 224], pin_memory=True).to(local_rank)
+    target = torch.ones([batchsize], pin_memory=True).to(torch.long).to(local_rank)
     #data = torch.rand([batchsize, 2048]).to(local_rank)
     model = models.__dict__[model_name](num_classes=1000)
     model = model.to(local_rank)
@@ -56,17 +57,15 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
     start = time.time()
 
 
-    for batch_idx in range(1): #batch in train_iter:
+    for batch_idx in range(1000): #batch in train_iter:
 
         #data, target = batch[0].to(local_rank), batch[1].to(local_rank)
-
-        print(f"Main thread id is {threading.get_native_id()}")
-        if batch_idx == 0:
+        start = time.time()
+        if batch_idx == 9:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
                 torch.cuda.profiler.cudart().cudaProfilerStart()
-
         if do_eval:
             with torch.no_grad():
                 output = model(data)
@@ -77,18 +76,17 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
             loss.backward()
             optimizer.step()
 
-        if batch_idx == 0:
+        torch.cuda.synchronize()
+        if batch_idx == 9:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
                 torch.cuda.profiler.cudart().cudaProfilerStop()
-
         #batch_idx += 1
 
         print(f"Iteration took {time.time()-start} sec")
-        start = time.time()
 
     print("Done!")
 
 if __name__ == "__main__":
-    vision('mobilenet_v2', 96, 0, False, 'nsys')
+    vision('mobilenet_v2', 4, 0, True, 'ncu')
