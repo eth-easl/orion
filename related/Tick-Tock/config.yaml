@@ -1,51 +1,109 @@
 ---
-policy: MPS-process # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
+policy: Isolated # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
 model0:
   mode: eval # train or eval
-  name: vision # these two names should strictly correspond to the model names below
+  name: resnet101 # these two names should strictly correspond to the model names below
 model1:
-  mode: train # train or eval
-  name: vision
-num_epochs: 1 # deprecated, as we don't need to run a full epoch; use model-specific num_iterations instead
+  mode: eval # train or eval
+  name: mobilenet_v2
 shared_config:
-  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
-  cifar10_root: '/cluster/scratch/xianma/cifar10'
-  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
-  squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
-  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
-  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
-  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
-  print_every: 100
-  enable_profiling: false
-  use_dummy_data: true
-  num_requests: 200
-  num_warm_up_reqs: 20
-  request_rate: 10 # measured in 1/seconds
-  percentile_positions:
-    - 90
-    - 95
-    - 99
+  distribution: trace # poisson, uniform, or trace
+  trace_path: './inter_arrival_times.json' # only used when distribution is trace
+  pin_memory: true
+#  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
+#  cifar10_root: '/cluster/scratch/xianma/cifar10'
+#  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
+#  squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
+#  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
+#  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
+#  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
+
+
 
 # configuration for each model
+resnet50:
+  arch: resnet50
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 30 # measured in 1/seconds. If 0 it means no sleep
+resnet101:
+  arch: resnet101
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2:
+  arch: mobilenet_v2
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
+bert:
+  batch_size: 2
+  arch: large # either base or large
+  num_iterations: 1000
+  request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+transformer:
+  arch: base # either base or large
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
+
+
+
+
+
+
+resnet50-1:
+  arch: resnet50
+  batch_size: 32
+  num_iterations: 1000
+  request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
+resnet101-1:
+  arch: resnet101
+  batch_size: 32
+  num_iterations: 1000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2-1:
+  arch: mobilenet_v2
+  batch_size: 64
+  num_iterations: 1000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
+bert-1:
+  batch_size: 8
+  arch: base # either base or large
+  num_iterations: 1000
+  request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+transformer-1:
+  arch: base # either base or large
+  batch_size: 8
+  num_iterations: 1000
+  request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
+
+
+# unused models
+retinanet:
+  dataset_name: openimages-mlperf # coco, openimages, or openimages-mlperf
+  use_amp: false
+  num_workers: 2
+  batch_size: 4
+  num_iterations: 200
+  warm_up_iters: 10
+  num_warm_up_reqs: 10
 nasnet:
   optimizer: SGD
   batch_size: 32
-  arc: mobile # either large or mobile
+  arch: mobile # either large or mobile
   num_workers: 2
-vision:
-  arc: mobilenet_v2
-  optimizer: SGD
-  batch_size: 32
-  num_workers: 2
-  num_iterations: 200
-  warm_up_iters: 20
-vision1:
-  arc: mobilenet_v2
-  optimizer: SGD
-  batch_size: 32
+gnmt:
+  math: fp32 # precision
+  batch_size: 128
   num_workers: 2
   num_iterations: 200
   warm_up_iters: 20
+  dummy_datum_path: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16/gnmt_datum.pt' # if None or cannot open this, will produce dummy data on the fly
 dcgan:
   num_gen_filters: 64
   num_dis_filters: 64
@@ -55,36 +113,3 @@ dcgan:
   input_image_size: 64 # the image size the model finally accepts as input
   dataset: imagenet # can be imagenet, cifar10, or mnist
   num_workers: 2
-gnmt:
-  math: fp32 # precision
-  batch_size: 128
-  num_workers: 2
-  num_iterations: 200
-  warm_up_iters: 20
-  dummy_datum_path: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16/gnmt_datum.pt' # if None or cannot open this, will produce dummy data on the fly
-bert:
-  use_fp16: false # true or false; please stick to false or revise code otherwise
-  fp16_loss_scale: 0 # only used if use_fp16 is set to True
-  squad_version: 2 # 1 or 2, to decide if using v1.1 or v2.0 of the dataset
-  batch_size: 16
-  num_workers: 2
-  arch: base # either base or large
-  num_iterations: 200
-  warm_up_iters: 20
-  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
-  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
-transformer:
-  arch: base # either base or large
-  use_fp16: false
-  amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
-  apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
-  batch_size: 16
-  num_iterations: 200
-  warm_up_iters: 20
-retinanet:
-  dataset_name: coco # coco, openimages, or openimages-mlperf
-  use_amp: false
-  num_workers: 2
-  batch_size: 8
-  num_iterations: 200
-  warm_up_iters: 20
