@@ -140,8 +140,6 @@ extern "C" {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
-	printf("enter!\n");
-
 	int idx = get_idx();
 	assert (idx >= 0);
 	DEBUG_PRINT("[IDX %d] Caught cudaMalloc! allocate region of %ld bytes\n", idx, size);

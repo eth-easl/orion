@@ -224,7 +224,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				if (frecords[j] != NULL) { // low priority
 					op_info op_info_0 = op_info_vector[j][seen[j]];
 					bool schedule = false;
-					bool block = false;
 
 					//printf("%d, %d, %d\n", low_sms, high_sms, sm_threshold);
 
@@ -256,9 +255,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 						if (sum > depth && num_client_cur_iters[hp_client] < num_client_max_iters[hp_client] && seen[hp_client]==0) {
 							large_found = true;
 						}
-						schedule_kernel(*(frecords[j]), sched_streams[j], 0, events[j][event_ids[j]], seen, event_ids, 0);
+						schedule_kernel(*(frecords[j]), sched_streams[j], j, events[j][event_ids[j]], seen, event_ids, j);
 						status = 0;
-						pop_from_queue(client_buffers[j], client_mutexes[j], 0);
+						pop_from_queue(client_buffers[j], client_mutexes[j], j);
 
 						streams[j] = 0;
 					}
