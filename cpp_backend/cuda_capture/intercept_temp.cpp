@@ -140,12 +140,14 @@ extern "C" {
 
 cudaError_t cudaMalloc(void** devPtr, size_t size) {
 
+	printf("enter!\n");
 
 	int idx = get_idx();
 	assert (idx >= 0);
 	DEBUG_PRINT("[IDX %d] Caught cudaMalloc! allocate region of %ld bytes\n", idx, size);
 
 	cudaError_t err = cudaSuccess;
+
 
 	if (malloc_func == NULL) {
 		*(void **)(&malloc_func) = dlsym (RTLD_NEXT, "cudaMalloc");
@@ -155,7 +157,10 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	if (idx < *num_total_clients) {
 
 		//wait for all kernels or memory operations to finish
+		DEBUG_PRINT("About to block!\n");
 		block(idx,  mutexes, kqueues);
+		DEBUG_PRINT("Exit block!\n");
+
 
 		malloc_record new_malloc_record = {devPtr, size};
 		union func_data new_func_data;

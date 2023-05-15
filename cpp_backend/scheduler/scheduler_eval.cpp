@@ -296,6 +296,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					streams[i] = -1;
 					fidx[i] = 0;
 					request_status[i][num_client_cur_iters[i]] = true;
+					//printf("UNLOCK CLIENT %d\n", i);
 					pthread_mutex_unlock(client_mutexes[i]);
 					num_client_cur_iters[i] += 1;
 					locked[i] = false;
@@ -453,19 +454,22 @@ extern "C" {
 #endif
 
 		// 1. thread structures
-		pid_t* thread_ids_all = (pid_t*)dlsym(klib, "thread_ids");
-		thread_ids_all = (pid_t*)malloc((2*num_clients+1)*sizeof(pid_t)); // 2*N threads + scheduler
-		for (int i=0; i<num_clients; i++)
-			thread_ids_all[i] = tids[i];
-		thread_ids_all[num_clients] = mytid;
-		for (int i=num_clients+1; i<2*num_clients+1; i++)
-			thread_ids_all[i] = 0;
+		pid_t** thread_ids_all = (pid_t**)dlsym(klib, "thread_ids");
+		*thread_ids_all = (pid_t*)malloc((2*num_clients+1)*sizeof(pid_t)); // 2*N threads + scheduler
 
-		int* num_total_clients = (int*)dlsym(klib, "num_total_clients");
-		*num_total_clients = num_clients;
+		for (int i=0; i<num_clients; i++)
+			(*thread_ids_all)[i] = tids[i];
+		(*thread_ids_all)[num_clients] = mytid;
+		for (int i=num_clients+1; i<2*num_clients+1; i++)
+			(*thread_ids_all)[i] = 0;
+		//printf("address is %p, %p\n", thread_ids_all, *thread_ids_all);
+
+		int** num_total_clients = (int**)dlsym(klib, "num_total_clients");
+		*num_total_clients = (int*)malloc(sizeof(int));
+		**num_total_clients = num_clients;
 
 		for (int i=0; i<=num_clients; i++) {
-			DEBUG_PRINT("Scheduler setup the thread id at %d to be %d\n", i, thread_ids_all[i]);
+			DEBUG_PRINT("Scheduler setup the thread id at %d to be %d\n", i, (*thread_ids_all)[i]);
 		}
 
 		// 2. metadata structures
@@ -482,8 +486,10 @@ extern "C" {
 		}
 
 		// 3. indexes
-		fidx = (int*)dlsym(klib, "func_indexes");
-		fidx = (int*)calloc(num_clients, sizeof(int));
+		int** fidx_ptr = (int**)dlsym(klib, "func_indexes");
+		*fidx_ptr = (int*)calloc(num_clients, sizeof(int));
+		fidx = *fidx_ptr;
+
 		num_client_kernels = num_kernels;
 		num_client_max_iters = num_iters;
 
@@ -499,29 +505,35 @@ extern "C" {
 		}
 
 		// 4. communication queues + locks
-		queue<func_record>** buffers = (queue<func_record>**)dlsym(klib, "kqueues");
-		buffers = (queue<func_record>**)malloc(num_clients*sizeof(queue<func_record>*));
+		queue<func_record>*** buffers_ptr = (queue<func_record>***)dlsym(klib, "kqueues");
+		*buffers_ptr = (queue<func_record>**)malloc(num_clients*sizeof(queue<func_record>*));
+		queue<func_record>** buffers = *buffers_ptr;
 		for (int i=0; i<num_clients; i++) {
-			buffers[i] = (queue<func_record>*)malloc(sizeof(queue<func_record>));
+			buffers[i] = new queue<func_record>();
+			printf("size is %d\n", buffers[i]->size());
 		}
 
-		client_mutexes = (pthread_mutex_t**)dlsym(klib, "mutexes");
-		client_mutexes = (pthread_mutex_t**)malloc(num_clients*sizeof(pthread_mutex_t*));
+		pthread_mutex_t*** client_mutexes_ptr = (pthread_mutex_t***)dlsym(klib, "mutexes");
+		*client_mutexes_ptr = (pthread_mutex_t**)malloc(num_clients*sizeof(pthread_mutex_t*));
+		client_mutexes = *client_mutexes_ptr;
 		for (int i=0; i<num_clients; i++) {
-			client_mutexes[i] = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
+			client_mutexes[i] = new pthread_mutex_t(); //(pthread_mutex_t*)malloc(sizeof(pthread_mutex_t));
 		}
 		scheduler->profile_prep(buffers, num_clients, reef);
 
 		// 5. runtime control
-		request_status = (bool**)dlsym(klib, "client_request_status");
-		request_status = (bool**)malloc(num_clients*sizeof(bool*));
+		bool*** request_status_ptr = (bool***)dlsym(klib, "client_request_status");
+		*request_status_ptr = (bool**)malloc(num_clients*sizeof(bool*));
+		request_status = *request_status_ptr;
 
 		// check!
-		stops = (bool*)dlsym(klib, "client_stop");
-		stops = (bool*)calloc(num_clients, sizeof(bool));
+		bool** stops_ptr = (bool**)dlsym(klib, "client_stop");
+		*stops_ptr = (bool*)calloc(num_clients, sizeof(bool));
+		stops = *stops_ptr;
 
-		stop_ack = (bool*)dlsym(klib, "client_stop_ack");
-		stop_ack = (bool*)calloc(num_clients, sizeof(bool));
+		bool** stop_ack_ptr = (bool**)dlsym(klib, "client_stop_ack");
+		*stop_ack_ptr = (bool*)calloc(num_clients, sizeof(bool));
+		stop_ack = *stop_ack_ptr;
 
 		for (int i=0; i<num_clients; i++) {
 			request_status[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
