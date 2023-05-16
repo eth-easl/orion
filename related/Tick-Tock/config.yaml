@@ -1,13 +1,17 @@
 ---
-policy: Isolated # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
-model0:
-  mode: eval # train or eval
-  name: resnet101 # these two names should strictly correspond to the model names below
-model1:
-  mode: eval # train or eval
-  name: mobilenet_v2
+policy: "Streams" # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
+models:
+  model0:
+    mode: eval # train or eval
+    name: resnet101 # these two names should strictly correspond to the model names below
+  model1:
+    mode: eval # train or eval
+    name: mobilenet_v2
+  model2:
+    mode: eval # train or eval
+    name: resnet50
 shared_config:
-  distribution: trace # poisson, uniform, or trace
+  distribution: poisson # poisson, uniform, or trace
   trace_path: './inter_arrival_times.json' # only used when distribution is trace
   pin_memory: true
 #  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
@@ -29,12 +33,12 @@ resnet50:
 resnet101:
   arch: resnet101
   batch_size: 4
-  num_iterations: 1000
+  num_iterations: 300
   request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2:
   arch: mobilenet_v2
   batch_size: 4
-  num_iterations: 1000
+  num_iterations: 100000
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
 bert:
   batch_size: 2
@@ -48,8 +52,6 @@ transformer:
   batch_size: 4
   num_iterations: 1000
   request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
-
-
 
 
 
