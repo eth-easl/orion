@@ -163,6 +163,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 	bool large_found = false;
 	long sum = 0;
+	int size = 0;
+	int start = -1;
 
 	// BS - works only for 2 clients for now
 	int low_sms = 0;
@@ -172,13 +174,14 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 	float hp_limit_float = (float)hp_limit;
 
 	// if hp is inference, use max_sms + also there is no update phase
-	if (!is_train[1]) {
+	if (!is_train[hp_client]) {
 		sm_threshold = max_sms;
 		update_start = INT_MAX;
 	}
 
 	while(1) {
 		vector<func_record*> frecords(num_clients, NULL);
+		size = 0;
 
 		for (int i=0; i<num_clients; i++) {
 			if (seen[i] == num_client_kernels[i])
@@ -219,8 +222,12 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				status = 1;
 				pop_from_queue(client_buffers[hp_client], client_mutexes[hp_client], hp_client);
 			}
-			for (int j=0; j<num_clients-1; j++) {
-				// TODO: update policy here
+			start = -1;
+			int end = start + num_clients; // start+1+num_clients-1
+			//printf("Start from %d\n", (start+1)% (num_clients-1));
+			for (int t=start+1; t<end; t++) {
+				// Do round-robin
+				int j = t % (num_clients-1);
 				if (frecords[j] != NULL) { // low priority
 					op_info op_info_0 = op_info_vector[j][seen[j]];
 					bool schedule = false;
@@ -235,24 +242,33 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					}
 					else if (seen[hp_client] >= update_start && (op_info_0.sm_used <= sm_threshold && cudaEventQuery(*(events[hp_client][update_start-1])) == cudaSuccess)) // && (op_info_0.sm_used <= 10*sm_threshold))
 						schedule = true;
-					else if (seen[hp_client]>0 && (op_info_0.sm_used <= sm_threshold) &&  ((op_info_0.profile == -1 || profiles[hp_client]==-1 || (profiles[hp_client] != op_info_0.profile))))
+					else if (seen[hp_client]>0 && (size + op_info_0.sm_used <= sm_threshold) &&  ((op_info_0.profile == -1 || profiles[hp_client]==-1 || (profiles[hp_client] != op_info_0.profile))))
 						schedule = true;
-					if (schedule && large_found && event_ids[j]>=1) {
-						cudaError_t status = cudaEventQuery(*(events[j][event_ids[j]-1]));
-						if (status == cudaSuccess) {
+					if (schedule && large_found) {
+						bool do_schedule = true;
+						for (int k=0; k<num_clients-1; k++) {
+					 		if (event_ids[k]>=1) {
+								cudaError_t status = cudaEventQuery(*(events[k][event_ids[k]-1]));
+								if (status != cudaSuccess) {
+									do_schedule = false;
+									break;
+								}
+							}
+						}
+						if (do_schedule) {
 							large_found = false;
 							sum = 0;
 						}
-						else {
+						else
 							schedule = false;
-						}
 					}
 					if (schedule) {
 						//if (op_info_0.duration > depth && num_client_cur_iters[1] < num_client_max_iters[1] && seen[1]==0) {
 							//block = true;
+						size += op_info_0.sm_used;
 						if ((frecords[j]->type != MALLOC_RECORD) && (frecords[j]->type != MEMCPY_RECORD) && (frecords[j]->type != MEMSET_RECORD) && (frecords[j]->type != FREE_RECORD))
 							sum += op_info_0.duration;
-						if (sum > depth && num_client_cur_iters[hp_client] < num_client_max_iters[hp_client] && seen[hp_client]==0) {
+						if (sum > depth && num_client_cur_iters[hp_client] < num_client_max_iters[hp_client]) {
 							large_found = true;
 						}
 						schedule_kernel(*(frecords[j]), sched_streams[j], j, events[j][event_ids[j]], seen, event_ids, j);
@@ -260,6 +276,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 						pop_from_queue(client_buffers[j], client_mutexes[j], j);
 
 						streams[j] = 0;
+						start = j;
 					}
 				}
 			}
@@ -342,13 +359,15 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 						float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - total_client_starts[i]).count();
 						duration /= 1000.0;
 						printf("Client %d, Total loop took %f sec\n", i, duration);
-						if (i==1) {
-							printf("======= Client 0 has done %d iterations\n", num_client_cur_iters[0]);
-							if (!locked[0])
-								pthread_mutex_lock(client_mutexes[0]);
-							stops[0] = true;
-							if (!locked[0])
-								pthread_mutex_unlock(client_mutexes[0]);
+						if (i==num_clients-1) {
+							for (int k=0; k<num_clients-1; k++) {
+								printf("======= Client %d has done %d iterations\n", k, num_client_cur_iters[k]);
+								if (!locked[k])
+									pthread_mutex_lock(client_mutexes[k]);
+								stops[k] = true;
+								if (!locked[k])
+									pthread_mutex_unlock(client_mutexes[k]);
+							}
 						}
 					}
 				}
