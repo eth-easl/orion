@@ -162,8 +162,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 	int hp_client = num_clients-1;
 
 	bool large_found = false;
-	long sum = 0;
-	int size = 0;
+	long sum = 0; // sum of durations of ongoing BE kernels
+	long size = 0; // sum of sizes of in-the-queues BE kernels
 	int start = -1;
 
 	// BS - works only for 2 clients for now
@@ -222,7 +222,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				status = 1;
 				pop_from_queue(client_buffers[hp_client], client_mutexes[hp_client], hp_client);
 			}
-			start = -1;
+			//start = -1;
 			int end = start + num_clients; // start+1+num_clients-1
 			//printf("Start from %d\n", (start+1)% (num_clients-1));
 			for (int t=start+1; t<end; t++) {
@@ -234,10 +234,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 					//printf("%d, %d, %d\n", low_sms, high_sms, sm_threshold);
 
-					if ((num_clients==1) || (seen[hp_client] == 0) || (frecords[j]->type == MALLOC_RECORD) || (frecords[j]->type == MEMCPY_RECORD) || (frecords[j]->type == MEMSET_RECORD) || (frecords[j]->type == FREE_RECORD))
+					if ((num_clients==1) || (seen[hp_client]==0) || (frecords[j]->type == MALLOC_RECORD) || (frecords[j]->type == MEMCPY_RECORD) || (frecords[j]->type == MEMSET_RECORD) || (frecords[j]->type == FREE_RECORD))
 						schedule = true;
 					else if (num_client_cur_iters[j] <= 10 || num_client_cur_iters[hp_client] >= num_client_max_iters[hp_client]) {
-						// this could be removed
 						schedule = true;
 					}
 					else if (seen[hp_client] >= update_start && (op_info_0.sm_used <= sm_threshold && cudaEventQuery(*(events[hp_client][update_start-1])) == cudaSuccess)) // && (op_info_0.sm_used <= 10*sm_threshold))
@@ -247,7 +246,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					if (schedule && large_found) {
 						bool do_schedule = true;
 						for (int k=0; k<num_clients-1; k++) {
-					 		if (event_ids[k]>=1) {
+						 	if (event_ids[k]>=1) {
 								cudaError_t status = cudaEventQuery(*(events[k][event_ids[k]-1]));
 								if (status != cudaSuccess) {
 									do_schedule = false;
