@@ -104,43 +104,105 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		return;
 	}
 
+	int hp_client = num_clients-1;
 
-	if (frecords[1] != NULL && frecords[0] == NULL) {
-		op_info op_info_1 = op_info_vector[1][seen[1]];
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		pop_from_queue(client_buffers[1], client_mutexes[1], 1);
-		// sync here?
-		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
-	}
-	else if (frecords[0] != NULL && frecords[1] == NULL) {
-		penalty += 1;
-		if (penalty == 12) {
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-			if (lp_idx == depth) {
-				CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
-				lp_idx = 0;
+	// if hp is found, schedule
+	if (frecords[hp_client] != NULL) {
+		schedule_kernel(*(frecords[hp_client]), sched_streams[hp_client], hp_client, events[hp_client][event_ids[hp_client]], seen, event_ids, hp_client);
+		pop_from_queue(client_buffers[hp_client], client_mutexes[hp_client], hp_client);
+		op_info op_info_1 = op_info_vector[hp_client][seen[hp_client]];
+
+		// check all kernels, and find suitable
+		for (int i=0; i<hp_client; i++) {
+			if (frecords[i] != NULL) {
+				op_info op_info_0 = op_info_vector[i][seen[i]];
+				if (op_info_0.duration < op_info_1.duration && op_info_0.sm_used > op_info_1.sm_used) {
+					// colocate
+					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
+					pop_from_queue(client_buffers[i], client_mutexes[i], i);
+					break;
+				}
 			}
-			lp_idx += 1;
+		}
+	}
+	else {
+		for (int i=0; i<hp_client; i++) {
+			if (frecords[i] != NULL)
+				penalty += 1;
+		}
+		if (penalty==12) {
+			// schedule all
+			for (int i=0; i<hp_client; i++) {
+				schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
+				pop_from_queue(client_buffers[i], client_mutexes[i], i);
+				// TODO: check this
+				if (lp_idx == depth) {
+					CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[i]));
+					lp_idx = 0;
+				}
+				lp_idx += 1;
+			}
 			penalty = 0;
 		}
 	}
-	if (frecords[0] != NULL && frecords[1] != NULL) {
-		op_info op_info_0 = op_info_vector[0][seen[0]];
-		op_info op_info_1 = op_info_vector[1][seen[1]];
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		pop_from_queue(client_buffers[1], client_mutexes[1], 1);
-		if (op_info_0.duration < op_info_1.duration && op_info_0.sm_used > op_info_1.sm_used) {
-			// colocate
+}
+
+int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_clients, int start) {
+
+	// 1 client
+	if (num_clients==1) {
+		if (frecords[0] != NULL) {
 			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
 		}
-		// sync here?
-		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
+		return start;
 	}
+
+	int hp_client = num_clients-1;
+	// check high priority first
+	if (frecords[hp_client] != NULL) {
+		bool schedule = false;
+		if (num_client_cur_iters[hp_client] <= 10 || (frecords[hp_client]->type == MALLOC_RECORD))  {
+			schedule = true;
+		}
+		else {
+			// check that no other client is "active"
+			for (int i=0; i<hp_client; i++) {
+				if (seen[i]) {
+					// another client is served
+					schedule=false;
+					break;
+				}
+			}
+ 		}
+		if (schedule) {
+			// schedule on stream 0
+			schedule_kernel(*(frecords[hp_client]), sched_streams[0], hp_client, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[hp_client], client_mutexes[hp_client], hp_client);
+		}
+	}
+
+	// TODO: round-robin to next client to serve
+	int end = start + num_clients; // start+1+num_clients-1
+	//printf("Start from %d\n", (start+1)% (num_clients-1));
+	for (int t=start+1; t<end; t++) {
+		int i = t%(num_clients-1);
+		if (frecords[i] != NULL) {
+			if (num_client_cur_iters[i] <= 10 || seen[hp_client]==0 || (frecords[i]->type == MALLOC_RECORD))  {
+				// schedule on stream 0
+				schedule_kernel(*(frecords[i]), sched_streams[0], i, events[0][event_ids[0]], seen, event_ids, 0);
+				pop_from_queue(client_buffers[i], client_mutexes[i], i);
+				start = t;
+				break;
+			}
+		}
+	}
+
+	return start;
+
 }
 
-void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, int depth, int hp_limit, int update_start) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, bool seq, int depth, int hp_limit, int update_start) {
 
 	printf("here!\n");
 
@@ -209,7 +271,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 		if (reef) {
 			schedule_reef(frecords, num_clients, depth);
 		}
-
+		else if (seq) {
+			start = schedule_sequential(frecords, num_clients, start);
+		}
 		else {
 			if (frecords[hp_client] != NULL) { // high priority
 
@@ -300,13 +364,23 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					DEBUG_PRINT("LOCK CLIENT %d\n", i);
 				}
 				bool ready = true;
-				if (event_ids[i] >= 1) {
-					if (cudaEventQuery(*(events[i][event_ids[i]-1])) != cudaSuccess)
-						ready &= false;
+				if (seq) {
+					if (event_ids[0] >= 1) {
+						if (cudaEventQuery(*(events[0][event_ids[0]-1])) != cudaSuccess)
+							ready &= false;
+					}
+				}
+				else {
+					if (event_ids[i] >= 1) {
+						if (cudaEventQuery(*(events[i][event_ids[i]-1])) != cudaSuccess)
+							ready &= false;
+					}
 				}
 				if (ready) {
 					// if yes, reset meta-structures for this client, and let it continue
 					seen[i] = 0;
+					if (seq)
+						event_ids[0] = 0;
 					event_ids[i] = 0;
 					streams[i] = -1;
 					fidx[i] = 0;
@@ -316,17 +390,17 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					num_client_cur_iters[i] += 1;
 					locked[i] = false;
 
-					if (i==0) {
-						lp_idx = 0;
-						penalty = 0;
-						sum = 0;
-					}
+					// if (i==0) {
+					// 	lp_idx = 0;
+					// 	penalty = 0;
+					// 	sum = 0;
+					// }
 
 					auto end = std::chrono::high_resolution_clock::now();
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
-					if (!reef && i==hp_client && is_train[hp_client]) {
+					if (!reef && !seq && i==hp_client && is_train[hp_client]) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
 						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
@@ -552,6 +626,9 @@ extern "C" {
 		*stop_ack_ptr = (bool*)calloc(num_clients, sizeof(bool));
 		stop_ack = *stop_ack_ptr;
 
+		bool** affinity_set_ptr = (bool**)dlsym(klib, "affinity_set");
+		(*affinity_set_ptr) = (bool*)calloc(num_clients+1, sizeof(bool));
+
 		for (int i=0; i<num_clients; i++) {
 			request_status[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
 		}
@@ -559,11 +636,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, int reef_depth, int hp_limit, int update_start) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, bool seq, int reef_depth, int hp_limit, int update_start) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, reef_depth, hp_limit, update_start);
+			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, seq, reef_depth, hp_limit, update_start);
 		DEBUG_PRINT("exited sched func!\n");
 		return NULL;
 	}

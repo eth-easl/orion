@@ -111,6 +111,7 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
             profile,
             run_eval,
             False,
+            True,
             reef_depth,
             hp_limit,
             update_start,
