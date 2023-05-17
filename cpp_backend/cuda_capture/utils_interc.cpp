@@ -35,12 +35,13 @@ int get_idx() {
 			}
 		}
 
-		if (idx > -1) {
+		if (idx > -1 && !affinity_set[idx]) {
 			cpu_set_t  mask;
 			CPU_ZERO(&mask);
 			CPU_SET(idx+4, &mask);
 			int result = sched_setaffinity(0, sizeof(mask), &mask);
 			assert (result==0);
+			affinity_set[idx] = true;
 		}
 		return idx;
 }
