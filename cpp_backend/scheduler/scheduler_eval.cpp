@@ -106,6 +106,15 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 
 	int hp_client = num_clients-1;
 
+	// check for malloc operations
+	// for (int i=0; i<num_clients; i++) {
+	// 	if (frecords[i] != NULL && frecords[i]->type == MALLOC_RECORD) {
+	// 		schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
+	// 		pop_from_queue(client_buffers[i], client_mutexes[i], i);
+	// 		return;
+	// 	}
+	// }
+
 	// if hp is found, schedule
 	if (frecords[hp_client] != NULL) {
 		schedule_kernel(*(frecords[hp_client]), sched_streams[hp_client], hp_client, events[hp_client][event_ids[hp_client]], seen, event_ids, hp_client);
@@ -120,7 +129,8 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 					// colocate
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);
-					break;
+					// if one is found, exit
+					return;
 				}
 			}
 		}
@@ -130,17 +140,19 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 			if (frecords[i] != NULL)
 				penalty += 1;
 		}
-		if (penalty==12) {
+		if (penalty>=12) {
 			// schedule all
 			for (int i=0; i<hp_client; i++) {
-				schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
-				pop_from_queue(client_buffers[i], client_mutexes[i], i);
-				// TODO: check this
-				if (lp_idx == depth) {
-					CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[i]));
-					lp_idx = 0;
+				if (frecords[i] != NULL) {
+					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
+					pop_from_queue(client_buffers[i], client_mutexes[i], i);
+					// TODO: check this
+					if (lp_idx == depth) {
+						CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[i]));
+						lp_idx = 0;
+					}
+					lp_idx += 1;
 				}
-				lp_idx += 1;
 			}
 			penalty = 0;
 		}
@@ -149,6 +161,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 
 int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_clients, int start) {
 
+	// TODO: fix this!
 	// 1 client
 	if (num_clients==1) {
 		if (frecords[0] != NULL) {
@@ -158,17 +171,18 @@ int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_client
 		return start;
 	}
 
+
 	int hp_client = num_clients-1;
 	// check high priority first
 	if (frecords[hp_client] != NULL) {
 		bool schedule = false;
-		if (num_client_cur_iters[hp_client] <= 10 || (frecords[hp_client]->type == MALLOC_RECORD))  {
+		if ((num_client_cur_iters[hp_client] <= 10) || (frecords[hp_client]->type == MALLOC_RECORD))  {
 			schedule = true;
 		}
 		else {
 			// check that no other client is "active"
 			for (int i=0; i<hp_client; i++) {
-				if (seen[i]) {
+				if (seen[i]>0) {
 					// another client is served
 					schedule=false;
 					break;
@@ -182,13 +196,26 @@ int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_client
 		}
 	}
 
-	// TODO: round-robin to next client to serve
+
 	int end = start + num_clients; // start+1+num_clients-1
 	//printf("Start from %d\n", (start+1)% (num_clients-1));
 	for (int t=start+1; t<end; t++) {
 		int i = t%(num_clients-1);
 		if (frecords[i] != NULL) {
-			if (num_client_cur_iters[i] <= 10 || seen[hp_client]==0 || (frecords[i]->type == MALLOC_RECORD))  {
+			bool schedule = false; //false;
+			if (num_client_cur_iters[i] <= 10 || (frecords[i]->type == MALLOC_RECORD))
+				schedule = true;
+			else {
+				// check non-else is running
+				for (int j=0; j<num_clients; j++) {
+					if (i!=j && seen[j]>0) {
+						// another client is served
+						schedule=false;
+						break;
+					}
+				}
+			}
+			if (schedule)  {
 				// schedule on stream 0
 				schedule_kernel(*(frecords[i]), sched_streams[0], i, events[0][event_ids[0]], seen, event_ids, 0);
 				pop_from_queue(client_buffers[i], client_mutexes[i], i);
