@@ -97,7 +97,7 @@ if __name__ == "__main__":
             default_full_config['policy'] = policy
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
-            run(default_full_config, combination_name, times=times)
+            run(default_full_config, combination_name, times=times, start_id=start_id)
         elif {model0_mode, model1_mode} == {'eval', 'train'}:
             default_full_config['model0']['name'] = model0
             default_full_config['model0']['mode'] = model0_mode
@@ -120,7 +120,7 @@ if __name__ == "__main__":
                 default_full_config[model1]['batch_size'] = train_batch_sizes[model1]
 
                 combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
-                run(default_full_config, combination_name, times=times)
+                run(default_full_config, combination_name, times=times, start_id=start_id)
             else:
                 model1_with_suffix = model1 + '-1'
                 if model0 == 'bert':
@@ -163,7 +163,7 @@ if __name__ == "__main__":
             default_full_config[model1]['batch_size'] = eval_batch_sizes[model1]
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
-            run(default_full_config, combination_name, times=times)
+            run(default_full_config, combination_name, times=times, start_id=start_id)
 
 
     notifier.notify(
