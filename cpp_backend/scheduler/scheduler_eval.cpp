@@ -174,14 +174,15 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 
 void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, int depth) {
 
-	if (num_clients==1) {
-		if (frecords[0] != NULL) {
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-		}
-		return;
+	if (frecords[0] != NULL) {
+		if (num_clients==1
+			|| (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD)
+			|| (num_client_cur_iters[0] <= 10 || num_client_cur_iters[1] >= num_client_max_iters[1])) {
+				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+				pop_from_queue(client_buffers[0], client_mutexes[0], 0);
+				return;
+			}
 	}
-
 
 	if (frecords[1] != NULL && frecords[0] == NULL) {
 		op_info op_info_1 = op_info_vector[1][seen[1]];
@@ -190,20 +191,20 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		// sync here?
 		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
 	}
-	else if (frecords[0] != NULL && frecords[1] == NULL) {
+	else if (seen[1]==0 && frecords[0] != NULL && frecords[1] == NULL) {
 		penalty += 1;
 		if (penalty == 12) {
 			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-			if (lp_idx == depth) {
-				CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
-				lp_idx = 0;
-			}
-			lp_idx += 1;
+			// if (lp_idx == depth) {
+			// 	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
+			// 	lp_idx = 0;
+			// }
+			// lp_idx += 1;
 			penalty = 0;
 		}
 	}
-	if (frecords[0] != NULL && frecords[1] != NULL) {
+	else if (frecords[0] != NULL && frecords[1] != NULL) {
 		op_info op_info_0 = op_info_vector[0][seen[0]];
 		op_info op_info_1 = op_info_vector[1][seen[1]];
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
@@ -329,7 +330,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			if (frecords[0] != NULL) { // low priority
 				op_info op_info_0 = op_info_vector[0][seen[0]];
 				bool schedule = false;
-				bool block = false;
 
 				//printf("%d, %d, %d\n", low_sms, high_sms, sm_threshold);
 
@@ -339,9 +339,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					// this could be removed
 					schedule = true;
 				}
-				else if (seen[1] >= update_start && (op_info_0.sm_used <= sm_threshold && cudaEventQuery(*(events[1][update_start-1])) == cudaSuccess)) // && (op_info_0.sm_used <= 10*sm_threshold))
-					schedule = true;
-				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) &&  ((op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
+				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) && ((op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
 					schedule = true;
 				if (schedule && large_found && event_ids[0]>=1) {
 					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
@@ -434,9 +432,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
-					if (i==1)
-						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
-					if (!reef && i==1 && is_train[1]) {
+					//if (i==1)
+					//	printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
+					if (!seq && !reef && i==1 && is_train[1]) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
 						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
