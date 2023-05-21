@@ -7,6 +7,7 @@ import lamb
 import numpy as np
 from ctypes import *
 import os
+import json
 
 def seed_everything(seed: int):
     import random, os
@@ -39,19 +40,24 @@ def check_stop(backend_lib):
     return backend_lib.stop()
 
 
-def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid, input_file=False):
 
     seed_everything(42)
 
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
 
-    if rps > 0:
+    if rps > 0 and not input_file:
         if uniform:
             sleep_times = [1/rps]*num_iters
         else:
             sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    elif input_file:
+        with open('/home/image-varuna/gpu_share_repo/cpp_backend/inter_arrival_times.json') as f:
+            sleep_times = json.load(f)
     else:
         sleep_times = [0] * num_iters
+
+    print(sleep_times)
     barriers[0].wait()
 
     if (train and tid==1):

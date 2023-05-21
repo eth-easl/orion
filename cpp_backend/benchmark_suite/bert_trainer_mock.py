@@ -3,6 +3,7 @@ import threading
 import time
 import modeling
 import numpy as np
+import json
 
 from optimization import BertAdam
 
@@ -45,19 +46,23 @@ def block(backend_lib, it):
 def check_stop(backend_lib):
     return backend_lib.stop()
 
-def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid, input_file=False):
 
     seed_everything(42)
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
 
-    if rps > 0:
+    if rps > 0 and not input_file:
         if uniform:
             sleep_times = [1/rps]*num_iters
         else:
             sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    elif input_file:
+        with open('/home/image-varuna/gpu_share_repo/cpp_backend/inter_arrival_times.json') as f:
+            sleep_times = json.load(f)
     else:
         sleep_times = [0]*num_iters
 
+    print(sleep_times)
     barriers[0].wait()
     
     if (train and tid==1):
@@ -187,6 +192,10 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                             dur = next_startup-time.time()
                             if (dur>0):
                                 time.sleep(dur)
+                            if check_stop(backend_lib):
+                                print("---- STOP!")
+                                break
+
                     else:
                         ### CLOSED LOOP ###
                         print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
@@ -200,7 +209,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
 
     barriers[0].wait()
 
-    if not train:
+    if tid==1 and not train:
         timings = timings[50:]
         timings = sorted(timings)
         p50 = np.percentile(timings, 50)

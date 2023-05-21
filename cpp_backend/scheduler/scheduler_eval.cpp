@@ -432,9 +432,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
-					//if (i==1)
-					//	printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
-					if (!seq && !reef && i==1 && is_train[1]) {
+					if (i==1)
+						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
+					if (!reef && !seq && i==1 && is_train[1]) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
 						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
