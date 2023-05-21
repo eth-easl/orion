@@ -55,7 +55,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
     barriers[0].wait()
 
     if (train and tid==1):
-        time.sleep(5)
+        time.sleep(10)
 
     model_config = {
         'n_token': 267735,
@@ -109,9 +109,9 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
         timings = []
         while batch_idx < num_iters:
             if train:
-                print(f"Client {tid}, start iter {batch_idx}")
+                #print(f"Client {tid}, start iter {batch_idx}")
                 data, target = batch[0].to(local_rank), batch[1].to(local_rank)
-                optimizer.zero_grad()
+                #optimizer.zero_grad()
                 loss, mems = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
@@ -132,7 +132,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                     #### OPEN LOOP ####
                     if open_loop:
                         if (cur_time >= next_startup):
-                            print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                            #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             if batch_idx==50:
                                 torch.cuda.profiler.cudart().cudaProfilerStart()
                             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -140,7 +140,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                             block(backend_lib, batch_idx)
                             req_time = time.time()-next_startup
                             timings.append(req_time)
-                            print(f"Client {tid} finished! Wait! It took {req_time}")
+                            #print(f"Client {tid} finished! Wait! It took {req_time}")
                             if batch_idx>=10:
                                 next_startup += sleep_times[batch_idx]
                             else:
@@ -154,6 +154,9 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                             dur = next_startup-time.time()
                             if (dur>0):
                                 time.sleep(dur)
+                            if check_stop(backend_lib):
+                                print("---- STOP!")
+                                break
                     else:
                         #### CLOSED LOOP ####
                         print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
@@ -167,7 +170,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
 
     barriers[0].wait()
 
-    if not train:
+    if tid==1 and not train:
         timings = timings[50:]
         timings = sorted(timings)
         p50 = np.percentile(timings, 50)

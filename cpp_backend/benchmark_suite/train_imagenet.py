@@ -126,8 +126,8 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                 if train:
                     #client_barrier.wait()
                     print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                    if tid==0 and batch_idx==20:
-                        torch.cuda.profiler.cudart().cudaProfilerStart()
+                    # if tid==0 and batch_idx==20:
+                    #     torch.cuda.profiler.cudart().cudaProfilerStart()
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     optimizer.zero_grad()
                     output = model(gpu_data)
@@ -158,7 +158,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                             if (cur_time >= next_startup):
                                 #client_barrier.wait()
                                 print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                                if batch_idx==200:
+                                if batch_idx==100:
                                     torch.cuda.profiler.cudart().cudaProfilerStart()
                                 gpu_data = batch[0].to(local_rank)
                                 output = model(gpu_data)
@@ -181,6 +181,9 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                                 dur = next_startup-time.time()
                                 if (dur>0):
                                     time.sleep(dur)
+                                if check_stop(backend_lib):
+                                    print("---- STOP!")
+                                    break
                                 #client_barrier.wait()
                         else:
                             #### CLOSED LOOP ####
@@ -204,6 +207,6 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
         p95 = np.percentile(timings, 95)
         p99 = np.percentile(timings, 99)
 
-        if not train:
+        if tid==1 and not train:
             print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
         print("Finished! Ready to join!")
