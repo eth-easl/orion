@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, TensorDataset
 import random
 import numpy as np
-from utils.sync_info import BasicSyncInfo
+from utils.sync_info import BasicSyncInfo, ConcurrentSyncInfo
 import utils
 from bert.schedulers import LinearWarmUpScheduler
 from bert.optimization import BertAdam
@@ -182,7 +182,10 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     if 'default' in shared_config and shared_config['default']:
         stream = torch.cuda.default_stream(device=device)
     else:
-        stream = torch.cuda.Stream(device=device)
+        if isinstance(sync_info, ConcurrentSyncInfo) and sync_info.isolation_level == 'thread':
+            stream = torch.cuda.Stream(device=device, priority=-1 if tid == 0 else 0)
+        else:
+            stream = torch.cuda.Stream(device=device)
 
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
@@ -209,7 +212,10 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     if 'default' in shared_config and shared_config['default']:
         stream = torch.cuda.default_stream(device=device)
     else:
-        stream = torch.cuda.Stream(device=device)
+        if isinstance(sync_info, ConcurrentSyncInfo) and sync_info.isolation_level == 'thread':
+            stream = torch.cuda.Stream(device=device, priority=-1 if tid == 0 else 0)
+        else:
+            stream = torch.cuda.Stream(device=device)
 
     model, dataloader, optimizer = setup(model_config, shared_config, device)
     model.train()

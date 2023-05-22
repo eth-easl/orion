@@ -91,9 +91,21 @@ if __name__ == "__main__":
     for model0, model1 in combinations:
         if {model0_mode, model1_mode} == {'train', 'train'}:
             default_full_config['model0']['name'] = model0
-            # default_full_config['model0']['mode'] = model0_mode
-            default_full_config['model1']['name'] = model1 # if model0 != model1 else model1 + '-1'
-            # default_full_config['model1']['mode'] = model1_mode
+            default_full_config['model0']['mode'] = model0_mode
+            default_full_config['model1']['name'] = model1
+            default_full_config['model1']['mode'] = model1_mode
+
+            default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
+            default_full_config[model0]['num_iterations'] = 1000
+            default_full_config[model1]['batch_size'] = train_batch_sizes[model1]
+
+            if model0 == 'bert':
+                # for training use bert-basic
+                default_full_config[model0]['arch'] = 'base'
+            if model1 == 'bert':
+                # for training use bert-basic
+                default_full_config[model1]['arch'] = 'base'
+
             default_full_config['policy'] = policy
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
@@ -151,7 +163,7 @@ if __name__ == "__main__":
                 # for evaluation use bert-large
                 default_full_config[model0]['arch'] = 'large'
             if model1 == 'bert':
-                # for training use bert-base
+                # for evaluation use bert-large
                 default_full_config[model1]['arch'] = 'large'
 
             default_full_config[model0]['request_rate'] = request_rates[model0]
