@@ -107,13 +107,15 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 	int hp_client = num_clients-1;
 
 	// check for malloc operations
-	// for (int i=0; i<num_clients; i++) {
-	// 	if (frecords[i] != NULL && frecords[i]->type == MALLOC_RECORD) {
-	// 		schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
-	// 		pop_from_queue(client_buffers[i], client_mutexes[i], i);
-	// 		return;
-	// 	}
-	// }
+	for (int i=0; i<num_clients; i++) {
+		if (frecords[i] != NULL) {
+			if (frecords[i]->type == MALLOC_RECORD || num_client_cur_iters[i] <= 10 || num_client_cur_iters[hp_client] >= num_client_max_iters[hp_client]) {
+				schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
+				pop_from_queue(client_buffers[i], client_mutexes[i], i);
+				return;
+			}
+		}
+	}
 
 	// if hp is found, schedule
 	if (frecords[hp_client] != NULL) {
@@ -125,7 +127,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		for (int i=0; i<hp_client; i++) {
 			if (frecords[i] != NULL) {
 				op_info op_info_0 = op_info_vector[i][seen[i]];
-				if (op_info_0.duration < op_info_1.duration && op_info_0.sm_used > op_info_1.sm_used) {
+				if (op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
 					// colocate
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);
@@ -135,7 +137,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 			}
 		}
 	}
-	else {
+	else if (seen[hp_client]==0) {
 		for (int i=0; i<hp_client; i++) {
 			if (frecords[i] != NULL)
 				penalty += 1;
@@ -147,11 +149,11 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);
 					// TODO: check this
-					if (lp_idx == depth) {
-						CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[i]));
-						lp_idx = 0;
-					}
-					lp_idx += 1;
+					// if (lp_idx == depth) {
+					// 	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[i]));
+					// 	lp_idx = 0;
+					// }
+					// lp_idx += 1;
 				}
 			}
 			penalty = 0;
