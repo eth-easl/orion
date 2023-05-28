@@ -164,7 +164,7 @@ def setup(model_config, shared_config, device):
 
 
 def eval_wrapper(sync_info, tid: int, model_config, shared_config):
-    utils.seed_everything(42)
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
 
     if 'default' in shared_config and shared_config['default']:
@@ -195,7 +195,7 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
 
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
-    utils.seed_everything(42)
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
 
     if 'default' in shared_config and shared_config['default']:
