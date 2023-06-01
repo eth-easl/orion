@@ -3,11 +3,6 @@ import itertools
 import logging
 import utils
 import os
-from utils import notifier
-
-
-
-
 
 def run(config, combination_name, times=1, start_id = 0):
 
@@ -176,13 +171,3 @@ if __name__ == "__main__":
 
             combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
             run(default_full_config, combination_name, times=times, start_id=start_id)
-
-
-    notifier.notify(
-        subject='A set of experiments have finished',
-        body=utils.dict2pretty_str({
-            'combinations': combinations
-        })
-    )
-
-
