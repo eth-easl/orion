@@ -58,9 +58,6 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
             if time.time() >= next_startup:
                 if iteration == num_warm_up_reqs:
                     sync_info.pre_measurement_prep(tid)
-                    if request_rate > 0 and shared_config['distribution'] == 'uniform' and tid == 1:
-                        # delay be a bit to make sure both threads do not send requests at the same time
-                        time.sleep(1)
                     entire_inference_start_time = time.time()
                     # reset next_startup to have clear setup
                     next_startup = entire_inference_start_time

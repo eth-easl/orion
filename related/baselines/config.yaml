@@ -7,6 +7,7 @@ model1:
   mode: eval # train or eval
   name: mobilenet_v2
 shared_config:
+  seed: 42
   distribution: trace # poisson, uniform, or trace
   trace_path: './inter_arrival_times.json' # only used when distribution is trace
   pin_memory: true
@@ -26,16 +27,16 @@ resnet50:
   batch_size: 4
   num_iterations: 1000
   request_rate: 30 # measured in 1/seconds. If 0 it means no sleep
-resnet101:
-  arch: resnet101
-  batch_size: 4
-  num_iterations: 1000
-  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 mobilenet_v2:
   arch: mobilenet_v2
   batch_size: 4
   num_iterations: 1000
   request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
+resnet101:
+  arch: resnet101
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
 bert:
   batch_size: 2
   arch: large # either base or large

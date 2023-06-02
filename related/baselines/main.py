@@ -8,7 +8,6 @@ import argparse
 import utils
 from utils.sync_info import *
 from utils.data_manager import DataManager
-from utils import notifier
 from vision.train_imagenet import train_wrapper as vision_train_wrapper, eval_wrapper as vision_eval_wrapper
 from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
 from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
@@ -170,8 +169,3 @@ if __name__ == "__main__":
         dict_data = data_manager.read_dict()
         duration = dict_data['duration0'] + dict_data['duration1']
         data_manager.write_kv('duration', duration)
-
-    notifier.notify(
-        subject=f'The experiment training {model0_name} and {model1_name} with {policy} is finished!',
-        body=utils.dict2pretty_str(data_manager.read_dict())
-    )

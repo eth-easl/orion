@@ -3,7 +3,7 @@ from torchvision import models, datasets, transforms
 import torch.nn.functional as F
 import logging
 import utils
-from utils.sync_info import BasicSyncInfo
+from utils.sync_info import BasicSyncInfo, ConcurrentSyncInfo
 import time
 
 from utils.sync_control import *
@@ -11,12 +11,15 @@ from utils.sync_control import *
 
 
 def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
-    utils.seed_everything(42)
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
     if 'default' in shared_config and shared_config['default']:
         stream = torch.cuda.default_stream(device=device)
     else:
-        stream = torch.cuda.Stream(device=device)
+        if isinstance(sync_info, ConcurrentSyncInfo) and sync_info.isolation_level == 'thread':
+            stream = torch.cuda.Stream(device=device, priority=-1 if tid == 0 else 0)
+        else:
+            stream = torch.cuda.Stream(device=device)
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.eval()
 
@@ -34,13 +37,16 @@ def eval_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config
     utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
-    utils.seed_everything(42)
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
 
     if 'default' in shared_config and shared_config['default']:
         stream = torch.cuda.default_stream(device=device)
     else:
-        stream = torch.cuda.Stream(device=device)
+        if isinstance(sync_info, ConcurrentSyncInfo) and sync_info.isolation_level == 'thread':
+            stream = torch.cuda.Stream(device=device, priority=-1 if tid == 0 else 0)
+        else:
+            stream = torch.cuda.Stream(device=device)
 
     model, optimizer, train_loader, metric_fn = setup(model_config, shared_config, device)
     model.train()
