@@ -1,4 +1,29 @@
-# TICK-TOCK scheduling
+# GPU Sharing Baselines
+This directory contains evaluations of GPU sharing techniques between two workloads.
+Supported baselines are `MPS`, `TickTock`, `Streams`, `Isolated`, and `Sequential`.
+
+[main.py](./main.py) is the entry point of the evaluation and the all configurations are in [config.yaml](./config.yaml).
+
+To evaluate a baseline, change the `policy` field in `config.yaml` to the baseline name.
+Then, run `python main.py --config config.yaml`.
+
+If no `--config` argument is provided, [config.yaml](./config.yaml) is used by default.
+
+
+## Supported Baselines
+### MPS
+MPS: [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html) is a feature of NVIDIA GPUs that allows multiple processes to share a single GPU.
+
+**Caveat!** There are extra steps to do before executing the python program:
+1. Execute `./start_MPS_control_daemon.sh` to start the MPS server.
+2. Export these two environment variables:
+```shell
+export CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps
+export CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-log
+```
+3. Within the same shell session where you exported the environment variables, execute the python program normally.
+
+### TICK-TOCK scheduling
 
 This directory contains a basic implementation of TICK-TOCK scheduling using Python threads, and torch.cuda streams and events.
 It is based on the description provided in [WAVELET: EFFICIENT DNN TRAINING WITH TICK-TOCK SCHEDULING (MLSys'21)](https://proceedings.mlsys.org/paper/2021/file/c81e728d9d4c2f636f067f89cc14862c-Paper.pdf).
@@ -6,59 +31,13 @@ It is based on the description provided in [WAVELET: EFFICIENT DNN TRAINING WITH
 What would be an interesting next step is implementing the memory management support described in [Zico: Efficient GPU Memory Sharing for
 Concurrent DNN Training (ATC'21)](https://www.usenix.org/system/files/atc21-lim.pdf).
 
-## Supported Models
+### Streams
+GPU Streams provide a way to execute workloads concurrently on a single GPU.
+One stream captures a linear sequence of operations to be executed, and multiple streams can be executed concurrently.
 
-### BERT
+### Sequential
+`Sequential` represents the temporal sharing baseline where the GPU is time-sliced between the two workloads.
 
-It is mainly adapted from https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling/BERT
-(hereinafter referenced as "source") with the following difference:
-
-1. For the lack of C++ enabled `apex` (which will be installed on Google Cloud soon), 
-several places have been commented and marked with `TODO`.
-2. All the jit related annotations, e.g. `@torch.jit.script` are commented.
-4. Pretrained checkpoint is not loaded.
-
-### dcgan
-
-Mainly copied from https://github.com/pytorch/examples/blob/main/dcgan/main.py with no difference.
-
-### gnmt
-The differences with https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/Translation/GNMT
-are:
-1. We don't preallocate space (e.g. run a forward and backward iteration without updating weights) before starting a new epoch.
-2. They set `pin_memory` as `True` while we don't.
-3. All the jit related annotations are commented.
-
-### retinanet
-Differences with https://github.com/mlcommons/training/tree/master/single_stage_detector:
-1. They set `pin_memory` as `True` while we don't.
-2. I didn't set up the learning rate scheduler.
-3. All the jit related annotations are commented.
-
-### nasnet and vision
-No difference
-
-### transformer
-Differences with https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling/Transformer-XL.
-1. They explicitly disable profiling by the following, which I didn't do.
-```python
-torch._C._jit_set_profiling_executor(False)
-torch._C._jit_set_profiling_mode(False)
-```
-2. They also do the following which is not done in other models:
-```python
-if 'apex' in sys.modules:
-    amp.register_half_function(torch, 'einsum')
-```
-3. I didn't add the learning rate scheduler.
-4. They set `pin_memory` as `True` while we don't.
-
-## Guide to MPS
-
-1. Execute `./start_MPS_control_daemon.sh` in one shell session
-2. Exit that session and create a new one. Do
-```shell
-export CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps
-export CUDA_MPS_LOG_DIRECTORY=/tmp/nvidia-log
-```
-3Then start python program normally.
+### Isolated
+To analyze the overhead of GPU sharing, we compare the performance of GPU sharing with the performance of executing 
+the workload on a single GPU without sharing. For `Isolated` we first execute workload A and then workload B after A is finished.
