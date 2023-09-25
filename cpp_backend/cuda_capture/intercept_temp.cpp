@@ -1,3 +1,7 @@
+'''
+Intercepts and overwrites CUDA calls
+'''
+
 #include "intercept_temp.h"
 
 using namespace std;
@@ -180,7 +184,6 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 		err = (*malloc_func)(devPtr, size);
 		CHECK_CUDA_ERROR(err);
 		cudaError_t err_all = cudaDeviceSynchronize();
-		printf("%p\n", *devPtr);
 		CHECK_CUDA_ERROR(err_all);
 	}
 
@@ -322,10 +325,7 @@ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, enum cudaM
 	else {
 		//CHECK_CUDA_ERROR(cudaDeviceSynchronize());
 		err = (*memcpy_async_func)(dst, src, count, kind, stream); // TODO: not sure about which stream to use here
-		//err = (*function)(dst, src, count, kind);
 		CHECK_CUDA_ERROR(err);
-		// cudaError_t err_all = cudaDeviceSynchronize(); // although async, wait for debugging purposes
-		// CHECK_CUDA_ERROR(err_all);
 	}
 
 	return err;
@@ -409,9 +409,6 @@ cudaError_t cudaMemsetAsync ( void* devPtr, int  value, size_t count, cudaStream
 	else {
 		cudaError_t err = (*memset_async_func)(devPtr, value, count, stream);
 		CHECK_CUDA_ERROR(err);
-
-		// cudaError_t err_all = cudaDeviceSynchronize(); // although async, wait for debugging purposes
-		// CHECK_CUDA_ERROR(err_all);
 	}
 
 	return err;
@@ -424,16 +421,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 	int idx = get_idx();
 	assert (idx >= 0);
-
-	// TODO: remove this
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
-
-	//if (idx < 2)
-	//	DEBUG_PRINT("------------------------- IDX %d, model name is %s\n", idx, model_names[idx]);
-
-	//DEBUG_PRINT("[INTERCEPTER-CATCH-%d] Captured a cudaLaunchKernel! function ptr is %p, stream is %d, gridDim is %d, blockDim is %d, sharedMem is %ld\n", idx, func, stream, gridDim, blockDim, sharedMem);
-	//print_kernel_invocation(func_indexes[idx], gridDim, blockDim);
 
 	if (kernel_func == NULL) {
 		*(void **)(&kernel_func) = dlsym (RTLD_NEXT, "cudaLaunchKernel");
@@ -457,8 +444,6 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		func_indexes[idx] += 1;
 
 		pthread_mutex_unlock(mutexes[idx]);
-
-		//if (wait)
 		block(idx,  mutexes, kqueues);
 
 	}
@@ -466,25 +451,9 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
 
 		err = (*kernel_func)(func, gridDim, blockDim, args, sharedMem, stream);
-		//DEBUG_PRINT("*************** [INTERCEPTER] AFTER SUBMITTING %p *************\n", func);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
-
-		DEBUG_PRINT("SUBMITTED!!!\n");
-
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
-
-		// cudaError_t err2 = cudaGetLastError();
-		// CHECK_CUDA_ERROR(err2);
-
-
+		DEBUG_PRINT("SUBMITTED\n");
 
 	}
 	return err;
 }
-
-
-// CUDNN ....
-
-
-// CUBLAS ....

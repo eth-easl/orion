@@ -1,20 +1,10 @@
 
+'''
+Intercepts and overwrites CUDNN calls
+'''
+
 #include "intercept_temp.h"
 
-void getDescriptor(const cudnnTensorDescriptor_t desc) {
-
-	int ndims = 10;
-	cudnnDataType_t* dtype = (cudnnDataType_t*)malloc(sizeof(cudnnDataType_t));
-	int* nbdims = (int*)malloc(sizeof(int));
-	int dimA[10] = {0};
-	int strideA[10] = {0};
-
-	cudnnStatus_t status = cudnnGetTensorNdDescriptor(desc, ndims, dtype, nbdims, dimA, strideA);
-	printf("%d\n", *dtype);
-
-	assert (status==CUDNN_STATUS_SUCCESS);
-
-}
 
 cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) {
 
@@ -23,10 +13,6 @@ cudnnStatus_t cudnnConvolutionForward(cudnnHandle_t handle, const void *alpha, c
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 	DEBUG_PRINT("CONV found!!\n");
-
-
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
 
 	cudnnConvolutionForward_record new_conv_record = {
 		handle,
@@ -84,9 +70,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
-
 	// create record
 	cudnnBatchNormalizationForwardTrainingEx_record new_bn_record = {
 		handle,
@@ -139,13 +122,8 @@ cudnnStatus_t cudnnBatchNormalizationForwardTrainingEx(cudnnHandle_t handle, cud
 			*(void **)(&cudnn_bnorm_func) = dlsym(RTLD_NEXT, "cudnnBatchNormalizationForwardTrainingEx");
 			assert(cudnn_bnorm_func != NULL);
 		}
-		//printf("run func %p\n", cudnn_bnorm_function);
 		status = (*cudnn_bnorm_func)(handle, mode, bnOps, alpha, beta, xDesc, xData, zDesc, zData, yDesc, yData, bnScaleBiasMeanVarDesc, bnScaleData, bnBiasData, exponentialAverageFactor, resultRunningMeanData, resultRunningVarianceData, epsilon, saveMean, saveInvVariance, activationDesc, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
-		// if (status != CUDNN_STATUS_SUCCESS)
-		// 	printf("status is %d\n", status);
-		// assert (status == CUDNN_STATUS_SUCCESS);
-
-		// DEBUG_PRINT("BNORM submitted!!\n");
+		assert (status == CUDNN_STATUS_SUCCESS);
 
 	}
 
@@ -160,9 +138,6 @@ cudnnStatus_t cudnnBatchNormalizationForwardInference(cudnnHandle_t handle, cudn
 	int idx = get_idx();
 	assert (idx >= 0);
 	cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
-
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
 
 	// create record
 	cudnnBatchNormalizationForwardInference_record bn_record = {
@@ -223,11 +198,7 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 	if (idx < *num_total_clients) {
 
 		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	        //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
-
 		*xDesc_new = *xDesc;
-		//printf("%p, %p, %p, %p\n", xDesc, *xDesc, xDesc_new, *(xDesc_new));
-		//memcpy(xDesc_new, xDesc, sizeof(cudnnTensorDescriptor_t));
 
 		cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
 		*yDesc_new = *yDesc;
@@ -276,12 +247,8 @@ cudnnStatus_t cudnnRNNForwardInference(cudnnHandle_t handle, const cudnnRNNDescr
 
 		status = (*cudnn_rnn_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes);
 
-		printf("------------------------- cudnn status is %d\n", status);
 		// TODO: not sure why this complains here in just one call!
 		assert (status == CUDNN_STATUS_SUCCESS);
-
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all);
 	}
 
 	return status;
@@ -320,12 +287,7 @@ cudnnStatus_t cudnnRNNForwardTraining(
 	if (idx < *num_total_clients) {
 
 		cudnnTensorDescriptor_t* xDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
-	        //cudnnStatus_t s = cudnnCreateTensorDescriptor(xDesc_new);
-
 		*xDesc_new = *xDesc;
-		printf("%p, %p, %p, %p\n", xDesc, *xDesc, xDesc_new, *(xDesc_new));
-		//memcpy(xDesc_new, xDesc, sizeof(cudnnTensorDescriptor_t));
-
 		cudnnTensorDescriptor_t* yDesc_new = (cudnnTensorDescriptor_t*)malloc(sizeof(cudnnTensorDescriptor_t));
 		*yDesc_new = *yDesc;
 
@@ -374,9 +336,6 @@ cudnnStatus_t cudnnRNNForwardTraining(
 		}
 
 		status = (*cudnn_rnn_train_func)(handle, rnnDesc, seqLength, xDesc, x, hxDesc, hx, cxDesc, cx, wDesc, w, yDesc, y, hyDesc, hy, cyDesc, cy, workspace, workSpaceSizeInBytes, reserveSpace, reserveSpaceSizeInBytes);
-
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all);
 	}
 
 	return status;
@@ -690,21 +649,17 @@ cudnnStatus_t cudnnDestroyActivationDescriptor(cudnnActivationDescriptor_t activ
 
 cudnnStatus_t cudnnDestroyRNNDescriptor(cudnnRNNDescriptor_t rnnDesc) {
 
-	//DEBUG_PRINT("Caught a cudnnDestroyRNNDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
 
 cudnnStatus_t cudnnDestroyTensorDescriptor(cudnnTensorDescriptor_t tensorDesc) {
 
-	// mock cudnn destroy TensorDescriptor
-	//DEBUG_PRINT("Caught a cudnnDestroyTensorDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
 
 
 cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
 
-	//DEBUG_PRINT("Caught a cudnnDestroyFilterDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 
 }
@@ -712,12 +667,10 @@ cudnnStatus_t cudnnDestroyFilterDescriptor(cudnnFilterDescriptor_t filterDesc) {
 
 cudnnStatus_t cudnnDestroyConvolutionDescriptor(cudnnConvolutionDescriptor_t convDesc) {
 
-	//DEBUG_PRINT("Caught a cudnnDestroyConvolutionDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 }
 
 cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc) {
-	//DEBUG_PRINT("Caught a cudnnDestroyDropoutDescriptor! Do nothing!\n");
 	return CUDNN_STATUS_SUCCESS;
 
 }
@@ -725,6 +678,5 @@ cudnnStatus_t cudnnDestroyDropoutDescriptor(cudnnDropoutDescriptor_t dropoutDesc
 
 cudnnStatus_t cudnnDestroy(cudnnHandle_t handle) {
 
-	printf("Caught a cudnnDestroy, Do nothing!\n ");
 	return CUDNN_STATUS_SUCCESS;
 }

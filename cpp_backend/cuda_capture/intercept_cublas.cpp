@@ -1,3 +1,6 @@
+'''
+Intercepts and overwrites CUBLAS calls
+'''
 
 #include "intercept_temp.h"
 
@@ -6,9 +9,6 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t handle, cublasOperation_t transa, c
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
-
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemm_record blassgemm_record = {
 		handle,
@@ -51,9 +51,6 @@ cublasStatus_t cublasSgemm_v2(cublasHandle_t handle, cublasOperation_t transa, c
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
 
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
-
 	}
 
 	return status;
@@ -67,9 +64,6 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
-
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemm_record blassgemm_record = {
 		handle,
@@ -112,9 +106,6 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
 
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
-
 	}
 
 	return status;
@@ -127,9 +118,6 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 	int idx = get_idx();
 	assert (idx >= 0);
 	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
-
-	// if (idx < 2)
-	// 	block(idx,  mutexes, kqueues);
 
 	cublasSgemmStridedBatched_record record = {
 		handle,
@@ -178,8 +166,6 @@ cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_
 		assert (status == CUBLAS_STATUS_SUCCESS);
 		DEBUG_PRINT("CUBLAS status is %d\n", status);
 
-		// cudaError_t err_all = cudaDeviceSynchronize(); // for debugging
-		// CHECK_CUDA_ERROR(err_all); // this checks (or should check) runtime-specific errors
 	}
 
 	return status;

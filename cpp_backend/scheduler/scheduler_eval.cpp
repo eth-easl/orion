@@ -57,8 +57,6 @@ void Scheduler::profile_reset(int num_clients) {
 
 void Scheduler::profile_prep(queue<func_record>** qbuffers, int num_clients, bool reef) {
 
-	printf("Entered profile_prep!\n");
-
 	register_functions();
 	client_buffers = (queue<struct func_record>**)malloc(num_clients * sizeof(queue<struct kernel_record>*));
 	//(queue<struct kernel_record>**)qbuffers;
@@ -89,12 +87,12 @@ void Scheduler::profile_prep(queue<func_record>** qbuffers, int num_clients, boo
 
 	status = -1;
 
-	printf("Exited profile_prep!\n");
-
 }
 
 
 void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, int depth) {
+
+	// schedule based on REEF policy
 
 	if (num_clients==1) {
 		if (frecords[0] != NULL) {
@@ -163,6 +161,8 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 
 int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_clients, int start) {
 
+	// schedule based on temporal sharing
+
 	// TODO: fix this!
 	// 1 client
 	if (num_clients==1) {
@@ -200,7 +200,6 @@ int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_client
 
 
 	int end = start + num_clients; // start+1+num_clients-1
-	//printf("Start from %d\n", (start+1)% (num_clients-1));
 	for (int t=start+1; t<end; t++) {
 		int i = t%(num_clients-1);
 		if (frecords[i] != NULL) {
@@ -257,6 +256,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 	int start = -1;
 
 	// BS - works only for 2 clients for now
+	// TODO: check this
 	int low_sms = 0;
 	int high_sms = max_sms_clients[0]; // 0 is the lp client
 	int sm_threshold = max_sms_clients[0]/2;
@@ -265,19 +265,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 	// if hp is inference, use max_sms + also there is no update phase
 	if (!is_train[hp_client]) {
-		sm_threshold = max_sms;
-		update_start = INT_MAX;
-	}
-
-	// BS
-	int low_sms = 0;
-	int high_sms = max_sms_clients[0]; // 0 is the lp client
-	int sm_threshold = max_sms_clients[0]/2;
-	float hp_iter_duration = 0.0; // 1 is the hp client
-	float hp_limit_float = (float)hp_limit;
-
-	// if hp is inference, use max_sms + also there is no update phase
-	if (!is_train[1]) {
 		sm_threshold = max_sms;
 		update_start = INT_MAX;
 	}
@@ -329,9 +316,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			}
 			//start = -1;
 			int end = start + num_clients; // start+1+num_clients-1
-			//printf("Start from %d\n", (start+1)% (num_clients-1));
 			for (int t=start+1; t<end; t++) {
-				// Do round-robin
+				// Do round-robin for the BE clients
 				int j = t % (num_clients-1);
 				if (frecords[j] != NULL) { // low priority
 					op_info op_info_0 = op_info_vector[j][seen[j]];
@@ -388,8 +374,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 		int finished = 0;
 		for (int i=0; i<num_clients; i++) {
-			//printf("%d, %d, %d, %d, %d\n", i, seen[i], num_client_kernels[i], num_client_cur_iters[i], num_client_max_iters[i]);
-			//printf("%d, %d\n", is_train[0], is_train[1]);
 
 			if (
 				(num_client_cur_iters[i] == num_client_max_iters[i])
@@ -430,12 +414,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					pthread_mutex_unlock(client_mutexes[i]);
 					num_client_cur_iters[i] += 1;
 					locked[i] = false;
-
-					// if (i==0) {
-					// 	lp_idx = 0;
-					// 	penalty = 0;
-					// 	sum = 0;
-					// }
 
 					auto end = std::chrono::high_resolution_clock::now();
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
