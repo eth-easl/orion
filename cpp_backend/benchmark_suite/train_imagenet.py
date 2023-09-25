@@ -144,7 +144,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                     block(backend_lib, batch_idx)
                     iter_time = time.time()-start_iter
                     timings.append(iter_time)
-                    print(f"Client {tid} finished! Wait! It took {timings[batch_idx]}")
+                    #print(f"Client {tid} finished! Wait! It took {timings[batch_idx]}")
                     batch_idx, batch = next(train_iter)
                     if (batch_idx == 1): # for backward
                         barriers[0].wait()
@@ -174,7 +174,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                                 #     torch.cuda.profiler.cudart().cudaProfilerStop()
                                 req_time = time.time()-next_startup
                                 timings.append(req_time)
-                                print(f"Client {tid} finished! Wait! It took {req_time}")
+                                #print(f"Client {tid} finished! Wait! It took {req_time}")
                                 if batch_idx>=10:
                                     next_startup += sleep_times[batch_idx]
                                 else:

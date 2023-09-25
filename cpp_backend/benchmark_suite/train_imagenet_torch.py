@@ -131,7 +131,7 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                     loss = criterion(output, gpu_target)
                     loss.backward()
                     optimizer.step()
-                    s.synchronize()
+                    #s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
                     #end_barriers[0].wait()

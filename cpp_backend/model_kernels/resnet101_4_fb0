@@ -3,251 +3,29 @@ Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::(anonymous namespace)::max_pool_forward_nchw,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -258,22 +36,19 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -284,9 +59,8 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -297,22 +71,19 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -324,9 +95,8 @@ Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
@@ -337,8 +107,7 @@ Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -350,21 +119,18 @@ Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -375,9 +141,8 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -388,22 +153,19 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -414,12 +176,8 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
@@ -430,22 +188,20 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_forward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::reduce_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::fused_dropout_kernel_vec,-1,1,1,7
 void at::native::elementwise_kernel,-1,1,1,7
 volta_sgemm_64x32_sliced1x4_tn,-1,1,1,7
 void (anonymous namespace)::softmax_warp_forward,-1,1,1,7
@@ -454,248 +210,34 @@ void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::(anonymous namespace)::nll_loss_backward_reduce_cuda_kernel_2d,-1,1,1,7
 void (anonymous namespace)::softmax_warp_backward,-1,1,1,7
-volta_sgemm_64x32_sliced1x4_nn,-1,1,1,7
+volta_sgemm_128x32_sliced1x4_nn,-1,1,1,7
 volta_sgemm_128x32_nt,-1,1,1,7
 void at::native::reduce_kernel,-1,1,1,7
+void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -705,10 +247,9 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -718,23 +259,20 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -744,10 +282,9 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -757,23 +294,20 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -783,13 +317,9 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -799,10 +329,9 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -812,22 +341,19 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
@@ -838,13 +364,9 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -854,23 +376,20 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
 Conv,-1,1,1,7
@@ -880,9 +399,8 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
@@ -892,174 +410,11 @@ Conv,-1,1,1,7
 Conv,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-BatchNorm,-1,1,1,7
-Conv,-1,1,1,7
-Conv,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_grad_weight_kernel,-1,1,1,7
+void at::native::(anonymous namespace)::conv_depthwise2d_backward_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::(anonymous namespace)::max_pool_backward_nchw,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 BatchNorm,-1,1,1,7
 Conv,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
-void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7
 void at::native::vectorized_elementwise_kernel,-1,1,1,7

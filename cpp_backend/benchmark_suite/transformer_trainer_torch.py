@@ -86,13 +86,14 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
                 start = time.time()
 
                 if train:
+                    optimizer.zero_grad()
                     start_iter = time.time()
                     data, target = batch[0].to(local_rank), batch[1].to(local_rank)
                     loss, mems = model(data, target, mems)
                     loss = loss.float().mean().type_as(loss)
                     loss.backward()
                     optimizer.step()
-                    s.synchronize()
+                    #s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
                     if (batch_idx==10):

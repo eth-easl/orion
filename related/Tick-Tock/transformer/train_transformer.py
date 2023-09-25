@@ -133,13 +133,38 @@ def setup(model_config, shared_config, device):
         'clamp_len': -1,
         'sample_softmax': sample_softmax,
     }
+
+    # MemTransformerLM_kwargs = {
+    #     'n_token': 267735,
+    #     'n_layer': 16,
+    #     'n_head': 8,
+    #     'd_model': 512,
+    #     'd_head': 64,
+    #     'd_inner': 2048,
+    #     'dropout': 0.1,
+    #     'dropatt': 0.0,
+    #     'dtype': None,
+    #     'tie_weight': True,
+    #     'd_embed': 512,
+    #     'div_val': 1,
+    #     'tie_projs': [False, True, True, True],
+    #     'pre_lnorm': False,
+    #     'tgt_len': 192,
+    #     'ext_len': 0,
+    #     'mem_len': 192,
+    #     'cutoffs': [19997, 39997, 199997],
+    #     'same_length': False,
+    #     'attn_type': 0,
+    #     'clamp_len': -1,
+    #     'sample_softmax': -1
+    # }
     model = MemTransformerLM(**MemTransformerLM_kwargs)
     model.apply(functools.partial(weights_init, model_consts=model_consts))
     # ensure embedding init is not overridden by out_layer in case of weight sharing
     model.word_emb.apply(functools.partial(weights_init, model_consts=model_consts))
 
     # jitlamb optimizer
-    optimizer = lamb.JITLamb(model.parameters(), lr=model_consts['lr'], weight_decay=0.0)
+    optimizer = lamb.JITLamb(model.parameters(), lr=model_consts['lr'], weight_decay=0.0) #lamb.Lamb(model.parameters(), lr=0.1)
 
     model = model.to(device)
     scaler = None
@@ -156,6 +181,7 @@ def setup(model_config, shared_config, device):
     train_iter = tr_iter.get_fixlen_iter()
     if shared_config['use_dummy_data']:
         first_batch = next(train_iter)
+        #first_batch = (torch.ones((192, 8), pin_memory=False).to(torch.int64).cuda(), torch.ones((192, 8), pin_memory=False).to(torch.int64).cuda(), 192, True)
         for t in first_batch:
             if torch.is_tensor(t):
                 logging.info(f'part of dummy data shape: {t.shape}')
@@ -204,6 +230,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
     logging.info(f'transformer is set up with {num_iterations}')
 
     for batch_idx, (data, target, seq_len, _) in enumerate(data_loader):
+        start = time.time()
         if batch_idx == warm_up_iters:
             # finish previous work
             my_stream.synchronize()
@@ -237,17 +264,16 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 #     scaler.update()
                 # else:
                 optimizer.step()
-                model.zero_grad()
 
         if batch_idx == num_iterations - 1:
             # reached the last iteration
             break
+        print(f"iteration {batch_idx} took {time.time()-start}")
+        model.zero_grad()
+
     my_stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
     logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
     return duration
-
-
-

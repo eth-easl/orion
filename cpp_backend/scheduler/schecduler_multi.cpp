@@ -174,15 +174,14 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 
 void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, int depth) {
 
-	if (frecords[0] != NULL) {
-		if (num_clients==1
-			|| (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD)
-			|| (num_client_cur_iters[0] <= 10 || num_client_cur_iters[1] >= num_client_max_iters[1])) {
-				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-				pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-				return;
-			}
+	if (num_clients==1) {
+		if (frecords[0] != NULL) {
+			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
+		}
+		return;
 	}
+
 
 	if (frecords[1] != NULL && frecords[0] == NULL) {
 		op_info op_info_1 = op_info_vector[1][seen[1]];
@@ -191,7 +190,20 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		// sync here?
 		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
 	}
-	else if (frecords[0] != NULL && frecords[1] != NULL) {
+	else if (frecords[0] != NULL && frecords[1] == NULL) {
+		penalty += 1;
+		if (penalty == 12) {
+			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
+			if (lp_idx == depth) {
+				CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
+				lp_idx = 0;
+			}
+			lp_idx += 1;
+			penalty = 0;
+		}
+	}
+	if (frecords[0] != NULL && frecords[1] != NULL) {
 		op_info op_info_0 = op_info_vector[0][seen[0]];
 		op_info op_info_1 = op_info_vector[1][seen[1]];
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
@@ -203,19 +215,6 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		}
 		// sync here?
 		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
-	}
-	else if (seen[1]==0 && frecords[0] != NULL) {
-		penalty += 1;
-		if (penalty == 12) {
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-			// if (lp_idx == depth) {
-			// 	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
-			// 	lp_idx = 0;
-			// }
-			// lp_idx += 1;
-			penalty = 0;
-		}
 	}
 }
 
@@ -312,6 +311,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			schedule_reef(frecords, num_clients, depth);
 		}
 		else if (seq) {
+			printf("here!!!!!!!\n");
 			schedule_sequential(frecords, num_clients);
 		}
 
@@ -329,10 +329,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			}
 			if (frecords[0] != NULL) { // low priority
 				op_info op_info_0 = op_info_vector[0][seen[0]];
-				bool schedule = false;
-
-				//printf("%d, %d, %d\n", low_sms, high_sms, sm_threshold);
-
+				bool schedule = true;
 				if ((num_clients==1) || (seen[1] == 0) || (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD))
 					schedule = true;
 				else if (num_client_cur_iters[0] <= 10 || num_client_cur_iters[1] >= num_client_max_iters[1]) {
@@ -360,14 +357,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 						large_found = true;
 					}
 					//printf("Schedule! %d, %d\n", op_info_0.profile, profiles[1]);
-					//if (event_ids[2] >= 1)
-					//	CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[0], *(events[2][event_ids[2]-1]), 0));
 					schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 					status = 0;
-					//printf("Sum is %d\n", sum);
 					pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-					//if (block)
-					//	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
 					streams[0] = 0;
 				}
 			}
@@ -434,7 +426,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					client_durations[i].push_back(duration);
 					if (i==1)
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
-					if (!reef && !seq && i==1 && is_train[1]) {
+					if (!reef && i==1 && is_train[1]) {
 						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 						hp_iter_duration += duration;
 						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
