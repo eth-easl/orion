@@ -1,23 +1,5 @@
 #include "intercept_temp.h"
 
-using namespace std;
-using at::native::ReduceOp;
-using at::_isnan;
-
-template <typename acc_t>
-struct MaxNanFunctor {
-       	__device__ __forceinline__ acc_t operator()(acc_t a, acc_t b) const {
-		return (at::_isnan(a) || a > b) ? a : b;
-	}
-};
-
-template <typename acc_t>
-struct MinNanFunctor {
-	  __device__ __forceinline__ acc_t operator()(acc_t a, acc_t b) const {
-		return (at::_isnan(a) || a < b) ? a : b;
-	  }
-};
-
 template <typename T>
 T* create_new_reduce_arg(void* args0) {
 
