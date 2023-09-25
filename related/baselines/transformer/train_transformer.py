@@ -9,6 +9,7 @@ import torch
 import time
 import torch.nn as nn
 import torch.optim as optim
+from utils.sync_info import BasicSyncInfo, ConcurrentSyncInfo
 import yaml
 import transformer.lamb as lamb
 from transformer.data_utils import *
@@ -22,7 +23,6 @@ except ModuleNotFoundError:
 
 dataset = 'wt103'
 vocab = 'word'
-
 
 def init_weight(weight, model_consts):
     # if init == 'uniform':
@@ -86,22 +86,17 @@ def setup(model_config, shared_config, device):
     # Otherwise it'll default to "promote" mode, and we'll get fp32 operations.
     # Note that running `--apex_amp_opt_level O2` will remove the need for this
     # code, but it is still valid.
-    if 'apex' in sys.modules:
-        amp.register_half_function(torch, 'einsum')
+    # if 'apex' in sys.modules:
+    #     amp.register_half_function(torch, 'einsum')
 
-    seed = int(time.time())
+
     arch = model_config['arch']
     with open('./transformer/transformer_consts.yaml', 'r') as file:
         model_consts = yaml.load(file, Loader=yaml.FullLoader)[arch]
 
-    np.random.seed(seed)
-    torch.manual_seed(seed)
     batch_size = model_config['batch_size']
-    corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
-    ntokens = len(corpus.vocab)
 
     ext_len = 0
-    tr_iter = corpus.get_iterator('train', batch_size, model_consts['tgt_len'], device=device, ext_len=ext_len)
 
     # adaptive softmax / embedding
     cutoffs, tie_projs = [], [False]
@@ -110,7 +105,7 @@ def setup(model_config, shared_config, device):
         tie_projs += [True] * len(cutoffs)
     sample_softmax = -1
     MemTransformerLM_kwargs = {
-        'n_token': ntokens,
+        'n_token': 267735,
         'n_layer': model_consts['n_layer'],
         'n_head': model_consts['n_head'],
         'd_model': model_consts['d_model'],
@@ -159,47 +154,57 @@ def setup(model_config, shared_config, device):
     #     'sample_softmax': -1
     # }
     model = MemTransformerLM(**MemTransformerLM_kwargs)
-    model.apply(functools.partial(weights_init, model_consts=model_consts))
+    # model.apply(functools.partial(weights_init, model_consts=model_consts))
     # ensure embedding init is not overridden by out_layer in case of weight sharing
-    model.word_emb.apply(functools.partial(weights_init, model_consts=model_consts))
+    # model.word_emb.apply(functools.partial(weights_init, model_consts=model_consts))
 
     # jitlamb optimizer
-    optimizer = lamb.JITLamb(model.parameters(), lr=model_consts['lr'], weight_decay=0.0) #lamb.Lamb(model.parameters(), lr=0.1)
+    optimizer = lamb.Lamb(model.parameters(), lr=0.1)
 
     model = model.to(device)
-    scaler = None
-    if model_config['use_fp16']:
-        if model_config['amp'] == 'pytorch':
-            scaler = torch.cuda.amp.GradScaler()
-        elif model_config['amp'] == 'apex':
-            model, optimizer = amp.initialize(
-                model,
-                optimizer,
-                opt_level=model_config['apex_amp_opt_level'],
-            )
+    # scaler = None
+    # if model_config['use_fp16']:
+    #     if model_config['amp'] == 'pytorch':
+    #         scaler = torch.cuda.amp.GradScaler()
+    #     elif model_config['amp'] == 'apex':
+    #         model, optimizer = amp.initialize(
+    #             model,
+    #             optimizer,
+    #             opt_level=model_config['apex_amp_opt_level'],
+    #         )
 
-    train_iter = tr_iter.get_fixlen_iter()
-    if shared_config['use_dummy_data']:
-        first_batch = next(train_iter)
-        #first_batch = (torch.ones((192, 8), pin_memory=False).to(torch.int64).cuda(), torch.ones((192, 8), pin_memory=False).to(torch.int64).cuda(), 192, True)
-        for t in first_batch:
-            if torch.is_tensor(t):
-                logging.info(f'part of dummy data shape: {t.shape}')
-        virtual_loader = utils.DummyDataLoader(batch=first_batch)
-    else:
-        virtual_loader = train_iter
+
+    pin_memory = shared_config['pin_memory']
+    data = torch.ones((model_consts['tgt_len'], batch_size), pin_memory=pin_memory).to(torch.int64)
+    target = torch.ones((model_consts['tgt_len'], batch_size), pin_memory=pin_memory).to(torch.int64)
+    # The later two parts are not used in either training or inference. They are set to align its behavior with real loader.
+    virtual_loader = utils.DummyDataLoader(batch=(data, target, 1, 1))
+    # else:
+    #     corpus = get_lm_corpus(datadir=shared_config['wikitext_103_dir'], dataset='wt103', vocab=model_consts['vocab'])
+    #     tr_iter = corpus.get_iterator('train', batch_size, model_consts['tgt_len'], device=device, ext_len=ext_len)
+    #     train_iter = tr_iter.get_fixlen_iter()
+    #     virtual_loader = train_iter
 
     return model, virtual_loader, optimizer
 
 
 def eval_wrapper(sync_info, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
+    else:
+        if isinstance(sync_info, ConcurrentSyncInfo) and sync_info.isolation_level == 'thread':
+            stream = torch.cuda.Stream(device=device, priority=-1 if tid == 0 else 0)
+        else:
+            stream = torch.cuda.Stream(device=device)
+
     model, data_loader, _ = setup(model_config, shared_config, device)
     model.eval()
 
-    num_requests = shared_config['num_requests']
-    num_warm_up_reqs = shared_config['num_warm_up_reqs']
+    num_requests = model_config['num_iterations']
+    num_warm_up_reqs = 10
 
     loader_iterator = iter(data_loader)
 
@@ -207,24 +212,35 @@ def eval_wrapper(sync_info, tid: int, model_config, shared_config):
     def eval():
         nonlocal mems
         data, target, _, _ = next(loader_iterator)
+        data = data.to(device)
+        target = target.to(device)
         _, mems = model(data, target, mems)
 
-    utils.measure(eval, num_requests, num_warm_up_reqs, tid, shared_config, my_stream, sync_info)
+    utils.measure(eval, num_requests, num_warm_up_reqs, model_config['request_rate'], tid, shared_config, stream, sync_info)
 
 
-def train_wrapper(sync_info, tid: int, model_config, shared_config):
+def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_config):
+    utils.seed_everything(shared_config['seed'])
     device = torch.device("cuda:0")
-    my_stream = torch.cuda.Stream(device=device)
+
+    if 'default' in shared_config and shared_config['default']:
+        stream = torch.cuda.default_stream(device=device)
+    else:
+        if isinstance(sync_info, ConcurrentSyncInfo) and sync_info.isolation_level == 'thread':
+            stream = torch.cuda.Stream(device=device, priority=-1 if tid == 0 else 0)
+        else:
+            stream = torch.cuda.Stream(device=device)
+
     model, data_loader, optimizer = setup(model_config, shared_config, device)
 
     model.train()
 
-    enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
+    # enable_autocast = model_config['use_fp16'] and model_config['amp'] == 'pytorch'
     mem = None
     clip = 0.25
 
     num_iterations = model_config['num_iterations']
-    warm_up_iters = model_config['warm_up_iters']
+    warm_up_iters = 10
 
 
     logging.info(f'transformer is set up with {num_iterations}')
@@ -233,19 +249,21 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
         start = time.time()
         if batch_idx == warm_up_iters:
             # finish previous work
-            my_stream.synchronize()
+            stream.synchronize()
             sync_info.pre_measurement_prep(tid)
             # start timer
             start_time = time.time()
 
-        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-            with torch.cuda.stream(my_stream):
+        data = data.to(device)
+        target = target.to(device)
+        with ForwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
+            with torch.cuda.stream(stream):
                 # with torch.cuda.amp.autocast(enable_autocast):
                 loss, mem = model(data, target, mem)
                 loss = loss.float().mean().type_as(loss)
 
-        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=my_stream):
-            with torch.cuda.stream(my_stream):
+        with BackwardControl(thread_id=tid, batch_idx=batch_idx, sync_info=sync_info, stream=stream):
+            with torch.cuda.stream(stream):
                 # if model_config['use_fp16']:
                 #     if model_config['amp'] == 'pytorch':
                 #         scaler.scale(loss).backward()
@@ -257,7 +275,7 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 #         torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), clip)
                 # else:
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
+                # torch.nn.utils.clip_grad_norm_(model.parameters(), clip)
 
                 # if model_config['use_fp16'] and model_config['amp'] == 'pytorch':
                 #     scaler.step(optimizer)
@@ -265,15 +283,13 @@ def train_wrapper(sync_info, tid: int, model_config, shared_config):
                 # else:
                 optimizer.step()
 
-        if batch_idx == num_iterations - 1:
-            # reached the last iteration
+        if not sync_info.should_continue_loop(tid, batch_idx, num_iterations):
             break
-        print(f"iteration {batch_idx} took {time.time()-start}")
-        model.zero_grad()
 
-    my_stream.synchronize()
+    stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
     sync_info.write_kv(f'duration{tid}', duration)
+    sync_info.write_kv(f'iterations{tid}', batch_idx + 1)
     logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
     return duration

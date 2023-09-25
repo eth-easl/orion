@@ -79,8 +79,8 @@ class LMOrderedIterator(object):
         end_idx = i + seq_len
         beg_idx = max(0, i - self.ext_len)
 
-        data = self.data[beg_idx:end_idx].to(self.device, non_blocking=False)
-        target = self.data[i+1:i+1+seq_len].to(self.device, non_blocking=False)
+        data = self.data[beg_idx:end_idx]
+        target = self.data[i+1:i+1+seq_len]
 
         if self.mem_len and self.warmup:
             warm = i >= self.warmup_elems
