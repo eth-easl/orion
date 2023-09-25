@@ -9,11 +9,11 @@ from optimization import BertAdam
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
-        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
-        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
-        self.start_positions = torch.zeros((self.batchsize,), pin_memory=True).to(torch.int64)
-        self.end_positions = torch.ones((self.batchsize,), pin_memory=True).to(torch.int64)
+        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
+        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
+        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
+        self.start_positions = torch.zeros((self.batchsize,), pin_memory=False).to(torch.int64)
+        self.end_positions = torch.ones((self.batchsize,), pin_memory=False).to(torch.int64)
 
     def __iter__(self):
         return self
@@ -101,13 +101,13 @@ def bert_loop(batchsize, train, num_iters, default, rps, uniform, dummy_data, lo
     timings = [0 for _ in range(num_iters)]
 
     with torch.cuda.stream(s):
-        
+
         for i in range(1):
             print("Start epoch: ", i)
 
 
             while batch_idx < num_iters:
-    
+
                 start = time.time()
 
                 if train:
@@ -123,7 +123,7 @@ def bert_loop(batchsize, train, num_iters, default, rps, uniform, dummy_data, lo
                     loss = (start_loss + end_loss) / 2
                     loss.backward()
                     optimizer.step()
-                    s.synchronize()
+                    #s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
                     #end_barriers[0].wait()

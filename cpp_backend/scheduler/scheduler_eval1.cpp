@@ -1,5 +1,4 @@
 #include "scheduler.h"
-#define MIN_DURATION 100000 // might need to change this - emperical
 
 using namespace std;
 
@@ -35,15 +34,6 @@ cudaEvent_t*** events;
 int* streams;
 int* event_ids;
 int status;
-vector<int> max_sms_clients = {0, 0};
-vector<bool> is_train = {false, false};
-
-// reef
-int lp_idx = 0;
-int penalty = 0;
-bool** request_status;
-bool* stops;
-bool* stop_ack;
 
 void Scheduler::fifo_prep(void** qbuffers, int num_clients) {
 
@@ -81,7 +71,7 @@ void Scheduler::profile_prep(void** qbuffers, int num_clients, bool reef) {
 	for (int i=0; i<num_clients; i++)
 		client_buffers[i] = (queue<struct func_record>*)(qbuffers[i]);
 
-	int num = 2*num_clients;
+	int num = num_clients+1;
 
 	sched_streams = (cudaStream_t**)malloc((num)*sizeof(cudaStream_t*));
 	for (int i=0; i<num; i++)
@@ -172,82 +162,9 @@ void* Scheduler::busy_wait_single_client(int client_id) {
 	return NULL;
 }
 
-void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, int depth) {
+void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef) {
 
-	if (frecords[0] != NULL) {
-		if (num_clients==1
-			|| (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD)
-			|| (num_client_cur_iters[0] <= 10 || num_client_cur_iters[1] >= num_client_max_iters[1])) {
-				schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-				pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-				return;
-			}
-	}
-
-	if (frecords[1] != NULL && frecords[0] == NULL) {
-		op_info op_info_1 = op_info_vector[1][seen[1]];
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		pop_from_queue(client_buffers[1], client_mutexes[1], 1);
-		// sync here?
-		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
-	}
-	else if (seen[1]==0 && frecords[0] != NULL && frecords[1] == NULL) {
-		penalty += 1;
-		if (penalty == 4) {
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-			// if (lp_idx == depth) {
-			// 	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
-			// 	lp_idx = 0;
-			// }
-			// lp_idx += 1;
-			penalty = 0;
-		}
-	}
-	else if (frecords[0] != NULL && frecords[1] != NULL) {
-		op_info op_info_0 = op_info_vector[0][seen[0]];
-		op_info op_info_1 = op_info_vector[1][seen[1]];
-		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
-		pop_from_queue(client_buffers[1], client_mutexes[1], 1);
-		if (op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
-			// colocate
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-		}
-		// sync here?
-		//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[1]));
-	}
-}
-
-
-void Scheduler::schedule_sequential(vector<func_record*> frecords, int num_clients) {
-
-	if (num_clients==1) {
-		if (frecords[0] != NULL) {
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-		}
-		return;
-	}
-
-	if (frecords[1] != NULL) {
-		if (num_client_cur_iters[1] <= 10 || seen[0]==0 || (frecords[1]->type == MALLOC_RECORD))  {
-			schedule_kernel(*(frecords[1]), sched_streams[0], 1, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[1], client_mutexes[1], 1);
-		}
-	}
-
-	if (frecords[0] != NULL) {
-		if (num_client_cur_iters[0] <= 10 || seen[1]==0 || (frecords[0]->type == MALLOC_RECORD))  {
-			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-		}
-	}
-
-}
-
-void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int warmup_iters, bool reef, bool seq, int depth, int hp_limit, int update_start) {
-
+	printf("here!\n");
 
 	DEBUG_PRINT("Entered busy_wait_profile! Num clients is %d\n", num_clients);
 	int start0 = 0;
@@ -263,24 +180,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 	auto start_total = std::chrono::high_resolution_clock::now();
 
 	vector<bool> total_client_set = {false, false};
-	vector<int> profiles = {-1, -1};
-	vector<int> cur_sms = {-1, -1};
-
-	bool large_found = false;
-	long sum = 0;
-
-	// BS
-	int low_sms = 0;
-	int high_sms = max_sms_clients[0]; // 0 is the lp client
-	int sm_threshold = max_sms_clients[0]/2;
-	float hp_iter_duration = 0.0; // 1 is the hp client
-	float hp_limit_float = (float)hp_limit;
-
-	// if hp is inference, use max_sms + also there is no update phase
-	if (!is_train[1]) {
-		sm_threshold = max_sms;
-		update_start = INT_MAX;
-	}
 
 	while(1) {
 		vector<func_record*> frecords = {NULL, NULL};
@@ -293,10 +192,10 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			volatile int sz = client_buffers[i]->size();
 			if (sz > 0) {
 				frecords[i] = &(client_buffers[i]->front());
-				int cur_iter = num_client_cur_iters[i];
-				if (seen[i] == 0 && client_starts_set[i][cur_iter] == false) {
+				// if last one for that client, left locked
+				if (seen[i] == 0 && client_starts_set[i][num_client_cur_iters[i]] == false) {
 					client_starts[i] = std::chrono::high_resolution_clock::now();
-					client_starts_set[i][cur_iter] = true;
+					client_starts_set[i][num_client_cur_iters[i]] = true;
 					if (!total_client_set[i]) {
 						total_client_starts[i] = std::chrono::high_resolution_clock::now();
 						total_client_set[i] = true;
@@ -308,159 +207,177 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			pthread_mutex_unlock(client_mutexes[i]);
 		}
 
-		if (reef) {
-			schedule_reef(frecords, num_clients, depth);
-		}
-		else if (seq) {
-			schedule_sequential(frecords, num_clients);
-		}
+		// if ((frecords[0] != NULL) and (frecords[1] != NULL)) {
+		// 	//printf("type0 is %d, type1 is %d\n", frecords[0]->type, frecords[1]->type);
+		// 	if (reef) {
+		// 		schedule_pair_kernel_padding(
+		// 			frecords,
+		// 			client_buffers,
+		// 			client_mutexes,
+		// 			op_info_vector,
+		// 			seen,
+		// 			max_sms,
+		// 			sched_streams,
+		// 			streams,
+		// 			events,
+		// 			num_clients+1,
+		// 			event_ids
+		// 		);
+		// 	}
+		// 	else {
+		// 		schedule_pair(
+		// 			frecords,
+		// 			client_buffers,
+		// 			client_mutexes,
+		// 			op_info_vector,
+		// 			seen,
+		// 			max_sms,
+		// 			sched_streams,
+		// 			streams,
+		// 			events,
+		// 			num_clients+1,
+		// 			event_ids
+		// 		);
+		// 	}
+		// }
 
-		else {
-			if (frecords[1] != NULL) { // high priority
 
+			/*if (frecords[1] != NULL) {
 				op_info op_info_1 = op_info_vector[1][seen[1]];
-				schedule_kernel(*(frecords[1]), sched_streams[3], 1, events[3][event_ids[3]], seen, event_ids, 3);
-				streams[1] = 1;
-				profiles[1] = op_info_1.profile;
-				cur_sms[1] = op_info_1.sm_used;
-
-				status = 1;
-				pop_from_queue(client_buffers[1], client_mutexes[1], 1);
+				// if (op_info_1.duration < 10000.0 || op_info_1.sm_used < max_sms) {
+				// 	wait_for_stream(1, op_info_1.profile, 1, streams[1], sched_streams[4],  events, num_events, event_ids);
+				// 	schedule_kernel(*(frecords[1]), sched_streams[4], 0, events[4][event_ids[4]], seen, event_ids, 4);
+				// 	pop_from_queue(client_buffers[1], client_mutexes[1]);
+				// 	streams[1]=1;
+				// // }
+				if (seen[0] == num_client_kernels[0]) {
+					schedule_kernel(*(frecords[1]), sched_streams[3], 1, events[3][event_ids[3]], seen, event_ids, 3);
+					pop_from_queue(client_buffers[1], client_mutexes[1]);
+					streams[1]=0;
+				}
+				else if (op_info_1.profile == 0) {
+					wait_for_stream(1, 0, 0, streams[1], sched_streams[2],  events, num_events, event_ids);
+					schedule_kernel(*(frecords[1]), sched_streams[2], 1, events[2][event_ids[2]], seen, event_ids, 2);
+					pop_from_queue(client_buffers[1], client_mutexes[1]);
+					streams[1]=0;
+				}
+				else {
+					//sleep_kernel(1000, *(sched_streams[3]));
+					wait_for_stream(1, 1, 0, streams[1], sched_streams[3],  events, num_events, event_ids);
+					schedule_kernel(*(frecords[1]), sched_streams[3], 1, events[3][event_ids[3]], seen, event_ids, 3);
+					pop_from_queue(client_buffers[1], client_mutexes[1]);
+					streams[1]=0;
+				}
 			}
-			if (frecords[0] != NULL) { // low priority
+			if (frecords[0] != NULL) {
 				op_info op_info_0 = op_info_vector[0][seen[0]];
-				bool schedule = false;
-
-				//printf("%d, %d, %d\n", low_sms, high_sms, sm_threshold);
-
-				if ((num_clients==1) || (seen[1] == 0) || (frecords[0]->type == MALLOC_RECORD) || (frecords[0]->type == MEMCPY_RECORD) || (frecords[0]->type == MEMSET_RECORD) || (frecords[0]->type == FREE_RECORD))
-					schedule = true;
-				else if (num_client_cur_iters[0] <= 10 || num_client_cur_iters[1] >= num_client_max_iters[1]) {
-					// this could be removed
-					schedule = true;
-				}
-				else if (seen[1] >= update_start && (cudaEventQuery(*(events[3][update_start-1])) == cudaSuccess))
-					schedule = true;
-				else if (seen[1]>0 && (op_info_0.sm_used <= 5*sm_threshold) && ((op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
-					schedule = true;
-				if (schedule && large_found && event_ids[0]>=1) {
-					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
-					if (status == cudaSuccess) {
-						large_found = false;
-						sum = 0;
-					}
-					else {
-						schedule = false;
-					}
-				}
-				if (schedule) {
-					//if (op_info_0.duration > depth && num_client_cur_iters[1] < num_client_max_iters[1] && seen[1]==0) {
-						//block = true;
-					if ((frecords[0]->type != MALLOC_RECORD) && (frecords[0]->type != MEMCPY_RECORD) && (frecords[0]->type != MEMSET_RECORD) && (frecords[0]->type != FREE_RECORD))
-						sum += op_info_0.duration;
-					if (sum > depth && num_client_cur_iters[1] < num_client_max_iters[1] && seen[1]==0) {
-						large_found = true;
-					}
-					//printf("Schedule! %d, %d\n", op_info_0.profile, profiles[1]);
-					//if (event_ids[2] >= 1)
-					//	CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[0], *(events[2][event_ids[2]-1]), 0));
+				// if (op_info_0.duration < 10000.0 || op_info_0.sm_used < max_sms) {
+				// 	wait_for_stream(0, op_info_0.profile, 1, streams[0], sched_streams[4],  events, num_events, event_ids);
+				// 	schedule_kernel(*(frecords[0]), sched_streams[4], 0, events[4][event_ids[4]], seen, event_ids, 4);
+				// 	pop_from_queue(client_buffers[0], client_mutexes[0]);
+				// 	streams[0]=1;
+				// }
+				if (seen[1] == num_client_kernels[1]) {
 					schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
-					status = 0;
-					//printf("Sum is %d\n", sum);
-					pop_from_queue(client_buffers[0], client_mutexes[0], 0);
-					//if (block)
-					//	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[0]));
-					streams[0] = 0;
+					pop_from_queue(client_buffers[0], client_mutexes[0]);
+					streams[0]=0;
 				}
-			}
+				else if (op_info_0.profile == 0) {
+					wait_for_stream(0, 0, 0, streams[0], sched_streams[0],  events, num_events, event_ids);
+					schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+					pop_from_queue(client_buffers[0], client_mutexes[0]);
+					streams[0]=0;
+				}
+				else {
+					if (num_clients > 1 && event_ids[0] > 0 && seen[1] < num_client_kernels[1]) {
+						cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
+						if (status == cudaErrorNotReady)
+							continue;
+					}
+					wait_for_stream(0, 1, 0, streams[0], sched_streams[1],  events, num_events, event_ids);
+					schedule_kernel(*(frecords[0]), sched_streams[1], 0, events[1][event_ids[1]], seen, event_ids, 1);
+					pop_from_queue(client_buffers[0], client_mutexes[0]);
+					streams[0]=0;
+				}
+
+			}*/
+
+
+		if (frecords[0] != NULL) {
+			op_info op_info_0 = op_info_vector[0][seen[0]];
+
+			//if (status != 0)
+				//wait_all_streams(0, sched_streams[0], events, num_clients+1, event_ids);
+			if (!reef)
+				wait_for_stream(0, 0, 0, streams[0], sched_streams[0],  events, num_clients+1, event_ids);
+			if (reef && event_ids[1] > 1)
+				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[0], *(events[1][event_ids[1]-1]), 0));
+
+			//cudaStreamSynchronize(*sched_streams[1]);
+			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
+			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
+			streams[0] = 0;
+			//cudaStreamSynchronize(*sched_streams[0]);
+
+			status = 0;
+		}
+
+		if (frecords[1] != NULL) {
+
+			op_info op_info_1 = op_info_vector[1][seen[1]];
+
+			//if (status != 1)
+			//wait_all_streams(1, sched_streams[1], events, num_clients+1, event_ids);
+			if (!reef)
+				wait_for_stream(1, 0, 0, streams[1], sched_streams[1],  events, num_clients+1, event_ids);
+			if (reef && event_ids[0] > 1)
+				CHECK_CUDA_ERROR(cudaStreamWaitEvent(*sched_streams[1], *(events[0][event_ids[0]-1]), 0));
+
+			status = 1;
+			schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
+			pop_from_queue(client_buffers[1], client_mutexes[1], 1);
+			streams[1] = 0;
 		}
 
 		int finished = 0;
 		for (int i=0; i<num_clients; i++) {
 			//printf("%d, %d, %d, %d, %d\n", i, seen[i], num_client_kernels[i], num_client_cur_iters[i], num_client_max_iters[i]);
-			//printf("%d, %d\n", is_train[0], is_train[1]);
-
 			if (
 				(num_client_cur_iters[i] == num_client_max_iters[i])
 				|| (warmup && (num_client_cur_iters[i]==warmup_iters))
-				|| (i==0 && stop_ack[0] == true)
 			)
 				finished += 1;
 			else if (seen[i] == num_client_kernels[i]) {
 				// check if GPU work for this client has finished
 				if (!locked[i]) {
+					DEBUG_PRINT("LOCK CLIENT %d\n", i);
 					pthread_mutex_lock(client_mutexes[i]);
 					locked[i] = true;
-					DEBUG_PRINT("LOCK CLIENT %d\n", i);
 				}
-				bool ready = true;
-				if (seq) {
-					if (event_ids[0] >= 1) {
-						if (cudaEventQuery(*(events[0][event_ids[0]-1])) != cudaSuccess)
-							ready &= false;
-					}
-				}
-				else {
-					if (event_ids[i] >= 1) {
-						if (cudaEventQuery(*(events[i][event_ids[i]-1])) != cudaSuccess)
-							ready &= false;
-					}
-					if (event_ids[i+2] >= 1) {
-						if (cudaEventQuery(*(events[i+2][event_ids[i+2]-1])) != cudaSuccess)
-							ready &= false;
-					}
-				}
-				if (ready) {
+				cudaError_t status = cudaEventQuery(*(events[i][event_ids[i]-1]));
+				//printf("check if finished, status is %d!!\n", status);
+				if (status == cudaSuccess) {
 					// if yes, reset meta-structures for this client, and let it continue
 					seen[i] = 0;
-					if (seq)
-						event_ids[0] = 0;
 					event_ids[i] = 0;
-					event_ids[i+2] = 0;
 					streams[i] = -1;
 					fidx[i] = 0;
-					request_status[i][num_client_cur_iters[i]] = true;
 					pthread_mutex_unlock(client_mutexes[i]);
 					num_client_cur_iters[i] += 1;
 					locked[i] = false;
-
-					if (i==0) {
-						lp_idx = 0;
-						penalty = 0;
-						sum = 0;
-					}
 
 					auto end = std::chrono::high_resolution_clock::now();
 					float duration = std::chrono::duration_cast<std::chrono::microseconds>(end - client_starts[i]).count();
 					duration /= 1000.0;
 					client_durations[i].push_back(duration);
-					if (i==1)
-						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
-					if (!reef && !seq && i==1 && is_train[1]) {
-						printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
-						hp_iter_duration += duration;
-						if ((num_client_cur_iters[i] % 10) == 0 && low_sms != sm_threshold) {
-							float hp_avg_duration = hp_iter_duration/10.0;
-							printf("--------------------- Average iter duration for client 1 is %f ms, limit is %f ms, sm_threshold is %d\n", hp_avg_duration, hp_limit_float, sm_threshold);
-							hp_iter_duration = 0;
+					printf("Client %d finished iteration %d, it took %f ms\n", i, num_client_cur_iters[i], duration);
 
-							// TODO: add better stopping conditions
-							if (hp_avg_duration > hp_limit_float) {
-								high_sms = sm_threshold;
-								sm_threshold = (low_sms+high_sms)/2;
-							}
-							else {
-								low_sms = sm_threshold;
-								sm_threshold = (low_sms+high_sms)/2;
-							}
-						}
-					}
-					//printf("Client %d finished iteration %d, it took %f ms, seen is %d\n", i, num_client_cur_iters[i], duration, seen[i]);
 				}
+
+
 				if (
 					(num_client_cur_iters[i] == num_client_max_iters[i])
 					|| (warmup && (num_client_cur_iters[i]==warmup_iters))
-					|| (i==0 && stop_ack[0] == true)
 				) {
 					finished += 1;
 					if (!warmup) {
@@ -468,14 +385,6 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 						float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - total_client_starts[i]).count();
 						duration /= 1000.0;
 						printf("Client %d, Total loop took %f sec\n", i, duration);
-						if (i==1) {
-							printf("======= Client 0 has done %d iterations\n", num_client_cur_iters[0]);
-							if (!locked[0])
-								pthread_mutex_lock(client_mutexes[0]);
-							stops[0] = true;
-							if (!locked[0])
-								pthread_mutex_unlock(client_mutexes[0]);
-						}
 					}
 				}
 			}
@@ -490,7 +399,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 		float duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - start_total).count();
 		duration /= 1000.0;
 		printf("Total loop took %f sec\n", duration);
-		//process_eval(client_durations);
+		process_eval(client_durations);
 	}
 
 	// printf("All clients finished!\n");
@@ -563,10 +472,6 @@ extern "C" {
 		(*func_names_all[client_id]).clear();
 		op_info_vector[client_id].clear();
 		populate_kernel_info(func_names_all[client_id], file, op_info_vector[client_id]);
-		int max_sm_used = 0;
-		for (auto info: op_info_vector[client_id])
-			max_sm_used = max(max_sm_used, info.sm_used);
-		max_sms_clients[client_id] = max_sm_used;
 		num_client_kernels[client_id] = num_kernels;
 
 	}
@@ -578,8 +483,7 @@ extern "C" {
 		char** models,
 		char** files,
 		int* num_kernels,
-		int* num_iters,
-		bool* train
+		int* num_iters
 	) {
 
 		struct passwd *pw = getpwuid(getuid());
@@ -620,12 +524,7 @@ extern "C" {
 			client_durations.push_back({});
 			printf("fname0 ptr is %p, fname1 ptr is %p\n", func_names_all[i], func_names_all[i]);
 			populate_kernel_info(func_names_all[i], files[i], op_info_vector[i]);
-			int max_sm_used = 0;
-			for (auto info: op_info_vector[i])
-				max_sm_used = max(max_sm_used, info.sm_used);
-			max_sms_clients[i] = max_sm_used;
 			printf("----------- SIZE: %d\n", op_info_vector[i].size());
-			is_train[i] = train[i];
 		}
 
 		fidx = (int*)dlsym(klib, "func_indexes");
@@ -639,17 +538,8 @@ extern "C" {
 		client_starts = (std::chrono::time_point<std::chrono::high_resolution_clock>*)calloc(num_clients, sizeof(std::chrono::time_point<std::chrono::high_resolution_clock>));
 		total_client_starts = (std::chrono::time_point<std::chrono::high_resolution_clock>*)calloc(num_clients, sizeof(std::chrono::time_point<std::chrono::high_resolution_clock>));
 		client_starts_set = (bool**)malloc(num_clients*sizeof(bool*));
-		for (int i=0; i<num_clients; i++) {
-			client_starts_set[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
-		}
-
-		request_status = (bool**)dlsym(klib, "client_request_status");
 		for (int i=0; i<num_clients; i++)
-			request_status[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
-
-		stops = (bool*)dlsym(klib, "client_stop");
-		stop_ack = (bool*)dlsym(klib, "client_stop_ack");
-
+			client_starts_set[i] = (bool*)calloc(num_client_max_iters[i], sizeof(bool));
 	}
 
 	void* sched_setup(Scheduler* scheduler, int num_clients, bool profile_mode, bool reef) {
@@ -674,11 +564,11 @@ extern "C" {
 	}
 
 
-	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef, bool seq, int reef_depth, int hp_limit, int update_start) {
+	void* schedule(Scheduler* scheduler, int num_clients, bool profile_mode, int iter, bool warmup, int warmup_iters, bool reef) {
 
 		DEBUG_PRINT("entered sched func!\n");
 		if (profile_mode)
-			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef, seq, reef_depth, hp_limit, update_start);
+			scheduler->busy_wait_profile(num_clients, iter, warmup, warmup_iters, reef);
 		else
 			scheduler->busy_wait_fifo(num_clients);
 		DEBUG_PRINT("exited sched func!\n");

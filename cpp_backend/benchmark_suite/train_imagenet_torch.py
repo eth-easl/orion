@@ -14,6 +14,7 @@ import random
 import numpy as np
 import time
 import os
+import psutil
 import argparse
 import threading
 
@@ -59,6 +60,7 @@ class RealDataLoader():
 def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform, dummy_data, local_rank, start_barriers, end_barriers, tid):
 
     seed_everything(42)
+    #os.sched_setaffinity(0, {tid+4})
     start_barriers[0].wait()
 
     if rps > 0:
@@ -131,7 +133,7 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                     loss = criterion(output, gpu_target)
                     loss.backward()
                     optimizer.step()
-                    s.synchronize()
+                    #s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
                     #end_barriers[0].wait()
@@ -157,6 +159,7 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                                 time.sleep(dur)
                             if (batch_idx==10):
                                 starttime = time.time()
+                                next_startup = time.time()
 
                         ###### CLOSED LOOP #####
                         # print(f"submit!, batch_idx is {batch_idx}")
@@ -188,6 +191,6 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
     p95 = np.percentile(timings, 95)
     p99 = np.percentile(timings, 99)
 
-    end_barriers[0].wait()
+    #end_barriers[0].wait()
     print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
     print(f"Total time is {time.time()-starttime} sec")

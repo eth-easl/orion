@@ -1,8 +1,8 @@
 ---
-policy: MPS-process # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
+policy: temporal # "temporal", "tick-tock", "MPS-process", or "MPS-thread"
 model0:
-  mode: eval # train or eval
-  name: vision # these two names should strictly correspond to the model names below
+  mode: train # train or eval
+  name: transformer # these two names should strictly correspond to the model names below
 model1:
   mode: train # train or eval
   name: vision
@@ -14,7 +14,7 @@ shared_config:
   squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
   wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
   coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
-  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
+  wikitext_103_dir: '/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/data/wikitext-103'
   print_every: 100
   enable_profiling: false
   use_dummy_data: true
@@ -78,9 +78,9 @@ transformer:
   use_fp16: false
   amp: apex # impl of auto mixed precision, either pytorch or apex, only takes effect when use_fp16 is true
   apex_amp_opt_level: O2 # O0, O1, O2, O3, only takes effect when use_fp16 is true
-  batch_size: 16
-  num_iterations: 200
-  warm_up_iters: 20
+  batch_size: 8
+  num_iterations: 500
+  warm_up_iters: 10
 retinanet:
   dataset_name: coco # coco, openimages, or openimages-mlperf
   use_amp: false

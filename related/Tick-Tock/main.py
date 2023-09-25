@@ -10,42 +10,42 @@ from utils.sync_info import *
 from utils.data_manager import DataManager
 from utils import notifier
 from vision.train_imagenet import train_wrapper as vision_train_wrapper, eval_wrapper as vision_eval_wrapper
-from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
-from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
-from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
-from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
+# from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
+# from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
+# from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
+#from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
 from transformer.train_transformer import train_wrapper as transformer_train_wrapper, eval_wrapper as transformer_eval_wrapper
-from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
+#from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
 
 model_to_wrapper = {
-    'nasnet': {
-        'train': nasnet_train_wrapper,
-        'eval': None,
-    },
+    # 'nasnet': {
+    #     'train': nasnet_train_wrapper,
+    #     'eval': None,
+    # },
     'vision': {
         'train': vision_train_wrapper,
         'eval': vision_eval_wrapper,
     },
-    'dcgan': {
-        'train': dcgan_train_wrapper,
-        'eval': None,
-    },
-    'gnmt': {
-        'train': gnmt_train_wrapper,
-        'eval': gnmt_eval_wrapper,
-    },
-    'bert': {
-        'train': bert_train_wrapper,
-        'eval': bert_eval_wrapper,
-    },
+    # 'dcgan': {
+    #     'train': dcgan_train_wrapper,
+    #     'eval': None,
+    # },
+    # 'gnmt': {
+    #     'train': gnmt_train_wrapper,
+    #     'eval': gnmt_eval_wrapper,
+    # },
+    # 'bert': {
+    #     'train': bert_train_wrapper,
+    #     'eval': bert_eval_wrapper,
+    # },
     'transformer': {
         'train': transformer_train_wrapper,
         'eval': transformer_eval_wrapper,
     },
-    'retinanet': {
-        'train': retinanet_train_wrapper,
-        'eval': None,
-    }
+    # 'retinanet': {
+    #     'train': retinanet_train_wrapper,
+    #     'eval': None,
+    # }
 }
 
 parser = argparse.ArgumentParser()
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         raise NotImplementedError(f"unsupported policy {policy}")
 
     model0_wrapper = model_to_wrapper[model0_name][model0_mode]
-    model1_wrapper = model_to_wrapper[model1_name][model1_mode]
+    #model1_wrapper = model_to_wrapper[model1_name][model1_mode]
 
     model0_kwargs = {
         'sync_info': sync_info,
@@ -130,52 +130,52 @@ if __name__ == "__main__":
         'model_config': model0_config,
         'shared_config': shared_config
     }
-    model1_kwargs = {
-        'sync_info': sync_info,
-        'tid': 1,
-        'model_config': model1_config,
-        'shared_config': shared_config
-    }
+    # model1_kwargs = {
+    #     'sync_info': sync_info,
+    #     'tid': 1,
+    #     'model_config': model1_config,
+    #     'shared_config': shared_config
+    # }
 
-    if policy == "MPS-process":
-        process0 = multiprocessing.Process(target=model0_wrapper, kwargs=model0_kwargs)
-        process1 = multiprocessing.Process(target=model1_wrapper, kwargs=model1_kwargs)
-        process0.start()
-        process1.start()
+    # if policy == "MPS-process":
+    #     process0 = multiprocessing.Process(target=model0_wrapper, kwargs=model0_kwargs)
+    #     process1 = multiprocessing.Process(target=model1_wrapper, kwargs=model1_kwargs)
+    #     process0.start()
+    #     process1.start()
 
-        process0.join()
-        process1.join()
-    elif policy == "MPS-thread":
-        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
-        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
-        thread0.start()
-        thread1.start()
+    #     process0.join()
+    #     process1.join()
+    # elif policy == "MPS-thread":
+    #     thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
+    #     thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
+    #     thread0.start()
+    #     thread1.start()
 
-        thread0.join()
-        thread1.join()
-    elif policy == "tick-tock":
-        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
-        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
-        thread0.start()
-        thread1.start()
+    #     thread0.join()
+    #     thread1.join()
+    # elif policy == "tick-tock":
+    #     thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
+    #     thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
+    #     thread0.start()
+    #     thread1.start()
 
-        thread0.join()
-        thread1.join()
-    elif policy == "temporal":
-        model0_wrapper(**model0_kwargs)
-        model1_wrapper(**model1_kwargs)
-    else:
-        raise NotImplementedError(f'unsupported policy {policy}')
+    #     thread0.join()
+    #     thread1.join()
+    # elif policy == "temporal":
+    model0_wrapper(**model0_kwargs)
+    #     model1_wrapper(**model1_kwargs)
+    # else:
+    #     raise NotImplementedError(f'unsupported policy {policy}')
     # if shared_config['use_dummy_data'].enable_profiling:
     #     torch.cuda.cudart().cudaProfilerStop()
 
     # post-processing: sum two durations
     if policy == 'temporal':
         dict_data = data_manager.read_dict()
-        duration = dict_data['duration0'] + dict_data['duration1']
+        duration = dict_data['duration0'] #+ dict_data['duration1']
         data_manager.write_kv('duration', duration)
 
-    notifier.notify(
-        subject=f'The experiment training {readable_model0_name} and {readable_model1_name} with {policy} is finished!',
-        body=utils.dict2pretty_str(config)
-    )
+    # notifier.notify(
+    #     subject=f'The experiment training {readable_model0_name} and {readable_model1_name} with {policy} is finished!',
+    #     body=utils.dict2pretty_str(config)
+    # )
