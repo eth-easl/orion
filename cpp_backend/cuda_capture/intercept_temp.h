@@ -14,41 +14,6 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include "../system_utils.h"
-#include "Torch_Array.h"
-
-//#ifdef INCLUDE_TORCH_CUDA
-//#include "Reduce.cuh"
-//#include "ATen/native/SharedReduceOps.h"
-//#include "ATen/NumericUtils.h"
-//#endif
-
-#define VECTORIZED_ELEMENTWISE_KERNEL "void at::native::vectorized_elementwise_kernel"
-#define CUB_DEVICE_REDUCE_SINGLE_TILE_KERNEL "void at_cuda_detail::cub::DeviceReduceSingleTileKernel"
-#define CUB_DEVICE_COMPACT_INIT_KERNEL "void at_cuda_detail::cub::DeviceCompactInitKernel"
-#define CUB_DEVICE_SELECT_SWEEP_KERNEL "void at_cuda_detail::cub::DeviceSelectSweepKernel"
-#define CUB_DEVICE_REDUCE_KERNEL "void at_cuda_detail::cub::DeviceReduceKernel"
-#define CUB_DEVICE_SCAN_INIT_KERNEL "void at_cuda_detail::cub::DeviceScanInitKernel"
-#define CUB_DEVICE_SCAN_KERNEL "void at_cuda_detail::cub::DeviceScanKernel"
-
-#define INDEX_ELEMENTWISE_KERNEL "void at::native::index_elementwise_kernel"
-#define UNROLLED_ELEMENTWISE_KERNEL "void at::native::unrolled_elementwise_kernel"
-#define REDUCE_KERNEL "void at::native::reduce_kernel"
-#define MAX_POOL_FORWARD_NCHW "void at::native::(anonymous namespace)::max_pool_forward_nchw"
-#define ELEMENTWISE_KERNEL_WITH_INDEX "void (anonymous namespace)::elementwise_kernel_with_index"
-#define ELEMENTWISE_KERNEL "void at::native::elementwise_kernel"
-#define INDEX_SELECT_LARGE_INDEX "void at::native::(anonymous namespace)::indexSelectLargeIndex"
-#define VECTORIZED_LAYER_NORM_KERNEL "void at::native::(anonymous namespace)::vectorized_layer_norm_kernel"
-#define SOFTMAX_WARP_FORWARD "void (anonymous namespace)::softmax_warp_forward"
-#define CAT_ARRAY_BATCHED_COPY "void at::native::(anonymous namespace)::CatArrayBatchedCopy"
-#define TRIU_TRIL_KERNEL "void at::native::triu_tril_kernel"
-#define UPSAMPLE_BILINEAR2D_OUT_FRAME "void at::native::(anonymous namespace)::upsample_bilinear2d_out_frame"
-#define UPSAMPLE_NEAREST2D_NHWC_OUT_FRAME "void at::native::(anonymous namespace)::upsample_nearest2d_nhwc_out_frame"
-
-#define MOBILENET "mobilenet_v2"
-#define VGG16 "vgg16"
-#define RESNET50 "resnet50"
-#define RESNET101 "resnet101"
-#define GNMT "gnmt"
 
 typedef struct kernel_record {
 
@@ -737,6 +702,7 @@ extern int* num_total_clients;
 extern volatile bool** client_request_status;
 extern volatile bool* client_stop;
 extern volatile bool* client_stop_ack;
+extern volatile bool* affinity_set;
 
 // functions
 extern cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream);

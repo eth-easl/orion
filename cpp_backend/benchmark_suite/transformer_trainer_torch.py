@@ -74,10 +74,11 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
         model.eval()
 
     next_startup = time.time()
-    open_loop = True
+    open_loop = False
     timings = [0 for _ in range(num_iters)]
 
     mems = None
+    print("before while")
     with torch.cuda.stream(s):
         for i in range(1):
             print("Start epoch: ", i)
@@ -114,6 +115,7 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
                             if (batch_idx==10):
                                 starttime = time.time()
 
+            print(f"FINISHED! It took {time.time()-starttime} sec")
             end_barriers[0].wait()
 
     #print(f"Time is {time.time()-starttime} sec")

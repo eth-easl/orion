@@ -86,7 +86,7 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
 
         print(f"Iteration took {time.time()-start} sec")
 
-    print("Done!")
+    print(f"Done!, It took {time.time()-start_all} sec")
 
 if __name__ == "__main__":
     vision('mobilenet_v2', 4, 0, True, 'ncu')

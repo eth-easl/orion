@@ -16,6 +16,7 @@ import time
 import os
 import argparse
 import threading
+import json
 from ctypes import *
 
 def seed_everything(seed: int):
@@ -67,18 +68,24 @@ def check_stop(backend_lib):
     return backend_lib.stop()
 
 
-def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid, input_file=False):
 
     seed_everything(42)
     print(model_name, batchsize, local_rank, barriers, tid)
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
-    if rps > 0:
+    if rps > 0 and not input_file:
         if uniform:
             sleep_times = [1/rps]*num_iters
         else:
             sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    elif input_file:
+        with open('/home/image-varuna/gpu_share_repo/cpp_backend/inter_arrival_times.json') as f:
+                sleep_times = json.load(f)
     else:
-        sleep_times = [0] * num_iters
+        sleep_times = [0]*num_iters
+
+    print(sleep_times)
+    print(f"size is {len(sleep_times)}")
 
     barriers[0].wait()
 
@@ -126,8 +133,8 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                 if train:
                     #client_barrier.wait()
                     print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                    if tid==0 and batch_idx==20:
-                        torch.cuda.profiler.cudart().cudaProfilerStart()
+                    # if tid==0 and batch_idx==20:
+                    #     torch.cuda.profiler.cudart().cudaProfilerStart()
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     optimizer.zero_grad()
                     output = model(gpu_data)
@@ -137,7 +144,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                     block(backend_lib, batch_idx)
                     iter_time = time.time()-start_iter
                     timings.append(iter_time)
-                    print(f"Client {tid} finished! Wait! It took {timings[batch_idx]}")
+                    #print(f"Client {tid} finished! Wait! It took {timings[batch_idx]}")
                     batch_idx, batch = next(train_iter)
                     if (batch_idx == 1): # for backward
                         barriers[0].wait()
@@ -157,8 +164,8 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                         if open_loop:
                             if (cur_time >= next_startup):
                                 #client_barrier.wait()
-                                print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                                if batch_idx==200:
+                                #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                                if batch_idx==100:
                                     torch.cuda.profiler.cudart().cudaProfilerStart()
                                 gpu_data = batch[0].to(local_rank)
                                 output = model(gpu_data)
@@ -167,7 +174,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                                 #     torch.cuda.profiler.cudart().cudaProfilerStop()
                                 req_time = time.time()-next_startup
                                 timings.append(req_time)
-                                print(f"Client {tid} finished! Wait! It took {req_time}")
+                                #print(f"Client {tid} finished! Wait! It took {req_time}")
                                 if batch_idx>=10:
                                     next_startup += sleep_times[batch_idx]
                                 else:
@@ -181,29 +188,33 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                                 dur = next_startup-time.time()
                                 if (dur>0):
                                     time.sleep(dur)
+                                if check_stop(backend_lib):
+                                    print("---- STOP!")
+                                    break
                                 #client_barrier.wait()
                         else:
                             #### CLOSED LOOP ####
-                            client_barrier.wait()
+                            #client_barrier.wait()
                             print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             gpu_data = batch[0].to(local_rank)
                             output = model(gpu_data)
                             block(backend_lib, batch_idx)
                             print(f"Client {tid} finished! Wait!")
+                            batch_idx,batch = next(train_iter)
                             if ((batch_idx == 1) or (batch_idx == 10)):
                                 barriers[0].wait()
-                            batch_idx,batch = next(train_iter)
-                            client_barrier.wait()
+                            #client_barrier.wait()
 
 
         barriers[0].wait()
 
         timings = timings[10:]
         timings = sorted(timings)
-        p50 = np.percentile(timings, 50)
-        p95 = np.percentile(timings, 95)
-        p99 = np.percentile(timings, 99)
 
-        if not train:
+        if tid==1 and not train:
+            print(timings)
+            p50 = np.percentile(timings, 50)
+            p95 = np.percentile(timings, 95)
+            p99 = np.percentile(timings, 99)
             print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
         print("Finished! Ready to join!")

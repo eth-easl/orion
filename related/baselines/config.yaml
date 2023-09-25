@@ -1,0 +1,122 @@
+---
+policy: "Streams" # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
+models:
+  model0:
+    mode: eval # train or eval
+    name: resnet101 # these two names should strictly correspond to the model names below
+  model1:
+    mode: eval # train or eval
+    name: mobilenet_v2
+  model2:
+    mode: eval # train or eval
+    name: resnet50
+shared_config:
+  distribution: poisson # poisson, uniform, or trace
+  trace_path: './inter_arrival_times.json' # only used when distribution is trace
+  pin_memory: true
+#  imagenet_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/imagenet/imagenet-raw-euwest4/train'
+#  cifar10_root: '/cluster/scratch/xianma/cifar10'
+#  squad_version1: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v1.1/train-v1.1.json'
+#  squad_version2: '/mnt/disks/disk-imagenet-gpu-share/home/fot/squad/v2.0/train-v2.0.json'
+#  wmt16_en_de_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16'
+#  coco_root: '/mnt/disks/disk-imagenet-gpu-share/home/fot/coco2017'
+#  wikitext_103_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/transformer/wikitext-103'
+
+
+
+# configuration for each model
+resnet50:
+  arch: resnet50
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 30 # measured in 1/seconds. If 0 it means no sleep
+resnet101:
+  arch: resnet101
+  batch_size: 4
+  num_iterations: 300
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2:
+  arch: mobilenet_v2
+  batch_size: 4
+  num_iterations: 100000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
+resnet101:
+  arch: resnet101
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+bert:
+  batch_size: 2
+  arch: large # either base or large
+  num_iterations: 1000
+  request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+transformer:
+  arch: base # either base or large
+  batch_size: 4
+  num_iterations: 1000
+  request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
+
+
+
+
+resnet50-1:
+  arch: resnet50
+  batch_size: 32
+  num_iterations: 1000
+  request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
+resnet101-1:
+  arch: resnet101
+  batch_size: 32
+  num_iterations: 1000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2-1:
+  arch: mobilenet_v2
+  batch_size: 64
+  num_iterations: 1000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
+bert-1:
+  batch_size: 8
+  arch: base # either base or large
+  num_iterations: 1000
+  request_rate: 8 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+transformer-1:
+  arch: base # either base or large
+  batch_size: 8
+  num_iterations: 1000
+  request_rate: 20 # measured in 1/seconds. If 0 it means no sleep
+
+
+# unused models
+retinanet:
+  dataset_name: openimages-mlperf # coco, openimages, or openimages-mlperf
+  use_amp: false
+  num_workers: 2
+  batch_size: 4
+  num_iterations: 200
+  warm_up_iters: 10
+  num_warm_up_reqs: 10
+nasnet:
+  optimizer: SGD
+  batch_size: 32
+  arch: mobile # either large or mobile
+  num_workers: 2
+gnmt:
+  math: fp32 # precision
+  batch_size: 128
+  num_workers: 2
+  num_iterations: 200
+  warm_up_iters: 20
+  dummy_datum_path: '/mnt/disks/disk-imagenet-gpu-share/home/fot/wmt16/gnmt_datum.pt' # if None or cannot open this, will produce dummy data on the fly
+dcgan:
+  num_gen_filters: 64
+  num_dis_filters: 64
+  latent_z_vec_size: 100
+  batch_size: 32
+  optimizer: Adam
+  input_image_size: 64 # the image size the model finally accepts as input
+  dataset: imagenet # can be imagenet, cifar10, or mnist
+  num_workers: 2

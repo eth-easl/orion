@@ -13,6 +13,7 @@ int* num_total_clients;
 volatile bool** client_request_status;
 volatile bool* client_stop;
 volatile bool* client_stop_ack;
+volatile bool* affinity_set;
 
 
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
