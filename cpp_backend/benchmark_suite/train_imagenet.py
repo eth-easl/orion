@@ -119,7 +119,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
     #  open loop
     next_startup = time.time()
-    open_loop = False
+    open_loop = True
 
     if True:
         timings=[]
@@ -210,10 +210,11 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
         timings = timings[10:]
         timings = sorted(timings)
-        p50 = np.percentile(timings, 50)
-        p95 = np.percentile(timings, 95)
-        p99 = np.percentile(timings, 99)
 
         if tid==1 and not train:
+            print(timings)
+            p50 = np.percentile(timings, 50)
+            p95 = np.percentile(timings, 95)
+            p99 = np.percentile(timings, 99)
             print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
         print("Finished! Ready to join!")
