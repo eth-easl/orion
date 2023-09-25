@@ -196,7 +196,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		op_info op_info_1 = op_info_vector[1][seen[1]];
 		schedule_kernel(*(frecords[1]), sched_streams[1], 1, events[1][event_ids[1]], seen, event_ids, 1);
 		pop_from_queue(client_buffers[1], client_mutexes[1], 1);
-		if (op_info_0.duration < op_info_1.duration && op_info_0.sm_used > op_info_1.sm_used) {
+		if (op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
 			// colocate
 			schedule_kernel(*(frecords[0]), sched_streams[0], 0, events[0][event_ids[0]], seen, event_ids, 0);
 			pop_from_queue(client_buffers[0], client_mutexes[0], 0);
@@ -339,7 +339,9 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					// this could be removed
 					schedule = true;
 				}
-				else if (seen[1]>0 && (op_info_0.sm_used <= sm_threshold) && ((op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
+				else if (seen[1] >= update_start && (cudaEventQuery(*(events[3][update_start-1])) == cudaSuccess))
+					schedule = true;
+				else if (seen[1]>0 && (op_info_0.sm_used <= 5*sm_threshold) && ((op_info_0.profile == -1 || profiles[1]==-1 || (profiles[1] != op_info_0.profile))))
 					schedule = true;
 				if (schedule && large_found && event_ids[0]>=1) {
 					cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));

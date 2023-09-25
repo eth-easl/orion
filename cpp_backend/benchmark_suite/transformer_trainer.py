@@ -105,7 +105,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
 
     #  open loop
     next_startup = time.time()
-    open_loop = True
+    open_loop = False
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -169,9 +169,9 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                         data, target = batch[0].to(local_rank), batch[1].to(local_rank)
                         output, mems = model(data, target, mems)
                         print(f"Client {tid} finished! Wait!")
+                        batch_idx,batch = next(train_iter)
                         if ((batch_idx == 1) or (batch_idx == 10)):
                             barriers[0].wait()
-                        batch_idx,batch = next(train_iter)
 
 
     barriers[0].wait()

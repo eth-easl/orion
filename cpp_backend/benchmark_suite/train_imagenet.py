@@ -119,7 +119,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
     #  open loop
     next_startup = time.time()
-    open_loop = True
+    open_loop = False
 
     if True:
         timings=[]
@@ -164,7 +164,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                         if open_loop:
                             if (cur_time >= next_startup):
                                 #client_barrier.wait()
-                                print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                                #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                                 if batch_idx==100:
                                     torch.cuda.profiler.cudart().cudaProfilerStart()
                                 gpu_data = batch[0].to(local_rank)
@@ -194,16 +194,16 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
                                 #client_barrier.wait()
                         else:
                             #### CLOSED LOOP ####
-                            client_barrier.wait()
+                            #client_barrier.wait()
                             print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             gpu_data = batch[0].to(local_rank)
                             output = model(gpu_data)
                             block(backend_lib, batch_idx)
                             print(f"Client {tid} finished! Wait!")
+                            batch_idx,batch = next(train_iter)
                             if ((batch_idx == 1) or (batch_idx == 10)):
                                 barriers[0].wait()
-                            batch_idx,batch = next(train_iter)
-                            client_barrier.wait()
+                            #client_barrier.wait()
 
 
         barriers[0].wait()
