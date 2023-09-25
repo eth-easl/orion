@@ -111,12 +111,9 @@ void process_eval(vector<vector<float>> &client_durations) {
 
 
 void pop_from_queue(queue<struct func_record>* client_queue, pthread_mutex_t* client_mutex, int idx) {
-	//if (seen[idx] < num_client_kernels[idx])
 	pthread_mutex_lock(client_mutex);
 	client_queue->pop();
-	//if (seen[idx] < num_client_kernels[idx])
 	pthread_mutex_unlock(client_mutex);
-	//printf("exit pop!\n");
 }
 
 void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
@@ -152,18 +149,6 @@ void create_streams(cudaStream_t** sched_streams, int num, bool reef) {
 		cudaStreamCreateWithPriority(sched_streams[1], cudaStreamNonBlocking, 0);
 	}
 	printf("exit\n");
-
-
-	// for (int i=0; i<num; i++) {
-	// 	sched_streams[i] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-	// 	if (i==2 || i==3)
-	// 		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, *hp);
-	// 	else
-	// 		cudaStreamCreateWithPriority(sched_streams[i], cudaStreamNonBlocking, *lp);
-	// }
-
-	// sched_streams[num] = (cudaStream_t*)malloc(sizeof(cudaStream_t));
-	// cudaStreamCreateWithPriority(sched_streams[num], cudaStreamNonBlocking, *hp);
 
 
 }
