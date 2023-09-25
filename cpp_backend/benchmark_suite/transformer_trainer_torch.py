@@ -9,8 +9,8 @@ import numpy as np
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.ones((192, self.batchsize)).to(torch.int64)
-        self.target = torch.ones((192, self.batchsize)).to(torch.int64)
+        self.data = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
 
     def __iter__(self):
         return self
@@ -74,10 +74,11 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
         model.eval()
 
     next_startup = time.time()
-    open_loop = True
+    open_loop = False
     timings = [0 for _ in range(num_iters)]
 
     mems = None
+    print("before while")
     with torch.cuda.stream(s):
         for i in range(1):
             print("Start epoch: ", i)
@@ -86,13 +87,14 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
                 start = time.time()
 
                 if train:
+                    optimizer.zero_grad()
                     start_iter = time.time()
                     data, target = batch[0].to(local_rank), batch[1].to(local_rank)
                     loss, mems = model(data, target, mems)
                     loss = loss.float().mean().type_as(loss)
                     loss.backward()
                     optimizer.step()
-                    s.synchronize()
+                    #s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
                     if (batch_idx==10):
@@ -110,7 +112,10 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
                             print(f"It took {timings[batch_idx]} sec")
                             next_startup += sleep_times[batch_idx]
                             batch_idx,batch = next(train_iter)
+                            if (batch_idx==10):
+                                starttime = time.time()
 
+            print(f"FINISHED! It took {time.time()-starttime} sec")
             end_barriers[0].wait()
 
     #print(f"Time is {time.time()-starttime} sec")
@@ -121,3 +126,4 @@ def transformer_loop(batchsize, train, default, num_iters, rps, uniform, dummy_d
         p99 = np.percentile(timings, 99)
 
         print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
+        print(f"Total time is {time.time()-starttime} sec")

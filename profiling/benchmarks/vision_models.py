@@ -56,12 +56,13 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
     start = time.time()
 
 
-    for batch_idx in range(1): #batch in train_iter:
+    start_all = time.time()
+    for batch_idx in range(2): #batch in train_iter:
 
         #data, target = batch[0].to(local_rank), batch[1].to(local_rank)
 
         print(f"Main thread id is {threading.get_native_id()}")
-        if batch_idx == 0:
+        if batch_idx == 1:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -77,7 +78,7 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
             loss.backward()
             optimizer.step()
 
-        if batch_idx == 0:
+        if batch_idx == 1:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
@@ -88,7 +89,7 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
         print(f"Iteration took {time.time()-start} sec")
         start = time.time()
 
-    print("Done!")
+    print(f"Done!, It took {time.time()-start_all} sec")
 
 if __name__ == "__main__":
-    vision('mobilenet_v2', 96, 0, False, 'nsys')
+    vision('resnet50', 4, 0, True, 'ncu')

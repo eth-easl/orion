@@ -1,0 +1,573 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+void at::native::unrolled_elementwise_kernel,-1,0,1,6144
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void (anonymous namespace)::elementwise_kernel_with_index,-1,0,1,3072
+void at::native::(anonymous namespace)::indexSelectLargeIndex,-1,0,40,11808
+void at::native::elementwise_kernel,-1,0,1,3712
+void at::native::(anonymous namespace)::indexSelectLargeIndex,-1,0,40,14208
+void at::native::(anonymous namespace)::indexSelectLargeIndex,-1,0,40,12672
+void at::native::vectorized_elementwise_kernel,0,0,96,15392
+void at::native::vectorized_elementwise_kernel,0,0,96,11232
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10240
+void at::native::elementwise_kernel,-1,0,192,8672
+volta_sgemm_128x64_tn,1,0,192,140638
+void at::native::elementwise_kernel,0,0,192,9472
+void at::native::elementwise_kernel,-1,0,192,11808
+volta_sgemm_128x64_tn,1,0,192,138335
+void at::native::elementwise_kernel,0,0,192,9472
+void at::native::elementwise_kernel,-1,0,192,11968
+volta_sgemm_128x64_tn,1,0,192,138431
+void at::native::elementwise_kernel,0,0,192,9472
+volta_sgemm_128x64_tn,1,0,144,57759
+void at::native::vectorized_elementwise_kernel,0,0,576,49472
+void at::native::elementwise_kernel,0,0,1152,50592
+void (anonymous namespace)::softmax_warp_forward,0,0,192,53535
+volta_sgemm_128x64_nn,1,0,48,110079
+void at::native::elementwise_kernel,-1,0,192,11584
+void at::native::elementwise_kernel,-1,0,192,9088
+volta_sgemm_128x64_tn,1,0,192,138335
+void at::native::elementwise_kernel,0,0,192,13920
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,11552
+void at::native::elementwise_kernel,-1,0,768,22592
+volta_sgemm_128x64_tn,1,0,288,499804
+void at::native::vectorized_elementwise_kernel,0,0,384,34848
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x32_tn,1,0,240,483548
+void at::native::vectorized_elementwise_kernel,0,0,96,12928
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10272
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,131966
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x64_tn,1,0,192,138592
+void at::native::elementwise_kernel,-1,0,192,10528
+volta_sgemm_128x64_tn,1,0,192,132287
+volta_sgemm_128x64_tn,1,0,144,58176
+void at::native::vectorized_elementwise_kernel,0,0,576,49471
+void at::native::elementwise_kernel,0,0,1152,51264
+void (anonymous namespace)::softmax_warp_forward,0,0,192,52032
+volta_sgemm_128x64_nn,1,0,48,109856
+void at::native::elementwise_kernel,-1,0,192,10752
+void at::native::elementwise_kernel,-1,0,192,9056
+volta_sgemm_128x64_tn,1,0,192,132255
+void at::native::vectorized_elementwise_kernel,0,0,96,11168
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10655
+void at::native::elementwise_kernel,-1,0,768,22304
+volta_sgemm_128x64_tn,1,0,288,477117
+void at::native::vectorized_elementwise_kernel,0,0,384,35071
+void at::native::elementwise_kernel,-1,0,192,9920
+volta_sgemm_128x32_tn,1,0,240,509852
+void at::native::vectorized_elementwise_kernel,0,0,96,12416
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10240
+void at::native::elementwise_kernel,-1,0,192,9152
+volta_sgemm_128x64_tn,1,0,192,136319
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,138143
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,138143
+volta_sgemm_128x64_tn,1,0,144,58560
+void at::native::vectorized_elementwise_kernel,0,0,576,49055
+void at::native::elementwise_kernel,0,0,1152,50592
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51999
+volta_sgemm_128x64_nn,1,0,48,109151
+void at::native::elementwise_kernel,-1,0,192,10496
+void at::native::elementwise_kernel,-1,0,192,9120
+volta_sgemm_128x64_tn,1,0,192,137887
+void at::native::vectorized_elementwise_kernel,0,0,96,11104
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10464
+void at::native::elementwise_kernel,-1,0,768,22304
+volta_sgemm_128x64_tn,1,0,288,476284
+void at::native::vectorized_elementwise_kernel,0,0,384,34080
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x32_tn,1,0,240,514556
+void at::native::vectorized_elementwise_kernel,0,0,96,11840
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10528
+void at::native::elementwise_kernel,-1,0,192,9632
+volta_sgemm_128x64_tn,1,0,192,136703
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,137311
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x64_tn,1,0,192,135488
+volta_sgemm_128x64_tn,1,0,144,57311
+void at::native::vectorized_elementwise_kernel,0,0,576,49216
+void at::native::elementwise_kernel,0,0,1152,50911
+void (anonymous namespace)::softmax_warp_forward,0,0,192,50624
+volta_sgemm_128x64_nn,1,0,48,109279
+void at::native::elementwise_kernel,-1,0,192,10592
+void at::native::elementwise_kernel,-1,0,192,9088
+volta_sgemm_128x64_tn,1,0,192,138655
+void at::native::vectorized_elementwise_kernel,0,0,96,11488
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10432
+void at::native::elementwise_kernel,-1,0,768,22367
+volta_sgemm_128x64_tn,1,0,288,499645
+void at::native::vectorized_elementwise_kernel,0,0,384,34655
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x32_tn,1,0,240,513404
+void at::native::vectorized_elementwise_kernel,0,0,96,11840
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10272
+void at::native::elementwise_kernel,-1,0,192,9344
+volta_sgemm_128x64_tn,1,0,192,139903
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,138463
+void at::native::elementwise_kernel,-1,0,192,9984
+volta_sgemm_128x64_tn,1,0,192,137311
+volta_sgemm_128x64_tn,1,0,144,59199
+void at::native::vectorized_elementwise_kernel,0,0,576,49312
+void at::native::elementwise_kernel,0,0,1152,50720
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51487
+volta_sgemm_128x64_nn,1,0,48,109599
+void at::native::elementwise_kernel,-1,0,192,10720
+void at::native::elementwise_kernel,-1,0,192,9184
+volta_sgemm_128x64_tn,1,0,192,131615
+void at::native::vectorized_elementwise_kernel,0,0,96,11520
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10304
+void at::native::elementwise_kernel,-1,0,768,22336
+volta_sgemm_128x64_tn,1,0,288,498396
+void at::native::vectorized_elementwise_kernel,0,0,384,35007
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x32_tn,1,0,240,515869
+void at::native::vectorized_elementwise_kernel,0,0,96,12288
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10656
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,130910
+void at::native::elementwise_kernel,-1,0,192,9568
+volta_sgemm_128x64_tn,1,0,192,136799
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,136063
+volta_sgemm_128x64_tn,1,0,144,59552
+void at::native::vectorized_elementwise_kernel,0,0,576,49759
+void at::native::elementwise_kernel,0,0,1152,51648
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51359
+volta_sgemm_128x64_nn,1,0,48,109120
+void at::native::elementwise_kernel,-1,0,192,10239
+void at::native::elementwise_kernel,-1,0,192,9088
+volta_sgemm_128x64_tn,1,0,192,136288
+void at::native::vectorized_elementwise_kernel,0,0,96,11168
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10111
+void at::native::elementwise_kernel,-1,0,768,22784
+volta_sgemm_128x64_tn,1,0,288,479517
+void at::native::vectorized_elementwise_kernel,0,0,384,35487
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x32_tn,1,0,240,513436
+void at::native::vectorized_elementwise_kernel,0,0,96,13024
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,11040
+void at::native::elementwise_kernel,-1,0,192,9184
+volta_sgemm_128x64_tn,1,0,192,130143
+void at::native::elementwise_kernel,-1,0,192,9792
+volta_sgemm_128x64_tn,1,0,192,132607
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x64_tn,1,0,192,138047
+volta_sgemm_128x64_tn,1,0,144,57983
+void at::native::vectorized_elementwise_kernel,0,0,576,49440
+void at::native::elementwise_kernel,0,0,1152,50495
+void (anonymous namespace)::softmax_warp_forward,0,0,192,52736
+volta_sgemm_128x64_nn,1,0,48,109215
+void at::native::elementwise_kernel,-1,0,192,10400
+void at::native::elementwise_kernel,-1,0,192,9376
+volta_sgemm_128x64_tn,1,0,192,132671
+void at::native::vectorized_elementwise_kernel,0,0,96,12864
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10496
+void at::native::elementwise_kernel,-1,0,768,22464
+volta_sgemm_128x64_tn,1,0,288,496508
+void at::native::vectorized_elementwise_kernel,0,0,384,34432
+void at::native::elementwise_kernel,-1,0,192,9567
+volta_sgemm_128x32_tn,1,0,240,515548
+void at::native::vectorized_elementwise_kernel,0,0,96,12416
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10496
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,137887
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x64_tn,1,0,192,129055
+void at::native::elementwise_kernel,-1,0,192,9472
+volta_sgemm_128x64_tn,1,0,192,133439
+volta_sgemm_128x64_tn,1,0,144,58847
+void at::native::vectorized_elementwise_kernel,0,0,576,49824
+void at::native::elementwise_kernel,0,0,1152,50560
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51680
+volta_sgemm_128x64_nn,1,0,48,109151
+void at::native::elementwise_kernel,-1,0,192,11136
+void at::native::elementwise_kernel,-1,0,192,9183
+volta_sgemm_128x64_tn,1,0,192,136831
+void at::native::vectorized_elementwise_kernel,0,0,96,11488
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10592
+void at::native::elementwise_kernel,-1,0,768,22720
+volta_sgemm_128x64_tn,1,0,288,499036
+void at::native::vectorized_elementwise_kernel,0,0,384,34368
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x32_tn,1,0,240,514812
+void at::native::vectorized_elementwise_kernel,0,0,96,11968
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10208
+void at::native::elementwise_kernel,-1,0,192,9504
+volta_sgemm_128x64_tn,1,0,192,137855
+void at::native::elementwise_kernel,-1,0,192,9536
+volta_sgemm_128x64_tn,1,0,192,133887
+void at::native::elementwise_kernel,-1,0,192,9856
+volta_sgemm_128x64_tn,1,0,192,130208
+volta_sgemm_128x64_tn,1,0,144,59327
+void at::native::vectorized_elementwise_kernel,0,0,576,52736
+void at::native::elementwise_kernel,0,0,1152,50879
+void (anonymous namespace)::softmax_warp_forward,0,0,192,50848
+volta_sgemm_128x64_nn,1,0,48,109279
+void at::native::elementwise_kernel,-1,0,192,10240
+void at::native::elementwise_kernel,-1,0,192,9120
+volta_sgemm_128x64_tn,1,0,192,134303
+void at::native::vectorized_elementwise_kernel,0,0,96,11776
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10880
+void at::native::elementwise_kernel,-1,0,768,22303
+volta_sgemm_128x64_tn,1,0,288,472509
+void at::native::vectorized_elementwise_kernel,0,0,384,35136
+void at::native::elementwise_kernel,-1,0,192,9792
+volta_sgemm_128x32_tn,1,0,240,516733
+void at::native::vectorized_elementwise_kernel,0,0,96,11903
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10976
+void at::native::elementwise_kernel,-1,0,192,9568
+volta_sgemm_128x64_tn,1,0,192,140159
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,137887
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x64_tn,1,0,192,134303
+volta_sgemm_128x64_tn,1,0,144,59935
+void at::native::vectorized_elementwise_kernel,0,0,576,49216
+void at::native::elementwise_kernel,0,0,1152,50495
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51361
+volta_sgemm_128x64_nn,1,0,48,109279
+void at::native::elementwise_kernel,-1,0,192,11103
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,133631
+void at::native::vectorized_elementwise_kernel,0,0,96,11136
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,11168
+void at::native::elementwise_kernel,-1,0,768,22304
+volta_sgemm_128x64_tn,1,0,288,501212
+void at::native::vectorized_elementwise_kernel,0,0,384,34688
+void at::native::elementwise_kernel,-1,0,192,10688
+volta_sgemm_128x32_tn,1,0,240,510972
+void at::native::vectorized_elementwise_kernel,0,0,96,12704
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10016
+void at::native::elementwise_kernel,-1,0,192,8992
+volta_sgemm_128x64_tn,1,0,192,132863
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,132670
+void at::native::elementwise_kernel,-1,0,192,9888
+volta_sgemm_128x64_tn,1,0,192,138368
+volta_sgemm_128x64_tn,1,0,144,57311
+void at::native::vectorized_elementwise_kernel,0,0,576,49440
+void at::native::elementwise_kernel,0,0,1152,50783
+void (anonymous namespace)::softmax_warp_forward,0,0,192,52352
+volta_sgemm_128x64_nn,1,0,48,109247
+void at::native::elementwise_kernel,-1,0,192,10368
+void at::native::elementwise_kernel,-1,0,192,9088
+volta_sgemm_128x64_tn,1,0,192,134975
+void at::native::vectorized_elementwise_kernel,0,0,96,12192
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10304
+void at::native::elementwise_kernel,-1,0,768,22272
+volta_sgemm_128x64_tn,1,0,288,474557
+void at::native::vectorized_elementwise_kernel,0,0,384,34464
+void at::native::elementwise_kernel,-1,0,192,9823
+volta_sgemm_128x32_tn,1,0,240,514397
+void at::native::vectorized_elementwise_kernel,0,0,96,12031
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10464
+void at::native::elementwise_kernel,-1,0,192,16640
+volta_sgemm_128x64_tn,1,0,192,137535
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,130335
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x64_tn,1,0,192,135039
+volta_sgemm_128x64_tn,1,0,144,59167
+void at::native::vectorized_elementwise_kernel,0,0,576,49312
+void at::native::elementwise_kernel,0,0,1152,50944
+void (anonymous namespace)::softmax_warp_forward,0,0,192,52927
+volta_sgemm_128x64_nn,1,0,48,109312
+void at::native::elementwise_kernel,-1,0,192,12224
+void at::native::elementwise_kernel,-1,0,192,9567
+volta_sgemm_128x64_tn,1,0,192,131583
+void at::native::vectorized_elementwise_kernel,0,0,96,11008
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10368
+void at::native::elementwise_kernel,-1,0,768,22272
+volta_sgemm_128x64_tn,1,0,288,477404
+void at::native::vectorized_elementwise_kernel,0,0,384,34624
+void at::native::elementwise_kernel,-1,0,192,9632
+volta_sgemm_128x32_tn,1,0,240,480124
+void at::native::vectorized_elementwise_kernel,0,0,96,11776
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10240
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,139295
+void at::native::elementwise_kernel,-1,0,192,9504
+volta_sgemm_128x64_tn,1,0,192,137759
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,132702
+volta_sgemm_128x64_tn,1,0,144,58080
+void at::native::vectorized_elementwise_kernel,0,0,576,49536
+void at::native::elementwise_kernel,0,0,1152,50784
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51871
+volta_sgemm_128x64_nn,1,0,48,109759
+void at::native::elementwise_kernel,-1,0,192,10848
+void at::native::elementwise_kernel,-1,0,192,9120
+volta_sgemm_128x64_tn,1,0,192,137151
+void at::native::vectorized_elementwise_kernel,0,0,96,11136
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10624
+void at::native::elementwise_kernel,-1,0,768,22271
+volta_sgemm_128x64_tn,1,0,288,497597
+void at::native::vectorized_elementwise_kernel,0,0,384,34399
+void at::native::elementwise_kernel,-1,0,192,9921
+volta_sgemm_128x32_tn,1,0,240,515100
+void at::native::vectorized_elementwise_kernel,0,0,96,11904
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10240
+void at::native::elementwise_kernel,-1,0,192,9183
+volta_sgemm_128x64_tn,1,0,192,136159
+void at::native::elementwise_kernel,-1,0,192,9792
+volta_sgemm_128x64_tn,1,0,192,130655
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,136639
+volta_sgemm_128x64_tn,1,0,144,58048
+void at::native::vectorized_elementwise_kernel,0,0,576,50911
+void at::native::elementwise_kernel,0,0,1152,51200
+void (anonymous namespace)::softmax_warp_forward,0,0,192,50783
+volta_sgemm_128x64_nn,1,0,48,110047
+void at::native::elementwise_kernel,-1,0,192,11552
+void at::native::elementwise_kernel,-1,0,192,9120
+volta_sgemm_128x64_tn,1,0,192,137279
+void at::native::vectorized_elementwise_kernel,0,0,96,12096
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10496
+void at::native::elementwise_kernel,-1,0,768,22880
+volta_sgemm_128x64_tn,1,0,288,496636
+void at::native::vectorized_elementwise_kernel,0,0,384,34976
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x32_tn,1,0,240,511996
+void at::native::vectorized_elementwise_kernel,0,0,96,12128
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10368
+void at::native::elementwise_kernel,-1,0,192,9152
+volta_sgemm_128x64_tn,1,0,192,132030
+void at::native::elementwise_kernel,-1,0,192,9984
+volta_sgemm_128x64_tn,1,0,192,132864
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,128830
+volta_sgemm_128x64_tn,1,0,144,57248
+void at::native::vectorized_elementwise_kernel,0,0,576,49536
+void at::native::elementwise_kernel,0,0,1152,52095
+void (anonymous namespace)::softmax_warp_forward,0,0,192,52096
+volta_sgemm_128x64_nn,1,0,48,110079
+void at::native::elementwise_kernel,-1,0,192,10368
+void at::native::elementwise_kernel,-1,0,192,9024
+volta_sgemm_128x64_tn,1,0,192,133151
+void at::native::vectorized_elementwise_kernel,0,0,96,11488
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10464
+void at::native::elementwise_kernel,-1,0,768,22399
+volta_sgemm_128x64_tn,1,0,288,477277
+void at::native::vectorized_elementwise_kernel,0,0,384,34911
+void at::native::elementwise_kernel,-1,0,192,9856
+volta_sgemm_128x32_tn,1,0,240,511388
+void at::native::vectorized_elementwise_kernel,0,0,96,12352
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10432
+void at::native::elementwise_kernel,-1,0,192,9184
+volta_sgemm_128x64_tn,1,0,192,135967
+void at::native::elementwise_kernel,-1,0,192,9888
+volta_sgemm_128x64_tn,1,0,192,137535
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,133503
+volta_sgemm_128x64_tn,1,0,144,58271
+void at::native::vectorized_elementwise_kernel,0,0,576,49440
+void at::native::elementwise_kernel,0,0,1152,51392
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51103
+volta_sgemm_128x64_nn,1,0,48,109152
+void at::native::elementwise_kernel,-1,0,192,11327
+void at::native::elementwise_kernel,-1,0,192,9120
+volta_sgemm_128x64_tn,1,0,192,137791
+void at::native::vectorized_elementwise_kernel,0,0,96,11712
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10272
+void at::native::elementwise_kernel,-1,0,768,22240
+volta_sgemm_128x64_tn,1,0,288,471741
+void at::native::vectorized_elementwise_kernel,0,0,384,35487
+void at::native::elementwise_kernel,-1,0,192,9536
+volta_sgemm_128x32_tn,1,0,240,512572
+void at::native::vectorized_elementwise_kernel,0,0,96,11904
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10432
+void at::native::elementwise_kernel,-1,0,192,10400
+volta_sgemm_128x64_tn,1,0,192,132575
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x64_tn,1,0,192,138750
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x64_tn,1,0,192,133344
+volta_sgemm_128x64_tn,1,0,144,58943
+void at::native::vectorized_elementwise_kernel,0,0,576,49376
+void at::native::elementwise_kernel,0,0,1152,51167
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51168
+volta_sgemm_128x64_nn,1,0,48,109151
+void at::native::elementwise_kernel,-1,0,192,10432
+void at::native::elementwise_kernel,-1,0,192,9344
+volta_sgemm_128x64_tn,1,0,192,137695
+void at::native::vectorized_elementwise_kernel,0,0,96,11520
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10208
+void at::native::elementwise_kernel,-1,0,768,22368
+volta_sgemm_128x64_tn,1,0,288,474268
+void at::native::vectorized_elementwise_kernel,0,0,384,34880
+void at::native::elementwise_kernel,-1,0,192,9568
+volta_sgemm_128x32_tn,1,0,240,483132
+void at::native::vectorized_elementwise_kernel,0,0,96,11520
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10432
+void at::native::elementwise_kernel,-1,0,192,9280
+volta_sgemm_128x64_tn,1,0,192,134750
+void at::native::elementwise_kernel,-1,0,192,9632
+volta_sgemm_128x64_tn,1,0,192,132096
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,137662
+volta_sgemm_128x64_tn,1,0,144,59616
+void at::native::vectorized_elementwise_kernel,0,0,576,49439
+void at::native::elementwise_kernel,0,0,1152,51136
+void (anonymous namespace)::softmax_warp_forward,0,0,192,50912
+volta_sgemm_128x64_nn,1,0,48,109247
+void at::native::elementwise_kernel,-1,0,192,10624
+void at::native::elementwise_kernel,-1,0,192,9056
+volta_sgemm_128x64_tn,1,0,192,137759
+void at::native::vectorized_elementwise_kernel,0,0,96,11232
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10079
+void at::native::elementwise_kernel,-1,0,768,22304
+volta_sgemm_128x64_tn,1,0,288,502684
+void at::native::vectorized_elementwise_kernel,0,0,384,34560
+void at::native::elementwise_kernel,-1,0,192,9952
+volta_sgemm_128x32_tn,1,0,240,511420
+void at::native::vectorized_elementwise_kernel,0,0,96,11648
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10496
+void at::native::elementwise_kernel,-1,0,192,9152
+volta_sgemm_128x64_tn,1,0,192,138207
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,142143
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x64_tn,1,0,192,129982
+volta_sgemm_128x64_tn,1,0,144,57664
+void at::native::vectorized_elementwise_kernel,0,0,576,49280
+void at::native::elementwise_kernel,0,0,1152,50944
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51583
+volta_sgemm_128x64_nn,1,0,48,109567
+void at::native::elementwise_kernel,-1,0,192,10432
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,130239
+void at::native::vectorized_elementwise_kernel,0,0,96,10848
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10816
+void at::native::elementwise_kernel,-1,0,768,22144
+volta_sgemm_128x64_tn,1,0,288,498556
+void at::native::vectorized_elementwise_kernel,0,0,384,34560
+void at::native::elementwise_kernel,-1,0,192,9920
+volta_sgemm_128x32_tn,1,0,240,513180
+void at::native::vectorized_elementwise_kernel,0,0,96,12768
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10336
+void at::native::elementwise_kernel,-1,0,192,9152
+volta_sgemm_128x64_tn,1,0,192,133407
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,139711
+void at::native::elementwise_kernel,-1,0,192,9568
+volta_sgemm_128x64_tn,1,0,192,138591
+volta_sgemm_128x64_tn,1,0,144,57824
+void at::native::vectorized_elementwise_kernel,0,0,576,49215
+void at::native::elementwise_kernel,0,0,1152,50976
+void (anonymous namespace)::softmax_warp_forward,0,0,192,52095
+volta_sgemm_128x64_nn,1,0,48,109504
+void at::native::elementwise_kernel,-1,0,192,10368
+void at::native::elementwise_kernel,-1,0,192,9216
+volta_sgemm_128x64_tn,1,0,192,137918
+void at::native::vectorized_elementwise_kernel,0,0,96,11872
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,11104
+void at::native::elementwise_kernel,-1,0,768,22336
+volta_sgemm_128x64_tn,1,0,288,475964
+void at::native::vectorized_elementwise_kernel,0,0,384,34976
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x32_tn,1,0,240,513244
+void at::native::vectorized_elementwise_kernel,0,0,96,12128
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10432
+void at::native::elementwise_kernel,-1,0,192,8992
+volta_sgemm_128x64_tn,1,0,192,136127
+void at::native::elementwise_kernel,-1,0,192,9920
+volta_sgemm_128x64_tn,1,0,192,136927
+void at::native::elementwise_kernel,-1,0,192,10176
+volta_sgemm_128x64_tn,1,0,192,137950
+volta_sgemm_128x64_tn,1,0,144,57696
+void at::native::vectorized_elementwise_kernel,0,0,576,49376
+void at::native::elementwise_kernel,0,0,1152,50656
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51327
+volta_sgemm_128x64_nn,1,0,48,109375
+void at::native::elementwise_kernel,-1,0,192,10464
+void at::native::elementwise_kernel,-1,0,192,9376
+volta_sgemm_128x64_tn,1,0,192,137759
+void at::native::vectorized_elementwise_kernel,0,0,96,11680
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10656
+void at::native::elementwise_kernel,-1,0,768,22367
+volta_sgemm_128x64_tn,1,0,288,474589
+void at::native::vectorized_elementwise_kernel,0,0,384,34687
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x32_tn,1,0,240,512861
+void at::native::vectorized_elementwise_kernel,0,0,96,12160
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,11136
+void at::native::elementwise_kernel,-1,0,192,9056
+volta_sgemm_128x64_tn,1,0,192,138302
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,137919
+void at::native::elementwise_kernel,-1,0,192,9728
+volta_sgemm_128x64_tn,1,0,192,132639
+volta_sgemm_128x64_tn,1,0,144,58080
+void at::native::vectorized_elementwise_kernel,0,0,576,49631
+void at::native::elementwise_kernel,0,0,1152,51136
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51647
+volta_sgemm_128x64_nn,1,0,48,109248
+void at::native::elementwise_kernel,-1,0,192,10847
+void at::native::elementwise_kernel,-1,0,192,9376
+volta_sgemm_128x64_tn,1,0,192,132928
+void at::native::vectorized_elementwise_kernel,0,0,96,11584
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10431
+void at::native::elementwise_kernel,-1,0,768,22304
+volta_sgemm_128x64_tn,1,0,288,478173
+void at::native::vectorized_elementwise_kernel,0,0,384,34239
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x32_tn,1,0,240,480605
+void at::native::vectorized_elementwise_kernel,0,0,96,12031
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10784
+void at::native::elementwise_kernel,-1,0,192,9152
+volta_sgemm_128x64_tn,1,0,192,137183
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x64_tn,1,0,192,138975
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x64_tn,1,0,192,136319
+volta_sgemm_128x64_tn,1,0,144,57247
+void at::native::vectorized_elementwise_kernel,0,0,576,49728
+void at::native::elementwise_kernel,0,0,1152,50560
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51775
+volta_sgemm_128x64_nn,1,0,48,109600
+void at::native::elementwise_kernel,-1,0,192,10816
+void at::native::elementwise_kernel,-1,0,192,9151
+volta_sgemm_128x64_tn,1,0,192,138431
+void at::native::vectorized_elementwise_kernel,0,0,96,11424
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10656
+void at::native::elementwise_kernel,-1,0,768,22336
+volta_sgemm_128x64_tn,1,0,288,497180
+void at::native::vectorized_elementwise_kernel,0,0,384,35200
+void at::native::elementwise_kernel,-1,0,192,9824
+volta_sgemm_128x32_tn,1,0,240,512508
+void at::native::vectorized_elementwise_kernel,0,0,96,12032
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10399
+void at::native::elementwise_kernel,-1,0,192,9152
+volta_sgemm_128x64_tn,1,0,192,130208
+void at::native::elementwise_kernel,-1,0,192,9760
+volta_sgemm_128x64_tn,1,0,192,136318
+void at::native::elementwise_kernel,-1,0,192,9664
+volta_sgemm_128x64_tn,1,0,192,137247
+volta_sgemm_128x64_tn,1,0,144,58048
+void at::native::vectorized_elementwise_kernel,0,0,576,49344
+void at::native::elementwise_kernel,0,0,1152,50879
+void (anonymous namespace)::softmax_warp_forward,0,0,192,51712
+volta_sgemm_128x64_nn,1,0,48,109183
+void at::native::elementwise_kernel,-1,0,192,11328
+void at::native::elementwise_kernel,-1,0,192,9056
+volta_sgemm_128x64_tn,1,0,192,137470
+void at::native::vectorized_elementwise_kernel,0,0,96,11648
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,10304
+void at::native::elementwise_kernel,-1,0,768,22432
+volta_sgemm_128x64_tn,1,0,288,493180
+void at::native::vectorized_elementwise_kernel,0,0,384,35232
+void at::native::elementwise_kernel,-1,0,192,9696
+volta_sgemm_128x32_tn,1,0,240,513404
+void at::native::vectorized_elementwise_kernel,0,0,96,12288
+void at::native::(anonymous namespace)::vectorized_layer_norm_kernel,0,0,64,11040
+void at::native::elementwise_kernel,-1,0,192,8672
+void at::native::elementwise_kernel,-1,0,1,4160
+void gemmSN_TN_kernel,0,0,11,17472
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+void at::native::elementwise_kernel,-1,0,1,3648
+volta_sgemm_32x128_tn,1,0,20,12864

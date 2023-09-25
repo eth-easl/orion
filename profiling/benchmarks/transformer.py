@@ -38,7 +38,6 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
 
     data = torch.ones((192, batchsize)).to(torch.int64).cuda()
     target = torch.ones((192, batchsize)).to(torch.int64).cuda()
-    mems = torch.ones((16, 192, batchsize, 512)).to(torch.int64).cuda()
 
     model = MemTransformerLM(**model_config).to(0)
 
@@ -50,10 +49,11 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
 
     torch.cuda.synchronize()
     batch_idx = 0
+    mems = None
 
-    while batch_idx < 100:
+    while batch_idx < 2:
 
-        if batch_idx == 0:
+        if batch_idx == 9:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -63,12 +63,13 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
             with torch.no_grad():
                 output = model(data, target, mems)
         else:
-            loss, output = model(data, target, mems)
+            optimizer.zero_grad()
+            loss, mems = model(data, target, mems)
             loss = loss.float().mean().type_as(loss)
             loss.backward()
             optimizer.step()
 
-        if batch_idx == 0:
+        if batch_idx == 9:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_pop()
             elif profile == 'nsys':
@@ -79,5 +80,4 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
     print("Done!")
 
 if __name__ == "__main__":
-    transformer(8, 0, False, 'nsys')
-
+    transformer(8, 0, False, 'ncu')

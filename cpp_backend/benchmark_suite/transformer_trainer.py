@@ -7,6 +7,7 @@ import lamb
 import numpy as np
 from ctypes import *
 import os
+import json
 
 def seed_everything(seed: int):
     import random, os
@@ -21,8 +22,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.ones((192, self.batchsize), pin_memory=False).to(torch.int64)
-        self.target = torch.ones((192, self.batchsize), pin_memory=False).to(torch.int64)
+        self.data = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
+        self.target = torch.ones((192, self.batchsize), pin_memory=True).to(torch.int64)
 
     def __iter__(self):
         return self
@@ -39,20 +40,28 @@ def check_stop(backend_lib):
     return backend_lib.stop()
 
 
-def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid, input_file=False):
 
     seed_everything(42)
 
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
 
-    if rps > 0:
+    if rps > 0 and not input_file:
         if uniform:
             sleep_times = [1/rps]*num_iters
         else:
             sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    elif input_file:
+        with open('/home/image-varuna/gpu_share_repo/cpp_backend/inter_arrival_times.json') as f:
+            sleep_times = json.load(f)
     else:
         sleep_times = [0] * num_iters
+
+    print(sleep_times)
     barriers[0].wait()
+
+    if (train and tid==1):
+        time.sleep(10)
 
     model_config = {
         'n_token': 267735,
@@ -96,7 +105,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
 
     #  open loop
     next_startup = time.time()
-    open_loop = True
+    open_loop = False
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -106,28 +115,30 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
         timings = []
         while batch_idx < num_iters:
             if train:
-                print(f"Start iter {batch_idx}")
+                #print(f"Client {tid}, start iter {batch_idx}")
                 data, target = batch[0].to(local_rank), batch[1].to(local_rank)
+                #optimizer.zero_grad()
                 loss, mems = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()
                 optimizer.step()
+                block(backend_lib, batch_idx)
                 batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward
                     barriers[0].wait()
-
                 if batch_idx == 10:
                     barriers[0].wait()
+                    print("After sync!!")
                 if check_stop(backend_lib):
-                        print("---- STOP!")
-                        break
+                    print("---- STOP!")
+                    break
             else:
                 with torch.no_grad():
                     cur_time = time.time()
                     #### OPEN LOOP ####
                     if open_loop:
                         if (cur_time >= next_startup):
-                            print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                            #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             if batch_idx==50:
                                 torch.cuda.profiler.cudart().cudaProfilerStart()
                             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -135,7 +146,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                             block(backend_lib, batch_idx)
                             req_time = time.time()-next_startup
                             timings.append(req_time)
-                            print(f"Client {tid} finished! Wait! It took {req_time}")
+                            #print(f"Client {tid} finished! Wait! It took {req_time}")
                             if batch_idx>=10:
                                 next_startup += sleep_times[batch_idx]
                             else:
@@ -149,20 +160,23 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                             dur = next_startup-time.time()
                             if (dur>0):
                                 time.sleep(dur)
+                            if check_stop(backend_lib):
+                                print("---- STOP!")
+                                break
                     else:
                         #### CLOSED LOOP ####
                         print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                         data, target = batch[0].to(local_rank), batch[1].to(local_rank)
                         output, mems = model(data, target, mems)
                         print(f"Client {tid} finished! Wait!")
+                        batch_idx,batch = next(train_iter)
                         if ((batch_idx == 1) or (batch_idx == 10)):
                             barriers[0].wait()
-                        batch_idx,batch = next(train_iter)
 
 
     barriers[0].wait()
 
-    if not train:
+    if tid==1 and not train:
         timings = timings[50:]
         timings = sorted(timings)
         p50 = np.percentile(timings, 50)

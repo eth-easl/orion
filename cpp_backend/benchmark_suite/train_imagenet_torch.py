@@ -14,10 +14,9 @@ import random
 import numpy as np
 import time
 import os
+import psutil
 import argparse
 import threading
-
-from measure_time import measure
 
 def seed_everything(seed: int):
     import random, os
@@ -32,8 +31,8 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=False)
-        self.target = torch.ones([self.batchsize], pin_memory=False, dtype=torch.long)
+        self.data = torch.rand([self.batchsize, 3, 224, 224], pin_memory=True)
+        self.target = torch.ones([self.batchsize], pin_memory=True, dtype=torch.long)
 
     def __iter__(self):
         return self
@@ -61,6 +60,7 @@ class RealDataLoader():
 def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform, dummy_data, local_rank, start_barriers, end_barriers, tid):
 
     seed_everything(42)
+    #os.sched_setaffinity(0, {tid+4})
     start_barriers[0].wait()
 
     if rps > 0:
@@ -124,6 +124,8 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                 # #start_barriers[0].wait()
                 # startiter = time.time()
                 if train:
+                    print("here")
+                    #start_barriers[0].wait()
                     start_iter = time.time()
                     optimizer.zero_grad()
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -131,11 +133,15 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                     loss = criterion(output, gpu_target)
                     loss.backward()
                     optimizer.step()
-                    s.synchronize()
+                    #s.synchronize()
                     print(f"Client {tid}, iter {batch_idx} took {time.time()-start_iter} sec")
                     batch_idx,batch = next(train_iter)
+                    #end_barriers[0].wait()
                     if (batch_idx==10):
                         starttime = time.time()
+                    if batch_idx == 300:
+                        print(f"---------- Client {tid} finished! total time is {time.time()-starttime}")
+
                 else:
                     with torch.no_grad():
                         cur_time = time.time()
@@ -151,6 +157,9 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
                             dur = next_startup-time.time()
                             if dur > 0:
                                 time.sleep(dur)
+                            if (batch_idx==10):
+                                starttime = time.time()
+                                next_startup = time.time()
 
                         ###### CLOSED LOOP #####
                         # print(f"submit!, batch_idx is {batch_idx}")
@@ -182,5 +191,6 @@ def imagenet_loop(model_name, batchsize, train, default, num_iters, rps, uniform
     p95 = np.percentile(timings, 95)
     p99 = np.percentile(timings, 99)
 
-    end_barriers[0].wait()
+    #end_barriers[0].wait()
     print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
+    print(f"Total time is {time.time()-starttime} sec")

@@ -9,12 +9,12 @@ import utils
 from utils.sync_info import *
 from utils.data_manager import DataManager
 from vision.train_imagenet import train_wrapper as vision_train_wrapper, eval_wrapper as vision_eval_wrapper
-from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
-from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
-from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
-from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
+# from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
+# from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
+# from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
+#from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
 from transformer.train_transformer import train_wrapper as transformer_train_wrapper, eval_wrapper as transformer_eval_wrapper
-from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
+#from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
 
 model_to_wrapper = {
     'nasnet': {
@@ -33,18 +33,18 @@ model_to_wrapper = {
         'train': vision_train_wrapper,
         'eval': vision_eval_wrapper,
     },
-    'dcgan': {
-        'train': dcgan_train_wrapper,
-        'eval': None,
-    },
-    'gnmt': {
-        'train': gnmt_train_wrapper,
-        'eval': gnmt_eval_wrapper,
-    },
-    'bert': {
-        'train': bert_train_wrapper,
-        'eval': bert_eval_wrapper,
-    },
+    # 'dcgan': {
+    #     'train': dcgan_train_wrapper,
+    #     'eval': None,
+    # },
+    # 'gnmt': {
+    #     'train': gnmt_train_wrapper,
+    #     'eval': gnmt_eval_wrapper,
+    # },
+    # 'bert': {
+    #     'train': bert_train_wrapper,
+    #     'eval': bert_eval_wrapper,
+    # },
     'transformer': {
         'train': transformer_train_wrapper,
         'eval': transformer_eval_wrapper,
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     if model1_name[-2:] == '-1':
         model1_name = model1_name[:-2]
     model0_wrapper = model_to_wrapper[model0_name][model0_mode]
-    model1_wrapper = model_to_wrapper[model1_name][model1_mode]
+    #model1_wrapper = model_to_wrapper[model1_name][model1_mode]
 
     model0_kwargs = {
         'sync_info': sync_info,
@@ -167,5 +167,5 @@ if __name__ == "__main__":
     # post-processing: sum two durations
     if policy == 'Isolated':
         dict_data = data_manager.read_dict()
-        duration = dict_data['duration0'] + dict_data['duration1']
+        duration = dict_data['duration0'] #+ dict_data['duration1']
         data_manager.write_kv('duration', duration)

@@ -123,11 +123,10 @@ def launch_jobs(config_dict_list, mode, processes):
     torch.cuda.profiler.cudart().cudaProfilerStart()
     start = time.time()
 
-    #for i in range(50):
-    #    start_barriers[0].wait()
-        #start_barriers[1].wait()
-        #end_barriers[0].wait()
-        #end_barriers[1].wait()
+    # print("start")
+    # for i in range(300):
+    #     start_barriers[0].wait()
+    #     end_barriers[0].wait()
     end_barriers[0].wait()
     torch.cuda.synchronize()
     torch.cuda.profiler.cudart().cudaProfilerStop()
@@ -167,7 +166,7 @@ if __name__ == "__main__":
         pass
     config_file = sys.argv[1]
     mode = sys.argv[2] # "sequential" or "streams"
-    processes = False
+    processes = True
     with open(config_file) as f:
         config_dict = json.load(f)
     launch_jobs(config_dict, mode, processes)

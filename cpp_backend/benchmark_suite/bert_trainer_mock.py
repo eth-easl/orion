@@ -3,6 +3,7 @@ import threading
 import time
 import modeling
 import numpy as np
+import json
 
 from optimization import BertAdam
 
@@ -23,11 +24,11 @@ def seed_everything(seed: int):
 class DummyDataLoader():
     def __init__(self, batchsize):
         self.batchsize = batchsize
-        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
-        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
-        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=False).to(torch.int64)
-        self.start_positions = torch.zeros((self.batchsize,), pin_memory=False).to(torch.int64)
-        self.end_positions = torch.ones((self.batchsize,), pin_memory=False).to(torch.int64)
+        self.input_ids = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
+        self.segment_ids = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
+        self.input_mask = torch.ones((self.batchsize, 384), pin_memory=True).to(torch.int64)
+        self.start_positions = torch.zeros((self.batchsize,), pin_memory=True).to(torch.int64)
+        self.end_positions = torch.ones((self.batchsize,), pin_memory=True).to(torch.int64)
 
 
     def __iter__(self):
@@ -45,21 +46,29 @@ def block(backend_lib, it):
 def check_stop(backend_lib):
     return backend_lib.stop()
 
-def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid):
+def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank, barriers, client_barrier, tid, input_file=False):
 
     seed_everything(42)
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
 
-    if rps > 0:
+    if rps > 0 and not input_file:
         if uniform:
             sleep_times = [1/rps]*num_iters
         else:
             sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
+    elif input_file:
+        with open('/home/image-varuna/gpu_share_repo/cpp_backend/inter_arrival_times.json') as f:
+            sleep_times = json.load(f)
     else:
         sleep_times = [0]*num_iters
 
+    print(sleep_times)
     barriers[0].wait()
     
+    if (train and tid==1):
+        time.sleep(5)
+        
+
     if (not train):
         model_config = {
             "attention_probs_dropout_prob": 0.1,
@@ -144,6 +153,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                 loss = (start_loss + end_loss) / 2
                 loss.backward()
                 optimizer.step()
+                block(backend_lib, batch_idx)
                 batch_idx, batch = next(train_iter)
                 if (batch_idx == 1): # for backward
                     barriers[0].wait()
@@ -152,6 +162,8 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                 if check_stop(backend_lib):
                     print("---- STOP!")
                     break
+                if batch_idx==20:
+                    torch.cuda.profiler.cudart().cudaProfilerStart()
             else:
                 with torch.no_grad():
                     cur_time = time.time()
@@ -180,6 +192,10 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                             dur = next_startup-time.time()
                             if (dur>0):
                                 time.sleep(dur)
+                            if check_stop(backend_lib):
+                                print("---- STOP!")
+                                break
+
                     else:
                         ### CLOSED LOOP ###
                         print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
@@ -193,7 +209,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
 
     barriers[0].wait()
 
-    if not train:
+    if tid==1 and not train:
         timings = timings[50:]
         timings = sorted(timings)
         p50 = np.percentile(timings, 50)

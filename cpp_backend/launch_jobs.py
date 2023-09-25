@@ -15,16 +15,12 @@ sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModelin
 from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
 from bert_trainer import bert_loop
-sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
-from benchmark_suite.retinanet_trainer import retinanet_loop
-sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/Recommendation/DLRM")
-#from benchmark_suite.dlrm_trainer import dlrm_loop
 
 #from benchmark_suite.train_imagenet import imagenet_loop
 from benchmark_suite.train_imagenet import imagenet_loop
 from benchmark_suite.conv_trainer import conv_loop
-from benchmark_suite.bnorm_trainer import bnorm_loop
-from benchmark_suite.conv_bn_trainer import conv_bn_loop
+from benchmark_suite.toy_models.bnorm_trainer import bnorm_loop
+from benchmark_suite.toy_models.conv_bn_trainer import conv_bn_loop
 
 from scheduler_frontend import PyScheduler
 
@@ -32,13 +28,11 @@ function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
     "mobilenet_v2": imagenet_loop,
-    "efficientnet": imagenet_loop,
     "conv": conv_loop,
     "bnorm": bnorm_loop,
     "conv_bnorm": conv_bn_loop,
     "bert": bert_loop,
     "transformer": transformer_loop,
-    "retinanet": retinanet_loop,
 }
 
 def seed_everything(seed: int):
@@ -51,7 +45,7 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list, profile, reef_depth, run_eval):
+def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, run_eval):
 
     seed_everything(42)
 
@@ -81,7 +75,7 @@ def launch_jobs(config_dict_list, profile, reef_depth, run_eval):
     additional_model_files = [config_dict['additional_kernel_file'] if 'additional_kernel_file' in config_dict else None for config_dict in config_dict_list]
     num_kernels = [config_dict['num_kernels'] for config_dict in config_dict_list]
     num_iters = [config_dict['num_iters'] for config_dict in config_dict_list]
-
+    train_list = [config_dict['args']['train'] for config_dict in config_dict_list]
     additional_num_kernels = [config_dict['additional_num_kernels'] if 'additional_num_kernels' in config_dict else None  for config_dict in config_dict_list]
     tids = []
     threads = []
@@ -110,8 +104,12 @@ def launch_jobs(config_dict_list, profile, reef_depth, run_eval):
             num_iters,
             profile,
             run_eval,
+            True,
             False,
-            reef_depth
+            reef_depth,
+            hp_limit,
+            update_start,
+            train_list
         )
     )
 
@@ -133,7 +131,9 @@ if __name__ == "__main__":
     # os.sched_setaffinity(0, affinity_mask)
     config_file = sys.argv[1]
     reef_depth = int(sys.argv[2])
+    hp_limit = int(sys.argv[3])
+    update_start = int(sys.argv[4])
     profile = True
     with open(config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict, profile, reef_depth, True)
+    launch_jobs(config_dict, profile, reef_depth, hp_limit, update_start, True)
