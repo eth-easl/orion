@@ -1,6 +1,7 @@
 import pandas as pd
-import sys
 import numpy as np
+import argparse
+
 
 def get_profile(profile_list, main_prof):
     pset = set(profile_list)
@@ -16,8 +17,17 @@ def get_profile(profile_list, main_prof):
         return main_prof
 
 
-df = pd.read_csv(sys.argv[1])
-output_file_name = sys.argv[2]
+parser = argparse.ArgumentParser()
+parser.add_argument('--input_file_name', type=str, required=True,
+                        help='path to the profiling input file')
+parser.add_argument('--output_file_name', type=str, required=True,
+                        help='path to the profiling output file')
+parser.add_argument('--model_type', type=str, required=True,
+                        help='Model type. (vision, bert, transformer) are currently supported')
+args = parser.parse_args()
+
+df = pd.read_csv(args.input_file_name)
+output_file_name = args.output_file_name
 
 # nsys_names = list(df['Name'])
 
@@ -27,41 +37,6 @@ output_file_name = sys.argv[2]
 processed_kernel_names = []
 rem_kernel_names = []
 
-# this is for gnmt, since it is a bit strange
-'''
-idx = 0
-cudnn_list = [11, 14, 16, 19, 25, 37, 40, 44]
-cublas_list = [41]
-
-for i, row in df.iterrows():
-    x = row['Name']
-
-    x = x.replace("<unnamed>", "(anonymous namespace)")
-
-    if ('memset' in x) or ('memcpy' in x):
-        continue
-
-    if ('splitKreduce_kernel' in x) or ('gemv2T_kernel_val' in x):
-        continue
-
-    if ('LSTM' not in x) and ('sgemm' not in x) and ('transpose_readWrite_alignment_kernel') not in x:
-        tokens = x.split('<')
-        processed_kernel_names.append([tokens[0],  row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
-        idx += 1
-
-        if idx in cudnn_list:
-            processed_kernel_names.append(["cudnn_rnn", row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
-        elif idx == 26:
-            print(i)
-            processed_kernel_names.append(["cublas_sgemm", row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
-            processed_kernel_names.append(["cublas_sgemm", row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
-        elif idx==46:
-            processed_kernel_names.append(["cublas_sgemm", row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
-    elif 'sgemm' in x:
-        if idx == 34:
-            processed_kernel_names.append(["cublas_sgemm", row['Profile'], row["Memory_footprint"], row["SM_needed"], row["Duration"]])
-
-'''
 conv_info = []
 l = df.to_dict('records')
 print(len(l))
@@ -139,9 +114,8 @@ while i < num_rows:
         processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
         conv_info=[]
 
-    #Comment for NLP models
-    # elif ('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x):
-    #      processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
+    elif args.model_type == 'vision' and (('volta_sgemm_128x64_nn' in x) or ('volta_sgemm_128x64_nt' in x)):
+          processed_kernel_names.append(['Conv', row['Roofline_prof'], 0, row["SM_needed"], row["Duration(ns)"]])
 
     elif 'volta_gcgemm_32x32_nt' in x:
         if found==0:
@@ -153,37 +127,35 @@ while i < num_rows:
         found = 0
         pass
 
-
-    #transformer
-    # elif 'volta_sgemm_32x128_tn' in x or 'ampere_sgemm_32x128_tn':
-    #     # check next row
-    #     if i < num_rows-1:
-    #         next_row = l[i+1]
-    #         sms = row["SM_needed"]
-    #         duration = row["Duration(ns)"]
-    #         profile = row["Roofline_prof"]
-    #         if 'splitKreduce_kernel' in next_row['Kernel_Name']:
-    #             sms = max(sms, next_row["SM_needed"])
-    #             duration += next_row["Duration(ns)"]
-    #             profile = get_profile([profile, next_row["Roofline_prof"]], profile)
-    #     processed_kernel_names.append([x, profile, 0, sms, duration])
+    elif args.model_type == 'transformer' and ('volta_sgemm_32x128_tn' in x or 'ampere_sgemm_32x128_tn'):
+        # check next row
+        if i < num_rows-1:
+            next_row = l[i+1]
+            sms = row["SM_needed"]
+            duration = row["Duration(ns)"]
+            profile = row["Roofline_prof"]
+            if 'splitKreduce_kernel' in next_row['Kernel_Name']:
+                sms = max(sms, next_row["SM_needed"])
+                duration += next_row["Duration(ns)"]
+                profile = get_profile([profile, next_row["Roofline_prof"]], profile)
+        processed_kernel_names.append([x, profile, 0, sms, duration])
 
 
-    # elif 'volta_gcgemm_32x32_nt' in x:
-    #     # vision
-    #     if found==3:
-    #         print("here!")
-    #         conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
-    #         print(conv_info)
-    #         sms = [x[0] for x in conv_info]
-    #         dur_list = [x[1] for x in conv_info]
-    #         profiles = [x[2] for x in conv_info]
-    #         sms_max = max(sms)
-    #         dur = sum(dur_list)
-    #         profile = get_profile(profiles,  row["Roofline_prof"])
-    #         processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
-    #         conv_info=[]
-    #     found += 1
+    elif args.model_type == 'transformer' and 'volta_gcgemm_32x32_nt' in x:
+        # vision
+        if found==3:
+            print("here!")
+            conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
+            print(conv_info)
+            sms = [x[0] for x in conv_info]
+            dur_list = [x[1] for x in conv_info]
+            profiles = [x[2] for x in conv_info]
+            sms_max = max(sms)
+            dur = sum(dur_list)
+            profile = get_profile(profiles,  row["Roofline_prof"])
+            processed_kernel_names.append(['Conv', profile, 0, sms_max, dur])
+            conv_info=[]
+        found += 1
 
     else:
         tokens = x.split('<')

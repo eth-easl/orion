@@ -1,10 +1,23 @@
 import pandas as pd
-import sys
+import argparse
 
-pwd = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--results_dir', type=str, required=True,
+                        help='path to directory containing the profiling files')
+args = parser.parse_args()
 
-df_raw = pd.read_csv(f'{pwd}/raw_ncu.csv')
-df_basic = pd.read_csv(f'{pwd}/output_ncu_sms.csv', index_col=0)
+df_raw = pd.read_csv(f'{args.results_dir}/raw_ncu.csv')
+
+startp = 0
+df_raw = df_raw.iloc[startp:]
+
+l = list(df_raw.iloc[0])
+print(l)
+df_basic = pd.read_csv(f'{args.results_dir}/output_ncu_sms.csv', index_col=0)
+
+
+dram_throughput = df_basic['DRAM_Throughput(%)']
+comp_throughput = df_basic['Compute(SM)(%)']
 
 fadd = 'smsp__sass_thread_inst_executed_op_fadd_pred_on.sum.per_cycle_elapsed [inst/cycle]'
 fmul = 'smsp__sass_thread_inst_executed_op_fmul_pred_on.sum.per_cycle_elapsed [inst/cycle]'
@@ -25,9 +38,10 @@ for index, row in df_raw.iterrows():
     fma = row[ffma]
     cycles = row[cycles_sec]
     bytes = row[bytes_sec]
-    print(add, mul, fma, cycles, bytes)
+    #print(add, mul, fma, cycles, bytes)
 
-    fma = float(fma.replace("'", ''))
+    if not isinstance(fma, float):
+        fma = float(fma.replace("'", ''))
     add = float(add.replace("'", ''))
     mul = float(mul.replace("'", ''))
 
@@ -37,8 +51,8 @@ for index, row in df_raw.iterrows():
         flops_sec = flops_cycle * cycles
         ai = flops_sec/bytes
         ai_list.append(ai)
-        print(ai)
-        if ai > 14.94:
+        print(index, ai)
+        if ai > 9.72:
             roofline_prof.append(1)
             comp_bound += 1
         else:
@@ -46,13 +60,18 @@ for index, row in df_raw.iterrows():
             mem_bound += 1
     else:
         ai_list.append(0.0)
-        roofline_prof.append(-1)
+        if comp_throughput[index-startp] >= 60.0:
+            roofline_prof.append(1)
+        elif dram_throughput[index-startp] >= 60.0:
+            roofline_prof.append(0)
+        else:
+            roofline_prof.append(-1)
         rest += 1
 
 
 print(df_basic)
 df_basic['AI(flops/bytes)'] = ai_list
 df_basic['Roofline_prof'] = roofline_prof
-df_basic.to_csv(f'{pwd}/output_ncu_sms_roofline.csv')
+df_basic.to_csv(f'{args.results_dir}/output_ncu_sms_roofline.csv')
 
 print(f"comp bound: {comp_bound}, mem bound: {mem_bound}, rest: {rest}, total: {comp_bound+mem_bound+rest}")

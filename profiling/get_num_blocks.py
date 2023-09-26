@@ -1,15 +1,26 @@
 import pandas as pd
 from math import ceil, floor
-import sys
+import argparse
 
-pwd = sys.argv[1]
-df = pd.read_csv(f'{pwd}/output_ncu_processed.csv', index_col=0)
+parser = argparse.ArgumentParser()
+parser.add_argument('--results_dir', type=str, required=True,
+                        help='path to directory containing the profiling files')
+parser.add_argument('--max_threads_sm', type=int, default=2048,
+                        help='maximum number of threads that can be active in an SM')
+parser.add_argument('--max_blocks_sm', type=int, default=80,
+                        help='maximum number of blocks that can be active in an SM')
+parser.add_argument('--max_shmem_sm', type=int, default=65536,
+                        help='maximum amount of shared memory (in bytes) per SM')
+parser.add_argument('--max_regs_sm', type=int, default=65536,
+                        help='maximum number of registers per SM')
+args = parser.parse_args()
 
-# for V100
-max_threads_sm = 2048
-max_blocks_sm = 80
-max_shmem_sm = 65536
-max_regs_sm = 65536
+df = pd.read_csv(f'{args.results_dir}/output_ncu_processed.csv', index_col=0)
+
+max_threads_sm = args.max_threads_sm
+max_blocks_sm = args.max_blocks_sm
+max_shmem_sm = args.max_shmem_sm
+max_regs_sm = args.max_regs_sm
 
 sm_needed = []
 
@@ -42,9 +53,9 @@ for index, row in df.iterrows():
     sm_needed.append(sm_needed_kernel)
 
 
-less = [x for x in  sm_needed if x < 80]
+less = [x for x in  sm_needed if x < 108]
 print(len(less), len(sm_needed))
 
 df['SM_needed'] = sm_needed
 #print(df)
-df.to_csv(f'{pwd}/output_ncu_sms.csv', index=0)
+df.to_csv(f'{args.results_dir}/output_ncu_sms.csv', index=0)
