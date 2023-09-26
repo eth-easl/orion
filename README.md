@@ -31,7 +31,18 @@ The file 'launch_jobs.py' is responsible for spawning the scheduler and the appl
 `python launch_jobs.py <config file> <orion kernel time limit> <hp_limit> <update start>`
 
 ## Project Structure
-TODO
+```
+> tree .
+├── profiling                     # Scripts and instructions for profiling
+│   ├── benchmarks                # Scripts of DNN models for profiling
+│   ├── postprocessing            # Scripts for processing of profile files
+└── src                           # Source code
+│   ├── cuda_capture              # Code to intercept CUDA/CUDNN/CUBLAS calls
+│   └── scheduler                 # Implementation of the scheduling policy
+│   └── scheduler_frontend.py     # Python interface for the Orion scheduler
+└── benchmarking_suite            # Scripts and configuration files for benchmarking
+└── artifact_evaluation           # Scripts and instructions for artifact evaluation
+```
 
 ## Hardware Requirements
 Orion currently supports NVIDIA GPUs.

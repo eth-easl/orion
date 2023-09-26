@@ -1,0 +1,33 @@
+[
+    {
+        "arch": "bert",
+        "kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_8_fb0",
+        "additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_8_fb1",
+        "num_kernels": 4777,
+        "additional_num_kernels": 4777,
+        "num_iters": 100000,
+        "args": {
+            "batchsize": 8,
+            "rps": 0,
+            "uniform": false,
+            "dummy_data": false,
+            "train": true
+        }
+    },
+    {
+		"arch": "mobilenet_v2",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_64_fb0",
+		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_64_fb1",
+		"num_kernels": 574,
+		"additional_num_kernels": 890,
+		"num_iters": 1000,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 64,
+            "rps": 0,
+			"uniform": false,
+			"dummy_data": true,
+			"train": true
+		}
+	}
+]
