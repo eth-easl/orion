@@ -1,5 +1,6 @@
 #include <dlfcn.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <cuda_runtime.h>
 #include <queue>
 #include <string>

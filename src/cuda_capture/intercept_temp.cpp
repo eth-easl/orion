@@ -1,6 +1,5 @@
-'''
-Intercepts and overwrites CUDA calls
-'''
+/* Intercepts and overwrites CUDA calls */
+
 
 #include "intercept_temp.h"
 

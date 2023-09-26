@@ -1,7 +1,4 @@
-
-'''
-Intercepts and overwrites CUDNN calls
-'''
+/* Intercepts and overwrites CUDNN calls */
 
 #include "intercept_temp.h"
 

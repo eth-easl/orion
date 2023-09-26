@@ -1,7 +1,9 @@
-NVCC=g++ #/usr/local/cuda-11.0/bin/nvcc
+CC=g++
+CUDAINCLUDE=/usr/local/cuda-10.2/include/
+CUDALIB=/usr/local/cuda-10.2/lib64
 
 libinttemp.so: utils_interc.cpp intercept_cudnn.cpp intercept_cublas.cpp intercept_temp.cpp
-	$(NVCC) -fPIC -O3 -L/usr/local/cuda-10.2/lib64 -I/usr/local/cuda-10.2/include  -g  -o libinttemp.so --shared utils_interc.cpp intercept_cudnn.cpp intercept_cublas.cpp intercept_temp.cpp -lcudart
+	$(CC) -O3 -fPIC -shared utils_interc.cpp intercept_cudnn.cpp intercept_cublas.cpp intercept_temp.cpp -I$(CUDAINCLUDE) -L$(CUDALIB) -lcudart -lpthread -o libinttemp.so
 
 all:
 	make libinttemp.so

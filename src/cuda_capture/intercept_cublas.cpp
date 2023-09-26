@@ -1,6 +1,4 @@
-'''
-Intercepts and overwrites CUBLAS calls
-'''
+/* Intercepts and overwrites CUBLAS calls */
 
 #include "intercept_temp.h"
 
