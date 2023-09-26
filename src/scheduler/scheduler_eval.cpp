@@ -548,7 +548,7 @@ extern "C" {
 
 		struct passwd *pw = getpwuid(getuid());
 		char *homedir = pw->pw_dir;
-		char* lib_path = "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so";
+		char* lib_path = "/orion/src/cuda_capture/libinttemp.so";
 
 		klib = dlopen(strcat(homedir, lib_path), RTLD_NOW | RTLD_GLOBAL);
 

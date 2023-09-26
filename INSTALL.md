@@ -5,7 +5,9 @@ We have set up a docker image: [A]() with all packages pre-installed. We assume 
 * Start a container with `docker run --gpus=1 -it <A> bash`
 * Download the Orion repo and install:
     * `git clone https://github.com/eth-easl/orion.git`
-    * `cd orion/src/scheduler && make scheduler_eval.so`
+    * `cd orion`
+    * `bash compile.sh`
+    * `pip install -e .`
 
 ### Without Docker image
 
@@ -15,4 +17,6 @@ In order to use Orion without our pre-built image, a user must install:
 * Pytorch (from source)
 * Download the Orion repo and install:
     * `git clone https://github.com/eth-easl/orion.git`
-    * `cd orion/src/scheduler && make scheduler_eval.so`
+    * `cd orion`
+    * `bash compile.sh`
+    * `pip install -e .`

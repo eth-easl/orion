@@ -8,21 +8,17 @@ import sys
 from torchvision import models
 import torch
 
-# sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
-# from benchmark_suite.gnmt_trainer import gnmt_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
 from benchmark_suite.transformer_trainer import transformer_loop
 sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/BERT")
 from bert_trainer import bert_loop
 
-#from benchmark_suite.train_imagenet import imagenet_loop
 from benchmark_suite.train_imagenet import imagenet_loop
-from benchmark_suite.conv_trainer import conv_loop
 from benchmark_suite.toy_models.bnorm_trainer import bnorm_loop
 from benchmark_suite.toy_models.conv_bn_trainer import conv_bn_loop
 
-from scheduler_frontend import PyScheduler
+from src.scheduler_frontend import PyScheduler
 
 function_dict = {
     "resnet50": imagenet_loop,
@@ -62,9 +58,9 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
     client_barrier = threading.Barrier(num_clients)
     home_directory = os.path.expanduser( '~' )
     if run_eval:
-        sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler_eval.so")
+        sched_lib = cdll.LoadLibrary(home_directory + "/orion/src/scheduler/scheduler_eval.so")
     else:
-        sched_lib = cdll.LoadLibrary(home_directory + "/gpu_share_repo/cpp_backend/scheduler/scheduler.so")
+        sched_lib = cdll.LoadLibrary(home_directory + "/orion/src/scheduler/scheduler.so")
     py_scheduler = PyScheduler(sched_lib, num_clients)
 
     print(torch.__version__)
@@ -105,7 +101,7 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
             profile,
             run_eval,
             False,
-            True,
+            False,
             reef_depth,
             hp_limit,
             update_start,

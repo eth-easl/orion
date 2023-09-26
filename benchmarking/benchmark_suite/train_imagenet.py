@@ -72,7 +72,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
     seed_everything(42)
     print(model_name, batchsize, local_rank, barriers, tid)
-    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
+    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/src/cuda_capture/libinttemp.so")
     if rps > 0 and not input_file:
         if uniform:
             sleep_times = [1/rps]*num_iters
@@ -119,7 +119,7 @@ def imagenet_loop(model_name, batchsize, train, num_iters, rps, uniform, dummy_d
 
     #  open loop
     next_startup = time.time()
-    open_loop = True
+    open_loop = False
 
     if True:
         timings=[]
