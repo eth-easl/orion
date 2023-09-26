@@ -1,7 +1,7 @@
 [
 	{
 		"arch": "resnet50",
-		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/resnet50_4_fwd",
+		"kernel_file": "/root/orion/artifact_evaluation/example/resnet50_4_fwd",
         "num_kernels": 175,
         "num_iters": 2000,
 		"args": {
@@ -13,5 +13,4 @@
 			"train": false
 		}
 	}
-
 ]

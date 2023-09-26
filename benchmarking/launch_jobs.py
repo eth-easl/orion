@@ -24,7 +24,6 @@ function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
     "mobilenet_v2": imagenet_loop,
-    "conv": conv_loop,
     "bnorm": bnorm_loop,
     "conv_bnorm": conv_bn_loop,
     "bert": bert_loop,
