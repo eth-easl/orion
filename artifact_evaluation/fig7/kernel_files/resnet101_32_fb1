@@ -1,0 +1,1848 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+void at::native::vectorized_elementwise_kernel,-1,0,2,3103
+void at::native::vectorized_elementwise_kernel,-1,0,1,2816
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,5,2784
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2753
+void at::native::vectorized_elementwise_kernel,-1,0,2,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,2,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,2,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2880
+void at::native::vectorized_elementwise_kernel,-1,0,5,2784
+void at::native::vectorized_elementwise_kernel,-1,0,1,2719
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,2,2912
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,2,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,5,2784
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,2,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,4,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,18,3104
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,8,2880
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,16,3040
+void at::native::vectorized_elementwise_kernel,-1,0,1,3008
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,8,2880
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,18,3136
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2784
+void at::native::vectorized_elementwise_kernel,-1,0,8,2848
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,8,2880
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2719
+void at::native::vectorized_elementwise_kernel,-1,0,18,3136
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,8,2880
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,8,2880
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3008
+void at::native::vectorized_elementwise_kernel,-1,0,18,3104
+void at::native::vectorized_elementwise_kernel,-1,0,1,3072
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,8,2880
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,16,3072
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2944
+void at::native::vectorized_elementwise_kernel,-1,0,72,4512
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3456
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,64,4672
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,32,4320
+void at::native::vectorized_elementwise_kernel,-1,0,1,2912
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,72,5504
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4288
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,72,5120
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,32,4128
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5088
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,32,4320
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4096
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2848
+void at::native::vectorized_elementwise_kernel,-1,0,72,5024
+void at::native::vectorized_elementwise_kernel,-1,0,1,3936
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4320
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,32,4288
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5792
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4320
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3936
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,3808
+void at::native::vectorized_elementwise_kernel,-1,0,72,4960
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4096
+void at::native::vectorized_elementwise_kernel,-1,0,1,2719
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,4352
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5184
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,32,3456
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3968
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2784
+void at::native::vectorized_elementwise_kernel,-1,0,72,4992
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,4320
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,32,3456
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,72,5696
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,3456
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4288
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3775
+void at::native::vectorized_elementwise_kernel,-1,0,72,5408
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,32,4128
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4288
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,72,5088
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,32,3520
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3552
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2848
+void at::native::vectorized_elementwise_kernel,-1,0,72,5088
+void at::native::vectorized_elementwise_kernel,-1,0,1,3936
+void at::native::vectorized_elementwise_kernel,-1,0,1,2784
+void at::native::vectorized_elementwise_kernel,-1,0,32,3936
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,32,3680
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,72,5152
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,3808
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5248
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,4096
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3552
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2816
+void at::native::vectorized_elementwise_kernel,-1,0,72,5216
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3808
+void at::native::vectorized_elementwise_kernel,-1,0,32,4288
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,4128
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5056
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4608
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,72,5600
+void at::native::vectorized_elementwise_kernel,-1,0,1,3104
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4288
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5024
+void at::native::vectorized_elementwise_kernel,-1,0,1,2944
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,4128
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,2784
+void at::native::vectorized_elementwise_kernel,-1,0,32,4095
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,72,5152
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3840
+void at::native::vectorized_elementwise_kernel,-1,0,32,3488
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,32,3456
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,72,5248
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3520
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3456
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2912
+void at::native::vectorized_elementwise_kernel,-1,0,72,5184
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,3936
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4320
+void at::native::vectorized_elementwise_kernel,-1,0,1,2688
+void at::native::vectorized_elementwise_kernel,-1,0,1,4064
+void at::native::vectorized_elementwise_kernel,-1,0,72,5120
+void at::native::vectorized_elementwise_kernel,-1,0,1,2719
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,32,4257
+void at::native::vectorized_elementwise_kernel,-1,0,1,2784
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,64,4832
+void at::native::vectorized_elementwise_kernel,-1,0,1,3808
+void at::native::vectorized_elementwise_kernel,-1,0,1,2944
+void at::native::vectorized_elementwise_kernel,0,0,288,13344
+void at::native::vectorized_elementwise_kernel,-1,0,1,3200
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,128,7360
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,256,11904
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+void at::native::vectorized_elementwise_kernel,-1,0,1,3104
+void at::native::vectorized_elementwise_kernel,-1,0,128,7136
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,0,0,288,13120
+void at::native::vectorized_elementwise_kernel,-1,0,1,3104
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+void at::native::vectorized_elementwise_kernel,-1,0,128,8064
+void at::native::vectorized_elementwise_kernel,-1,0,1,2752
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,128,7168
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,0,0,288,13056
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+void at::native::vectorized_elementwise_kernel,-1,0,1,2976
+void at::native::vectorized_elementwise_kernel,-1,0,128,7136
+void at::native::vectorized_elementwise_kernel,-1,0,1,2720
+void at::native::vectorized_elementwise_kernel,-1,0,1,3743
+void at::native::vectorized_elementwise_kernel,-1,0,250,11712
+void at::native::vectorized_elementwise_kernel,-1,0,1,3200
+Conv,1,0,784,578077
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+BatchNorm,0,0,16,426205
+void at::native::vectorized_elementwise_kernel,0,0,3136,250943
+void at::native::(anonymous namespace)::max_pool_forward_nchw,1,0,3136,224510
+Conv,1,0,196,93183
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,16,111840
+void at::native::vectorized_elementwise_kernel,0,0,784,65247
+Conv,1,0,896,343710
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,16,111839
+void at::native::vectorized_elementwise_kernel,0,0,784,65184
+Conv,1,0,784,290462
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,64,397502
+Conv,1,0,784,290046
+void at::native::vectorized_elementwise_kernel,-1,0,1,3776
+BatchNorm,0,0,64,398205
+void at::native::vectorized_elementwise_kernel,0,0,3136,366206
+void at::native::vectorized_elementwise_kernel,0,0,3136,250463
+Conv,1,0,196,256479
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,16,111743
+void at::native::vectorized_elementwise_kernel,0,0,784,65184
+Conv,1,0,896,337406
+void at::native::vectorized_elementwise_kernel,-1,0,1,3712
+BatchNorm,0,0,16,111679
+void at::native::vectorized_elementwise_kernel,0,0,784,65567
+Conv,1,0,784,291966
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,64,395454
+void at::native::vectorized_elementwise_kernel,0,0,3136,366238
+void at::native::vectorized_elementwise_kernel,0,0,3136,250334
+Conv,1,0,196,240703
+void at::native::vectorized_elementwise_kernel,-1,0,1,3648
+BatchNorm,0,0,16,110943
+void at::native::vectorized_elementwise_kernel,0,0,784,65119
+Conv,1,0,896,335262
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,16,112671
+void at::native::vectorized_elementwise_kernel,0,0,784,65536
+Conv,1,0,784,290558
+void at::native::vectorized_elementwise_kernel,-1,0,1,3648
+BatchNorm,0,0,64,394846
+void at::native::vectorized_elementwise_kernel,0,0,3136,365758
+void at::native::vectorized_elementwise_kernel,0,0,3136,250878
+Conv,1,0,392,465277
+void at::native::vectorized_elementwise_kernel,-1,0,1,3648
+BatchNorm,0,0,32,199167
+void at::native::vectorized_elementwise_kernel,0,0,1568,126687
+Conv,1,0,98,617116
+void at::native::vectorized_elementwise_kernel,-1,0,1,3904
+BatchNorm,0,0,32,53376
+void at::native::vectorized_elementwise_kernel,0,0,392,34143
+Conv,1,0,392,247551
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,128,208639
+Conv,1,0,392,502204
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,128,201983
+void at::native::vectorized_elementwise_kernel,0,0,1568,184671
+void at::native::vectorized_elementwise_kernel,0,0,1568,126943
+Conv,1,0,98,369630
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,32,53408
+void at::native::vectorized_elementwise_kernel,0,0,392,34303
+Conv,1,0,234,148063
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,32,52895
+void at::native::vectorized_elementwise_kernel,0,0,392,34048
+Conv,1,0,392,393246
+void at::native::vectorized_elementwise_kernel,-1,0,1,3872
+BatchNorm,0,0,128,203871
+void at::native::vectorized_elementwise_kernel,0,0,1568,185279
+void at::native::vectorized_elementwise_kernel,0,0,1568,126591
+Conv,1,0,98,370430
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,32,53631
+void at::native::vectorized_elementwise_kernel,0,0,392,34176
+Conv,1,0,234,144480
+void at::native::vectorized_elementwise_kernel,-1,0,1,3712
+BatchNorm,0,0,32,52960
+void at::native::vectorized_elementwise_kernel,0,0,392,34048
+Conv,1,0,392,388669
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,128,205695
+void at::native::vectorized_elementwise_kernel,0,0,1568,185823
+void at::native::vectorized_elementwise_kernel,0,0,1568,126783
+Conv,1,0,98,369533
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,32,52960
+void at::native::vectorized_elementwise_kernel,0,0,392,34432
+Conv,1,0,234,145310
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,32,51968
+void at::native::vectorized_elementwise_kernel,0,0,392,33984
+Conv,1,0,392,386430
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,128,204063
+void at::native::vectorized_elementwise_kernel,0,0,1568,185214
+void at::native::vectorized_elementwise_kernel,0,0,1568,126880
+Conv,1,0,196,546524
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,64,104064
+void at::native::vectorized_elementwise_kernel,0,0,784,64767
+Conv,1,0,49,613916
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,86,26176
+void at::native::vectorized_elementwise_kernel,0,0,196,12224
+Conv,1,0,196,259806
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,342,84256
+Conv,0,0,196,664475
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,82016
+void at::native::vectorized_elementwise_kernel,0,0,784,94464
+void at::native::vectorized_elementwise_kernel,0,0,784,65247
+Conv,1,0,49,272766
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,23008
+void at::native::vectorized_elementwise_kernel,0,0,196,12096
+Conv,1,0,144,188095
+void at::native::vectorized_elementwise_kernel,-1,0,1,4607
+BatchNorm,0,0,86,25632
+void at::native::vectorized_elementwise_kernel,0,0,196,12000
+Conv,1,0,196,347999
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,87807
+void at::native::vectorized_elementwise_kernel,0,0,784,97311
+void at::native::vectorized_elementwise_kernel,0,0,784,65472
+Conv,1,0,49,273086
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,22048
+void at::native::vectorized_elementwise_kernel,0,0,196,11648
+Conv,1,0,144,186431
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,24192
+void at::native::vectorized_elementwise_kernel,0,0,196,12128
+Conv,1,0,196,353757
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,342,85728
+void at::native::vectorized_elementwise_kernel,0,0,784,94015
+void at::native::vectorized_elementwise_kernel,0,0,784,65151
+Conv,1,0,49,273535
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,23264
+void at::native::vectorized_elementwise_kernel,0,0,196,12191
+Conv,1,0,144,184703
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,24352
+void at::native::vectorized_elementwise_kernel,0,0,196,11776
+Conv,1,0,196,347038
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,84991
+void at::native::vectorized_elementwise_kernel,0,0,784,94016
+void at::native::vectorized_elementwise_kernel,0,0,784,65472
+Conv,1,0,49,272990
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,23295
+void at::native::vectorized_elementwise_kernel,0,0,196,12384
+Conv,1,0,144,186527
+void at::native::vectorized_elementwise_kernel,-1,0,1,3616
+BatchNorm,0,0,86,24287
+void at::native::vectorized_elementwise_kernel,0,0,196,12992
+Conv,1,0,196,349663
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,342,82591
+void at::native::vectorized_elementwise_kernel,0,0,784,94527
+void at::native::vectorized_elementwise_kernel,0,0,784,65376
+Conv,1,0,49,272958
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,86,24416
+void at::native::vectorized_elementwise_kernel,0,0,196,13408
+Conv,1,0,144,184351
+void at::native::vectorized_elementwise_kernel,-1,0,1,3712
+BatchNorm,0,0,86,24576
+void at::native::vectorized_elementwise_kernel,0,0,196,12288
+Conv,1,0,196,347901
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,342,84992
+void at::native::vectorized_elementwise_kernel,0,0,784,94272
+void at::native::vectorized_elementwise_kernel,0,0,784,65279
+Conv,1,0,49,285790
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,22752
+void at::native::vectorized_elementwise_kernel,0,0,196,12032
+Conv,1,0,144,184798
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,86,23712
+void at::native::vectorized_elementwise_kernel,0,0,196,12320
+Conv,1,0,196,348030
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,86048
+void at::native::vectorized_elementwise_kernel,0,0,784,94335
+void at::native::vectorized_elementwise_kernel,0,0,784,65632
+Conv,1,0,49,273086
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,23360
+void at::native::vectorized_elementwise_kernel,0,0,196,11552
+Conv,1,0,144,185343
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,26624
+void at::native::vectorized_elementwise_kernel,0,0,196,12288
+Conv,1,0,196,350717
+void at::native::vectorized_elementwise_kernel,-1,0,1,3616
+BatchNorm,0,0,342,83552
+void at::native::vectorized_elementwise_kernel,0,0,784,94527
+void at::native::vectorized_elementwise_kernel,0,0,784,65375
+Conv,1,0,49,273183
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,22848
+void at::native::vectorized_elementwise_kernel,0,0,196,11935
+Conv,1,0,144,185407
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,86,24416
+void at::native::vectorized_elementwise_kernel,0,0,196,12191
+Conv,1,0,196,352543
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,84511
+void at::native::vectorized_elementwise_kernel,0,0,784,94592
+void at::native::vectorized_elementwise_kernel,0,0,784,64895
+Conv,1,0,49,272990
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,23456
+void at::native::vectorized_elementwise_kernel,0,0,196,11648
+Conv,1,0,144,185471
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,24576
+void at::native::vectorized_elementwise_kernel,0,0,196,12320
+Conv,1,0,196,348638
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,83391
+void at::native::vectorized_elementwise_kernel,0,0,784,94431
+void at::native::vectorized_elementwise_kernel,0,0,784,65024
+Conv,1,0,49,272734
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,23392
+void at::native::vectorized_elementwise_kernel,0,0,196,11904
+Conv,1,0,144,184448
+void at::native::vectorized_elementwise_kernel,-1,0,1,3904
+BatchNorm,0,0,86,24000
+void at::native::vectorized_elementwise_kernel,0,0,196,11552
+Conv,1,0,196,350908
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,342,84832
+void at::native::vectorized_elementwise_kernel,0,0,784,94143
+void at::native::vectorized_elementwise_kernel,0,0,784,65280
+Conv,1,0,49,273086
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,86,22656
+void at::native::vectorized_elementwise_kernel,0,0,196,12096
+Conv,1,0,144,184990
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,24128
+void at::native::vectorized_elementwise_kernel,0,0,196,12224
+Conv,1,0,196,348254
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,342,82047
+void at::native::vectorized_elementwise_kernel,0,0,784,93920
+void at::native::vectorized_elementwise_kernel,0,0,784,65120
+Conv,1,0,49,273022
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,23008
+void at::native::vectorized_elementwise_kernel,0,0,196,11904
+Conv,1,0,144,184895
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,23775
+void at::native::vectorized_elementwise_kernel,0,0,196,12256
+Conv,1,0,196,351198
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,84863
+void at::native::vectorized_elementwise_kernel,0,0,784,93920
+void at::native::vectorized_elementwise_kernel,0,0,784,65599
+Conv,1,0,49,273087
+void at::native::vectorized_elementwise_kernel,-1,0,1,3456
+BatchNorm,0,0,86,23520
+void at::native::vectorized_elementwise_kernel,0,0,196,11744
+Conv,1,0,144,184799
+void at::native::vectorized_elementwise_kernel,-1,0,1,4064
+BatchNorm,0,0,86,24160
+void at::native::vectorized_elementwise_kernel,0,0,196,12288
+Conv,1,0,196,351165
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,84319
+void at::native::vectorized_elementwise_kernel,0,0,784,94272
+void at::native::vectorized_elementwise_kernel,0,0,784,65215
+Conv,1,0,49,272799
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,22591
+void at::native::vectorized_elementwise_kernel,0,0,196,12064
+Conv,1,0,144,185279
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,23519
+void at::native::vectorized_elementwise_kernel,0,0,196,12128
+Conv,1,0,196,349823
+void at::native::vectorized_elementwise_kernel,-1,0,1,3808
+BatchNorm,0,0,342,83903
+void at::native::vectorized_elementwise_kernel,0,0,784,93855
+void at::native::vectorized_elementwise_kernel,0,0,784,65664
+Conv,1,0,49,273150
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,22848
+void at::native::vectorized_elementwise_kernel,0,0,196,12224
+Conv,1,0,144,185119
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,24096
+void at::native::vectorized_elementwise_kernel,0,0,196,12288
+Conv,1,0,196,345022
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,342,85375
+void at::native::vectorized_elementwise_kernel,0,0,784,94463
+void at::native::vectorized_elementwise_kernel,0,0,784,65408
+Conv,1,0,49,273630
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,22624
+void at::native::vectorized_elementwise_kernel,0,0,196,11840
+Conv,1,0,144,186527
+void at::native::vectorized_elementwise_kernel,-1,0,1,3680
+BatchNorm,0,0,86,24288
+void at::native::vectorized_elementwise_kernel,0,0,196,12640
+Conv,1,0,196,349821
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,85152
+void at::native::vectorized_elementwise_kernel,0,0,784,94239
+void at::native::vectorized_elementwise_kernel,0,0,784,72800
+Conv,1,0,49,273534
+void at::native::vectorized_elementwise_kernel,-1,0,1,3680
+BatchNorm,0,0,86,23327
+void at::native::vectorized_elementwise_kernel,0,0,196,11744
+Conv,1,0,144,185631
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,25344
+void at::native::vectorized_elementwise_kernel,0,0,196,12223
+Conv,1,0,196,348095
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,342,85183
+void at::native::vectorized_elementwise_kernel,0,0,784,94240
+void at::native::vectorized_elementwise_kernel,0,0,784,65952
+Conv,1,0,49,274045
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,86,23104
+void at::native::vectorized_elementwise_kernel,0,0,196,12033
+Conv,1,0,144,187039
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,24544
+void at::native::vectorized_elementwise_kernel,0,0,196,12608
+Conv,1,0,196,350653
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,83263
+void at::native::vectorized_elementwise_kernel,0,0,784,93984
+void at::native::vectorized_elementwise_kernel,0,0,784,65151
+Conv,1,0,49,272863
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,23199
+void at::native::vectorized_elementwise_kernel,0,0,196,11744
+Conv,1,0,144,185310
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,24224
+void at::native::vectorized_elementwise_kernel,0,0,196,12128
+Conv,1,0,196,346110
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,342,84928
+void at::native::vectorized_elementwise_kernel,0,0,784,94175
+void at::native::vectorized_elementwise_kernel,0,0,784,64960
+Conv,1,0,49,272894
+void at::native::vectorized_elementwise_kernel,-1,0,1,3616
+BatchNorm,0,0,86,24352
+void at::native::vectorized_elementwise_kernel,0,0,196,11968
+Conv,1,0,144,185566
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,86,23872
+void at::native::vectorized_elementwise_kernel,0,0,196,12288
+Conv,1,0,196,352414
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,342,85312
+void at::native::vectorized_elementwise_kernel,0,0,784,94303
+void at::native::vectorized_elementwise_kernel,0,0,784,65248
+Conv,1,0,49,273182
+void at::native::vectorized_elementwise_kernel,-1,0,1,3648
+BatchNorm,0,0,86,23424
+void at::native::vectorized_elementwise_kernel,0,0,196,11904
+Conv,1,0,144,184991
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,86,23680
+void at::native::vectorized_elementwise_kernel,0,0,196,12320
+Conv,1,0,196,348381
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,342,83648
+void at::native::vectorized_elementwise_kernel,0,0,784,93887
+void at::native::vectorized_elementwise_kernel,0,0,784,64895
+Conv,1,0,49,272703
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,86,23904
+void at::native::vectorized_elementwise_kernel,0,0,196,12319
+Conv,1,0,144,187039
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,86,24032
+void at::native::vectorized_elementwise_kernel,0,0,196,12160
+Conv,1,0,196,348767
+void at::native::vectorized_elementwise_kernel,-1,0,1,3584
+BatchNorm,0,0,342,83039
+void at::native::vectorized_elementwise_kernel,0,0,784,93664
+void at::native::vectorized_elementwise_kernel,0,0,784,65503
+Conv,1,0,98,721308
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,171,45920
+void at::native::vectorized_elementwise_kernel,0,0,392,32255
+Conv,1,0,26,815739
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,171,15776
+void at::native::vectorized_elementwise_kernel,-1,0,98,6560
+Conv,1,0,104,394717
+void at::native::vectorized_elementwise_kernel,-1,0,1,3648
+BatchNorm,0,0,683,56864
+Conv,1,0,100,682172
+void at::native::vectorized_elementwise_kernel,-1,0,1,3488
+BatchNorm,0,0,683,57151
+void at::native::vectorized_elementwise_kernel,0,0,392,48672
+void at::native::vectorized_elementwise_kernel,0,0,392,34560
+Conv,1,0,26,370109
+void at::native::vectorized_elementwise_kernel,-1,0,1,4032
+BatchNorm,0,0,171,15265
+void at::native::vectorized_elementwise_kernel,-1,0,98,6208
+Conv,1,0,72,187870
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,171,16352
+void at::native::vectorized_elementwise_kernel,-1,0,98,6208
+Conv,1,0,342,502589
+void at::native::vectorized_elementwise_kernel,-1,0,1,3744
+BatchNorm,0,0,683,56352
+void at::native::vectorized_elementwise_kernel,0,0,392,47775
+void at::native::vectorized_elementwise_kernel,0,0,392,33952
+Conv,1,0,26,360638
+void at::native::vectorized_elementwise_kernel,-1,0,1,3552
+BatchNorm,0,0,171,14464
+void at::native::vectorized_elementwise_kernel,-1,0,98,6303
+Conv,1,0,72,185759
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,171,15968
+void at::native::vectorized_elementwise_kernel,-1,0,98,6176
+Conv,1,0,342,454846
+void at::native::vectorized_elementwise_kernel,-1,0,1,3520
+BatchNorm,0,0,683,56672
+void at::native::vectorized_elementwise_kernel,0,0,392,48159
+void at::native::vectorized_elementwise_kernel,0,0,392,34112
+void at::native::reduce_kernel,0,0,1024,41920
+void at::native::elementwise_kernel,-1,0,8,5888
+volta_sgemm_64x32_sliced1x4_tn,1,0,80,24416
+void (anonymous namespace)::softmax_warp_forward,0,0,2,11936
+void at::native::(anonymous namespace)::nll_loss_forward_reduce_cuda_kernel_2d,0,0,1,6079
+void at::native::vectorized_elementwise_kernel,-1,0,1,3809
+void at::native::vectorized_elementwise_kernel,-1,0,4,2912
+void at::native::(anonymous namespace)::nll_loss_backward_reduce_cuda_kernel_2d,0,0,1,4384
+void (anonymous namespace)::softmax_warp_backward,0,0,2,11744
+volta_sgemm_64x32_sliced1x4_nn,1,0,32,25792
+volta_sgemm_128x32_nt,1,0,128,20671
+void at::native::reduce_kernel,0,0,1,9536
+void at::native::vectorized_elementwise_kernel,0,0,1,3712
+void at::native::vectorized_elementwise_kernel,0,0,250,39072
+void at::native::elementwise_kernel,0,0,784,23168
+void at::native::vectorized_elementwise_kernel,0,0,392,49791
+BatchNorm,0,0,683,72480
+void at::native::vectorized_elementwise_kernel,0,0,1,3552
+void at::native::vectorized_elementwise_kernel,0,0,1,3776
+Conv,1,0,52,368797
+Conv,1,0,512,409598
+void at::native::vectorized_elementwise_kernel,0,0,128,15488
+void at::native::vectorized_elementwise_kernel,0,0,98,15008
+BatchNorm,0,0,171,21376
+void at::native::vectorized_elementwise_kernel,0,0,1,3712
+void at::native::vectorized_elementwise_kernel,0,0,1,3392
+Conv,1,0,72,186847
+Conv,1,0,288,175390
+void at::native::vectorized_elementwise_kernel,0,0,288,37183
+void at::native::vectorized_elementwise_kernel,0,0,98,16128
+BatchNorm,0,0,171,21472
+void at::native::vectorized_elementwise_kernel,0,0,1,8512
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+Conv,1,0,342,521757
+Conv,1,0,512,437022
+void at::native::vectorized_elementwise_kernel,0,0,392,49951
+void at::native::vectorized_elementwise_kernel,0,0,128,21152
+void at::native::vectorized_elementwise_kernel,0,0,392,49312
+BatchNorm,0,0,683,70271
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,52,364381
+Conv,1,0,512,399902
+void at::native::vectorized_elementwise_kernel,0,0,128,15520
+void at::native::vectorized_elementwise_kernel,0,0,98,17248
+BatchNorm,0,0,171,20832
+void at::native::vectorized_elementwise_kernel,0,0,1,4320
+void at::native::vectorized_elementwise_kernel,0,0,1,4800
+Conv,1,0,72,182078
+Conv,1,0,288,175999
+void at::native::vectorized_elementwise_kernel,0,0,288,38176
+void at::native::vectorized_elementwise_kernel,0,0,98,17792
+BatchNorm,0,0,171,22176
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,342,516636
+Conv,1,0,512,433885
+void at::native::vectorized_elementwise_kernel,0,0,392,50624
+void at::native::vectorized_elementwise_kernel,0,0,128,18752
+void at::native::vectorized_elementwise_kernel,0,0,392,50207
+BatchNorm,0,0,683,73312
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,3136,902716
+Conv,1,0,1024,870586
+void at::native::vectorized_elementwise_kernel,0,0,256,35168
+BatchNorm,0,0,683,74176
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+void at::native::vectorized_elementwise_kernel,0,0,1,4319
+Conv,1,0,52,364158
+Conv,1,0,512,406045
+void at::native::vectorized_elementwise_kernel,0,0,128,15232
+void at::native::vectorized_elementwise_kernel,0,0,98,15872
+BatchNorm,0,0,171,23392
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+void at::native::vectorized_elementwise_kernel,0,0,1,5056
+Conv,1,0,1568,828763
+Conv,1,0,1152,664636
+void at::native::vectorized_elementwise_kernel,0,0,288,37248
+void at::native::vectorized_elementwise_kernel,0,0,392,51264
+BatchNorm,0,0,128,89727
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,567612
+Conv,1,0,256,675963
+void at::native::vectorized_elementwise_kernel,0,0,784,94335
+void at::native::vectorized_elementwise_kernel,0,0,64,11008
+void at::native::vectorized_elementwise_kernel,0,0,784,94879
+BatchNorm,0,0,256,179711
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,5056
+Conv,1,0,98,277662
+Conv,1,0,256,361982
+void at::native::vectorized_elementwise_kernel,0,0,32,5184
+void at::native::vectorized_elementwise_kernel,0,0,196,25728
+BatchNorm,0,0,64,46943
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,144,187518
+Conv,1,0,72,184287
+void at::native::vectorized_elementwise_kernel,0,0,72,8320
+void at::native::vectorized_elementwise_kernel,0,0,196,26816
+BatchNorm,0,0,64,46336
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+Conv,1,0,392,443197
+Conv,1,0,256,353726
+void at::native::vectorized_elementwise_kernel,0,0,784,92191
+void at::native::vectorized_elementwise_kernel,0,0,32,7616
+void at::native::vectorized_elementwise_kernel,0,0,784,95328
+BatchNorm,0,0,256,181534
+void at::native::vectorized_elementwise_kernel,0,0,1,4033
+void at::native::vectorized_elementwise_kernel,0,0,1,3776
+Conv,1,0,98,278686
+Conv,1,0,256,355422
+void at::native::vectorized_elementwise_kernel,0,0,32,5728
+void at::native::vectorized_elementwise_kernel,0,0,196,25280
+BatchNorm,0,0,64,46400
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,144,184223
+Conv,1,0,72,183743
+void at::native::vectorized_elementwise_kernel,0,0,72,8480
+void at::native::vectorized_elementwise_kernel,0,0,196,27167
+BatchNorm,0,0,64,44960
+void at::native::vectorized_elementwise_kernel,0,0,1,5120
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,392,452028
+Conv,1,0,256,354366
+void at::native::vectorized_elementwise_kernel,0,0,784,92224
+void at::native::vectorized_elementwise_kernel,0,0,32,7424
+void at::native::vectorized_elementwise_kernel,0,0,784,97407
+BatchNorm,0,0,256,180798
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,4096
+Conv,1,0,98,278366
+Conv,1,0,256,361726
+void at::native::vectorized_elementwise_kernel,0,0,32,5088
+void at::native::vectorized_elementwise_kernel,0,0,196,26208
+BatchNorm,0,0,64,45248
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+Conv,1,0,144,184319
+Conv,1,0,72,182495
+void at::native::vectorized_elementwise_kernel,0,0,72,8800
+void at::native::vectorized_elementwise_kernel,0,0,196,26816
+BatchNorm,0,0,64,45503
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,392,452605
+Conv,1,0,256,355390
+void at::native::vectorized_elementwise_kernel,0,0,784,92384
+void at::native::vectorized_elementwise_kernel,0,0,32,7616
+void at::native::vectorized_elementwise_kernel,0,0,784,94367
+BatchNorm,0,0,256,180447
+void at::native::vectorized_elementwise_kernel,0,0,1,4672
+void at::native::vectorized_elementwise_kernel,0,0,1,4159
+Conv,1,0,98,278271
+Conv,1,0,256,358173
+void at::native::vectorized_elementwise_kernel,0,0,32,5152
+void at::native::vectorized_elementwise_kernel,0,0,196,25088
+BatchNorm,0,0,64,46080
+void at::native::vectorized_elementwise_kernel,0,0,1,4096
+void at::native::vectorized_elementwise_kernel,0,0,1,5152
+Conv,1,0,144,185023
+Conv,1,0,72,182270
+void at::native::vectorized_elementwise_kernel,0,0,72,8512
+void at::native::vectorized_elementwise_kernel,0,0,196,27264
+BatchNorm,0,0,64,45695
+void at::native::vectorized_elementwise_kernel,0,0,1,3904
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+Conv,1,0,392,438431
+Conv,1,0,256,356094
+void at::native::vectorized_elementwise_kernel,0,0,784,92576
+void at::native::vectorized_elementwise_kernel,0,0,32,7456
+void at::native::vectorized_elementwise_kernel,0,0,784,95359
+BatchNorm,0,0,256,178495
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+void at::native::vectorized_elementwise_kernel,0,0,1,5088
+Conv,1,0,98,277374
+Conv,1,0,256,361374
+void at::native::vectorized_elementwise_kernel,0,0,32,5088
+void at::native::vectorized_elementwise_kernel,0,0,196,25376
+BatchNorm,0,0,64,45376
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+Conv,1,0,144,183774
+Conv,1,0,72,182591
+void at::native::vectorized_elementwise_kernel,0,0,72,8608
+void at::native::vectorized_elementwise_kernel,0,0,196,27392
+BatchNorm,0,0,64,45664
+void at::native::vectorized_elementwise_kernel,0,0,1,4127
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,392,436126
+Conv,1,0,256,353694
+void at::native::vectorized_elementwise_kernel,0,0,784,95103
+void at::native::vectorized_elementwise_kernel,0,0,32,7456
+void at::native::vectorized_elementwise_kernel,0,0,784,95199
+BatchNorm,0,0,256,179071
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,98,276830
+Conv,1,0,256,355646
+void at::native::vectorized_elementwise_kernel,0,0,32,5536
+void at::native::vectorized_elementwise_kernel,0,0,196,26400
+BatchNorm,0,0,64,46687
+void at::native::vectorized_elementwise_kernel,0,0,1,3904
+void at::native::vectorized_elementwise_kernel,0,0,1,4288
+Conv,1,0,144,183999
+Conv,1,0,72,183039
+void at::native::vectorized_elementwise_kernel,0,0,72,9408
+void at::native::vectorized_elementwise_kernel,0,0,196,27616
+BatchNorm,0,0,64,45952
+void at::native::vectorized_elementwise_kernel,0,0,1,4896
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,450077
+Conv,1,0,256,353886
+void at::native::vectorized_elementwise_kernel,0,0,784,92383
+void at::native::vectorized_elementwise_kernel,0,0,32,7456
+void at::native::vectorized_elementwise_kernel,0,0,784,96256
+BatchNorm,0,0,256,179774
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+Conv,1,0,98,276990
+Conv,1,0,256,356318
+void at::native::vectorized_elementwise_kernel,0,0,32,5184
+void at::native::vectorized_elementwise_kernel,0,0,196,25184
+BatchNorm,0,0,64,45919
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+Conv,1,0,144,184447
+Conv,1,0,72,182751
+void at::native::vectorized_elementwise_kernel,0,0,72,9184
+void at::native::vectorized_elementwise_kernel,0,0,196,27007
+BatchNorm,0,0,64,45216
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+Conv,1,0,392,450429
+Conv,1,0,256,355454
+void at::native::vectorized_elementwise_kernel,0,0,784,92671
+void at::native::vectorized_elementwise_kernel,0,0,32,7488
+void at::native::vectorized_elementwise_kernel,0,0,784,96831
+BatchNorm,0,0,256,177183
+void at::native::vectorized_elementwise_kernel,0,0,1,4384
+void at::native::vectorized_elementwise_kernel,0,0,1,4352
+Conv,1,0,98,277695
+Conv,1,0,256,359645
+void at::native::vectorized_elementwise_kernel,0,0,32,5120
+void at::native::vectorized_elementwise_kernel,0,0,196,26016
+BatchNorm,0,0,64,45856
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,5408
+Conv,1,0,144,184447
+Conv,1,0,72,182271
+void at::native::vectorized_elementwise_kernel,0,0,72,8832
+void at::native::vectorized_elementwise_kernel,0,0,196,27040
+BatchNorm,0,0,64,45599
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+Conv,1,0,392,434974
+Conv,1,0,256,351902
+void at::native::vectorized_elementwise_kernel,0,0,784,92576
+void at::native::vectorized_elementwise_kernel,0,0,32,7840
+void at::native::vectorized_elementwise_kernel,0,0,784,94496
+BatchNorm,0,0,256,176799
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+void at::native::vectorized_elementwise_kernel,0,0,1,5152
+Conv,1,0,98,278559
+Conv,1,0,256,356542
+void at::native::vectorized_elementwise_kernel,0,0,32,5088
+void at::native::vectorized_elementwise_kernel,0,0,196,26111
+BatchNorm,0,0,64,46432
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+Conv,1,0,144,183807
+Conv,1,0,72,183040
+void at::native::vectorized_elementwise_kernel,0,0,72,8800
+void at::native::vectorized_elementwise_kernel,0,0,196,26848
+BatchNorm,0,0,64,45568
+void at::native::vectorized_elementwise_kernel,0,0,1,3744
+void at::native::vectorized_elementwise_kernel,0,0,1,4288
+Conv,1,0,392,448957
+Conv,1,0,256,355294
+void at::native::vectorized_elementwise_kernel,0,0,784,92799
+void at::native::vectorized_elementwise_kernel,0,0,32,7360
+void at::native::vectorized_elementwise_kernel,0,0,784,95327
+BatchNorm,0,0,256,176159
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+Conv,1,0,98,279710
+Conv,1,0,256,359422
+void at::native::vectorized_elementwise_kernel,0,0,32,5760
+void at::native::vectorized_elementwise_kernel,0,0,196,25856
+BatchNorm,0,0,64,45824
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+Conv,1,0,144,184511
+Conv,1,0,72,184414
+void at::native::vectorized_elementwise_kernel,0,0,72,9441
+void at::native::vectorized_elementwise_kernel,0,0,196,26688
+BatchNorm,0,0,64,45664
+void at::native::vectorized_elementwise_kernel,0,0,1,5504
+void at::native::vectorized_elementwise_kernel,0,0,1,4288
+Conv,1,0,392,431709
+Conv,1,0,256,355582
+void at::native::vectorized_elementwise_kernel,0,0,784,92063
+void at::native::vectorized_elementwise_kernel,0,0,32,7392
+void at::native::vectorized_elementwise_kernel,0,0,784,95103
+BatchNorm,0,0,256,180735
+void at::native::vectorized_elementwise_kernel,0,0,1,4320
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,98,277566
+Conv,1,0,256,360894
+void at::native::vectorized_elementwise_kernel,0,0,32,5088
+void at::native::vectorized_elementwise_kernel,0,0,196,25888
+BatchNorm,0,0,64,45440
+void at::native::vectorized_elementwise_kernel,0,0,1,4480
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+Conv,1,0,144,184190
+Conv,1,0,72,184095
+void at::native::vectorized_elementwise_kernel,0,0,72,8576
+void at::native::vectorized_elementwise_kernel,0,0,196,27584
+BatchNorm,0,0,64,45343
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,4096
+Conv,1,0,392,438813
+Conv,1,0,256,355870
+void at::native::vectorized_elementwise_kernel,0,0,784,92927
+void at::native::vectorized_elementwise_kernel,0,0,32,7520
+void at::native::vectorized_elementwise_kernel,0,0,784,96448
+BatchNorm,0,0,256,178495
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,98,277726
+Conv,1,0,256,362142
+void at::native::vectorized_elementwise_kernel,0,0,32,5216
+void at::native::vectorized_elementwise_kernel,0,0,196,26752
+BatchNorm,0,0,64,45440
+void at::native::vectorized_elementwise_kernel,0,0,1,3776
+void at::native::vectorized_elementwise_kernel,0,0,1,5024
+Conv,1,0,144,185919
+Conv,1,0,72,181855
+void at::native::vectorized_elementwise_kernel,0,0,72,9280
+void at::native::vectorized_elementwise_kernel,0,0,196,27615
+BatchNorm,0,0,64,47328
+void at::native::vectorized_elementwise_kernel,0,0,1,4256
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,434172
+Conv,1,0,256,355358
+void at::native::vectorized_elementwise_kernel,0,0,784,93664
+void at::native::vectorized_elementwise_kernel,0,0,32,7840
+void at::native::vectorized_elementwise_kernel,0,0,784,97343
+BatchNorm,0,0,256,177886
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+void at::native::vectorized_elementwise_kernel,0,0,1,4832
+Conv,1,0,98,277631
+Conv,1,0,256,358014
+void at::native::vectorized_elementwise_kernel,0,0,32,5120
+void at::native::vectorized_elementwise_kernel,0,0,196,27424
+BatchNorm,0,0,64,46336
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+Conv,1,0,144,183583
+Conv,1,0,72,184927
+void at::native::vectorized_elementwise_kernel,0,0,72,8288
+void at::native::vectorized_elementwise_kernel,0,0,196,26847
+BatchNorm,0,0,64,45920
+void at::native::vectorized_elementwise_kernel,0,0,1,4288
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+Conv,1,0,392,453180
+Conv,1,0,256,354910
+void at::native::vectorized_elementwise_kernel,0,0,784,92160
+void at::native::vectorized_elementwise_kernel,0,0,32,7744
+void at::native::vectorized_elementwise_kernel,0,0,784,95007
+BatchNorm,0,0,256,177727
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,98,278111
+Conv,1,0,256,358301
+void at::native::vectorized_elementwise_kernel,0,0,32,5696
+void at::native::vectorized_elementwise_kernel,0,0,196,25536
+BatchNorm,0,0,64,48032
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,144,185183
+Conv,1,0,72,183006
+void at::native::vectorized_elementwise_kernel,0,0,72,9152
+void at::native::vectorized_elementwise_kernel,0,0,196,26976
+BatchNorm,0,0,64,45567
+void at::native::vectorized_elementwise_kernel,0,0,1,5216
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+Conv,1,0,392,431967
+Conv,1,0,256,353597
+void at::native::vectorized_elementwise_kernel,0,0,784,92448
+void at::native::vectorized_elementwise_kernel,0,0,32,7712
+void at::native::vectorized_elementwise_kernel,0,0,784,96415
+BatchNorm,0,0,256,178143
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,4320
+Conv,1,0,98,278046
+Conv,1,0,256,360286
+void at::native::vectorized_elementwise_kernel,0,0,32,5088
+void at::native::vectorized_elementwise_kernel,0,0,196,25823
+BatchNorm,0,0,64,46752
+void at::native::vectorized_elementwise_kernel,0,0,1,4096
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+Conv,1,0,144,186655
+Conv,1,0,72,183199
+void at::native::vectorized_elementwise_kernel,0,0,72,8416
+void at::native::vectorized_elementwise_kernel,0,0,196,26656
+BatchNorm,0,0,64,46592
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,449533
+Conv,1,0,256,357246
+void at::native::vectorized_elementwise_kernel,0,0,784,91967
+void at::native::vectorized_elementwise_kernel,0,0,32,7520
+void at::native::vectorized_elementwise_kernel,0,0,784,94464
+BatchNorm,0,0,256,177438
+void at::native::vectorized_elementwise_kernel,0,0,1,4320
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+Conv,1,0,98,278430
+Conv,1,0,256,356894
+void at::native::vectorized_elementwise_kernel,0,0,32,5152
+void at::native::vectorized_elementwise_kernel,0,0,196,25440
+BatchNorm,0,0,64,44831
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,5088
+Conv,1,0,144,184159
+Conv,1,0,72,183455
+void at::native::vectorized_elementwise_kernel,0,0,72,9120
+void at::native::vectorized_elementwise_kernel,0,0,196,29407
+BatchNorm,0,0,64,46304
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,455741
+Conv,1,0,256,355102
+void at::native::vectorized_elementwise_kernel,0,0,784,92255
+void at::native::vectorized_elementwise_kernel,0,0,32,7552
+void at::native::vectorized_elementwise_kernel,0,0,784,94816
+BatchNorm,0,0,256,178846
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+void at::native::vectorized_elementwise_kernel,0,0,1,5248
+Conv,1,0,98,278014
+Conv,1,0,256,356286
+void at::native::vectorized_elementwise_kernel,0,0,32,5120
+void at::native::vectorized_elementwise_kernel,0,0,196,25792
+BatchNorm,0,0,64,47295
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+void at::native::vectorized_elementwise_kernel,0,0,1,3904
+Conv,1,0,144,184447
+Conv,1,0,72,183167
+void at::native::vectorized_elementwise_kernel,0,0,72,8608
+void at::native::vectorized_elementwise_kernel,0,0,196,27968
+BatchNorm,0,0,64,45439
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+Conv,1,0,392,434430
+Conv,1,0,256,357790
+void at::native::vectorized_elementwise_kernel,0,0,784,92287
+void at::native::vectorized_elementwise_kernel,0,0,32,7968
+void at::native::vectorized_elementwise_kernel,0,0,784,94528
+BatchNorm,0,0,256,178591
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+Conv,1,0,98,277311
+Conv,1,0,256,363453
+void at::native::vectorized_elementwise_kernel,0,0,32,5408
+void at::native::vectorized_elementwise_kernel,0,0,196,26304
+BatchNorm,0,0,64,45568
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+Conv,1,0,144,184351
+Conv,1,0,72,182591
+void at::native::vectorized_elementwise_kernel,0,0,72,8544
+void at::native::vectorized_elementwise_kernel,0,0,196,26624
+BatchNorm,0,0,64,46655
+void at::native::vectorized_elementwise_kernel,0,0,1,5024
+void at::native::vectorized_elementwise_kernel,0,0,1,4288
+Conv,1,0,392,454301
+Conv,1,0,256,357181
+void at::native::vectorized_elementwise_kernel,0,0,784,92224
+void at::native::vectorized_elementwise_kernel,0,0,32,7520
+void at::native::vectorized_elementwise_kernel,0,0,784,94399
+BatchNorm,0,0,256,178175
+void at::native::vectorized_elementwise_kernel,0,0,1,4352
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+Conv,1,0,98,277630
+Conv,1,0,256,357342
+void at::native::vectorized_elementwise_kernel,0,0,32,5120
+void at::native::vectorized_elementwise_kernel,0,0,196,25599
+BatchNorm,0,0,64,45216
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+Conv,1,0,144,184512
+Conv,1,0,72,183454
+void at::native::vectorized_elementwise_kernel,0,0,72,8735
+void at::native::vectorized_elementwise_kernel,0,0,196,26624
+BatchNorm,0,0,64,45696
+void at::native::vectorized_elementwise_kernel,0,0,1,4320
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+Conv,1,0,392,450910
+Conv,1,0,256,353950
+void at::native::vectorized_elementwise_kernel,0,0,784,93023
+void at::native::vectorized_elementwise_kernel,0,0,32,7456
+void at::native::vectorized_elementwise_kernel,0,0,784,94399
+BatchNorm,0,0,256,178847
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+Conv,1,0,98,279614
+Conv,1,0,256,359454
+void at::native::vectorized_elementwise_kernel,0,0,32,5248
+void at::native::vectorized_elementwise_kernel,0,0,196,25696
+BatchNorm,0,0,64,46175
+void at::native::vectorized_elementwise_kernel,0,0,1,4352
+void at::native::vectorized_elementwise_kernel,0,0,1,5184
+Conv,1,0,144,185983
+Conv,1,0,72,183006
+void at::native::vectorized_elementwise_kernel,0,0,72,8640
+void at::native::vectorized_elementwise_kernel,0,0,196,26752
+BatchNorm,0,0,64,46304
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,4096
+Conv,1,0,392,450429
+Conv,1,0,256,355710
+void at::native::vectorized_elementwise_kernel,0,0,784,94271
+void at::native::vectorized_elementwise_kernel,0,0,32,7264
+void at::native::vectorized_elementwise_kernel,0,0,784,94719
+BatchNorm,0,0,256,179359
+void at::native::vectorized_elementwise_kernel,0,0,1,4576
+void at::native::vectorized_elementwise_kernel,0,0,1,5376
+Conv,1,0,98,279454
+Conv,1,0,256,360382
+void at::native::vectorized_elementwise_kernel,0,0,32,5088
+void at::native::vectorized_elementwise_kernel,0,0,196,25312
+BatchNorm,0,0,64,45855
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,144,184062
+Conv,1,0,72,183775
+void at::native::vectorized_elementwise_kernel,0,0,72,9024
+void at::native::vectorized_elementwise_kernel,0,0,196,27329
+BatchNorm,0,0,64,44512
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,451486
+Conv,1,0,256,356958
+void at::native::vectorized_elementwise_kernel,0,0,784,93631
+void at::native::vectorized_elementwise_kernel,0,0,32,7616
+void at::native::vectorized_elementwise_kernel,0,0,784,95199
+BatchNorm,0,0,256,177376
+void at::native::vectorized_elementwise_kernel,0,0,1,3904
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+Conv,1,0,98,276638
+Conv,1,0,256,357630
+void at::native::vectorized_elementwise_kernel,0,0,32,5504
+void at::native::vectorized_elementwise_kernel,0,0,196,37344
+BatchNorm,0,0,64,46560
+void at::native::vectorized_elementwise_kernel,0,0,1,3904
+void at::native::vectorized_elementwise_kernel,0,0,1,4095
+Conv,1,0,144,183711
+Conv,1,0,72,182303
+void at::native::vectorized_elementwise_kernel,0,0,72,8575
+void at::native::vectorized_elementwise_kernel,0,0,196,26752
+BatchNorm,0,0,64,54144
+void at::native::vectorized_elementwise_kernel,0,0,1,5408
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+Conv,1,0,392,435357
+Conv,1,0,256,354942
+void at::native::vectorized_elementwise_kernel,0,0,784,92544
+void at::native::vectorized_elementwise_kernel,0,0,32,7328
+void at::native::vectorized_elementwise_kernel,0,0,784,94496
+BatchNorm,0,0,256,179134
+void at::native::vectorized_elementwise_kernel,0,0,1,3616
+void at::native::vectorized_elementwise_kernel,0,0,1,3873
+Conv,1,0,6272,941561
+Conv,1,0,256,755995
+void at::native::vectorized_elementwise_kernel,0,0,64,7712
+BatchNorm,0,0,256,176415
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+void at::native::vectorized_elementwise_kernel,0,0,1,3904
+Conv,1,0,98,277407
+Conv,1,0,256,358622
+void at::native::vectorized_elementwise_kernel,0,0,32,5120
+void at::native::vectorized_elementwise_kernel,0,0,196,25760
+BatchNorm,0,0,64,45856
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,5152
+Conv,1,0,3136,1039482
+Conv,1,0,504,629884
+void at::native::vectorized_elementwise_kernel,0,0,72,8832
+void at::native::vectorized_elementwise_kernel,0,0,784,96063
+BatchNorm,0,0,64,165247
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+void at::native::vectorized_elementwise_kernel,0,0,1,4064
+Conv,1,0,784,482525
+Conv,1,0,256,622780
+void at::native::vectorized_elementwise_kernel,0,0,1568,182591
+void at::native::vectorized_elementwise_kernel,0,0,16,6015
+void at::native::vectorized_elementwise_kernel,0,0,1568,184960
+BatchNorm,0,0,128,328798
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,4352
+Conv,1,0,196,284190
+Conv,1,0,128,361406
+void at::native::vectorized_elementwise_kernel,0,0,8,4096
+void at::native::vectorized_elementwise_kernel,0,0,392,47232
+BatchNorm,0,0,32,86399
+void at::native::vectorized_elementwise_kernel,0,0,1,4608
+void at::native::vectorized_elementwise_kernel,0,0,1,5408
+Conv,1,0,234,147871
+Conv,1,0,18,164543
+void at::native::vectorized_elementwise_kernel,0,0,18,4736
+void at::native::vectorized_elementwise_kernel,0,0,392,51072
+BatchNorm,0,0,32,89247
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+Conv,1,0,784,535612
+Conv,1,0,171,376318
+void at::native::vectorized_elementwise_kernel,0,0,1568,181502
+void at::native::vectorized_elementwise_kernel,0,0,8,4832
+void at::native::vectorized_elementwise_kernel,0,0,1568,184767
+BatchNorm,0,0,128,330302
+void at::native::vectorized_elementwise_kernel,0,0,1,4096
+void at::native::vectorized_elementwise_kernel,0,0,1,5504
+Conv,1,0,196,285342
+Conv,1,0,128,354814
+void at::native::vectorized_elementwise_kernel,0,0,8,4160
+void at::native::vectorized_elementwise_kernel,0,0,392,46368
+BatchNorm,0,0,32,89055
+void at::native::vectorized_elementwise_kernel,0,0,1,4128
+void at::native::vectorized_elementwise_kernel,0,0,1,4320
+Conv,1,0,234,143296
+Conv,1,0,18,165055
+void at::native::vectorized_elementwise_kernel,0,0,18,4576
+void at::native::vectorized_elementwise_kernel,0,0,392,49344
+BatchNorm,0,0,32,87263
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+void at::native::vectorized_elementwise_kernel,0,0,1,4032
+Conv,1,0,784,531932
+Conv,1,0,171,375678
+void at::native::vectorized_elementwise_kernel,0,0,1568,183167
+void at::native::vectorized_elementwise_kernel,0,0,8,5248
+void at::native::vectorized_elementwise_kernel,0,0,1568,186046
+BatchNorm,0,0,128,332414
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,196,284670
+Conv,1,0,128,352862
+void at::native::vectorized_elementwise_kernel,0,0,8,5344
+void at::native::vectorized_elementwise_kernel,0,0,392,46335
+BatchNorm,0,0,32,86784
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+Conv,1,0,234,153471
+Conv,1,0,18,163775
+void at::native::vectorized_elementwise_kernel,0,0,18,4704
+void at::native::vectorized_elementwise_kernel,0,0,392,49247
+BatchNorm,0,0,32,87264
+void at::native::vectorized_elementwise_kernel,0,0,1,5344
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+Conv,1,0,784,535132
+Conv,1,0,171,376893
+void at::native::vectorized_elementwise_kernel,0,0,1568,182399
+void at::native::vectorized_elementwise_kernel,0,0,8,5344
+void at::native::vectorized_elementwise_kernel,0,0,1568,186783
+BatchNorm,0,0,128,326270
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+Conv,1,0,12544,870843
+Conv,1,0,256,640285
+void at::native::vectorized_elementwise_kernel,0,0,16,4511
+BatchNorm,0,0,128,325406
+void at::native::vectorized_elementwise_kernel,0,0,1,4192
+void at::native::vectorized_elementwise_kernel,0,0,1,3744
+Conv,1,0,196,286558
+Conv,1,0,128,345342
+void at::native::vectorized_elementwise_kernel,0,0,8,4032
+void at::native::vectorized_elementwise_kernel,0,0,392,46656
+BatchNorm,0,0,32,86751
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+Conv,1,0,512,1265335
+Conv,1,0,252,741307
+void at::native::vectorized_elementwise_kernel,0,0,18,4544
+void at::native::vectorized_elementwise_kernel,0,0,1568,182911
+BatchNorm,0,0,32,333054
+void at::native::vectorized_elementwise_kernel,0,0,1,3488
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+Conv,1,0,1568,505725
+Conv,1,0,299,741883
+void at::native::vectorized_elementwise_kernel,0,0,3136,362622
+void at::native::vectorized_elementwise_kernel,0,0,4,4352
+void at::native::vectorized_elementwise_kernel,0,0,3136,365885
+BatchNorm,0,0,64,639549
+void at::native::vectorized_elementwise_kernel,0,0,1,3648
+void at::native::vectorized_elementwise_kernel,0,0,1,3391
+Conv,1,0,392,264894
+Conv,1,0,112,631805
+void at::native::vectorized_elementwise_kernel,0,0,2,3584
+void at::native::vectorized_elementwise_kernel,0,0,784,90655
+BatchNorm,0,0,16,185151
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+Conv,1,0,896,341118
+Conv,1,0,404,773787
+void at::native::vectorized_elementwise_kernel,0,0,5,4352
+void at::native::vectorized_elementwise_kernel,0,0,784,91711
+BatchNorm,0,0,16,187135
+void at::native::vectorized_elementwise_kernel,0,0,1,3552
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+Conv,1,0,1568,315102
+Conv,0,0,180,826619
+void at::native::vectorized_elementwise_kernel,0,0,3136,362429
+void at::native::vectorized_elementwise_kernel,0,0,2,4000
+void at::native::vectorized_elementwise_kernel,0,0,3136,367678
+BatchNorm,0,0,64,634396
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3424
+Conv,1,0,392,267903
+Conv,1,0,112,631291
+void at::native::vectorized_elementwise_kernel,0,0,2,3904
+void at::native::vectorized_elementwise_kernel,0,0,784,90944
+BatchNorm,0,0,16,186367
+void at::native::vectorized_elementwise_kernel,0,0,1,3584
+void at::native::vectorized_elementwise_kernel,0,0,1,3328
+Conv,1,0,896,335645
+Conv,1,0,404,765372
+void at::native::vectorized_elementwise_kernel,0,0,5,3744
+void at::native::vectorized_elementwise_kernel,0,0,784,91167
+BatchNorm,0,0,16,184447
+void at::native::vectorized_elementwise_kernel,0,0,1,3488
+void at::native::vectorized_elementwise_kernel,0,0,1,3936
+Conv,1,0,1568,317182
+Conv,0,0,180,821307
+void at::native::vectorized_elementwise_kernel,0,0,3136,362301
+void at::native::vectorized_elementwise_kernel,0,0,2,4096
+void at::native::vectorized_elementwise_kernel,0,0,3136,366206
+BatchNorm,0,0,64,635484
+void at::native::vectorized_elementwise_kernel,0,0,1,3552
+void at::native::vectorized_elementwise_kernel,0,0,1,3360
+Conv,1,0,392,269566
+Conv,1,0,112,623356
+void at::native::vectorized_elementwise_kernel,0,0,2,3616
+BatchNorm,0,0,64,632668
+void at::native::vectorized_elementwise_kernel,0,0,1,3712
+void at::native::vectorized_elementwise_kernel,0,0,1,4000
+Conv,1,0,392,268063
+Conv,1,0,112,610363
+void at::native::vectorized_elementwise_kernel,0,0,2,3617
+void at::native::vectorized_elementwise_kernel,0,0,784,90687
+BatchNorm,0,0,16,185247
+void at::native::vectorized_elementwise_kernel,0,0,1,3456
+void at::native::vectorized_elementwise_kernel,0,0,1,3648
+Conv,1,0,896,345758
+Conv,1,0,404,764251
+void at::native::vectorized_elementwise_kernel,0,0,5,3904
+void at::native::vectorized_elementwise_kernel,0,0,784,91551
+BatchNorm,0,0,16,185631
+void at::native::vectorized_elementwise_kernel,0,0,1,3456
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+Conv,1,0,392,97343
+Conv,0,0,45,218911
+void at::native::vectorized_elementwise_kernel,0,0,784,91487
+void at::native::vectorized_elementwise_kernel,0,0,1,3680
+void at::native::vectorized_elementwise_kernel,0,0,3136,117152
+void at::native::(anonymous namespace)::max_pool_backward_nchw,0,0,12544,645275
+void at::native::vectorized_elementwise_kernel,0,0,3136,366494
+BatchNorm,0,0,16,714812
+void at::native::vectorized_elementwise_kernel,0,0,1,3488
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+Conv,1,0,480,966938
+void at::native::vectorized_elementwise_kernel,0,0,2,3552
+void at::native::vectorized_elementwise_kernel,0,0,2,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,4256
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,5,3488
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,2,3232
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,2,3264
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,2,3264
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,5,3552
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,2,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,2,3264
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,2976
+void at::native::vectorized_elementwise_kernel,0,0,5,3552
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,2,3520
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,4,3456
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,18,4863
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,8,3777
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,16,4448
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,8,3680
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,18,5088
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,8,4416
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,8,4416
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,18,5376
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,8,4512
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,8,4288
+void at::native::vectorized_elementwise_kernel,0,0,1,3008
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,18,5472
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,8,4448
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,16,5024
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,72,12000
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6752
+void at::native::vectorized_elementwise_kernel,0,0,1,3167
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,64,11072
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,32,7040
+void at::native::vectorized_elementwise_kernel,0,0,1,3040
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,72,12160
+void at::native::vectorized_elementwise_kernel,0,0,1,3968
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,7040
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6912
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,11680
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,32,6912
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,32,6623
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,72,11744
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,32,6752
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3169
+void at::native::vectorized_elementwise_kernel,0,0,32,6912
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3199
+void at::native::vectorized_elementwise_kernel,0,0,72,11552
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,32,6976
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,72,11776
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,32,6944
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,32,7168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,72,11424
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,32,6751
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,12064
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,1,3424
+void at::native::vectorized_elementwise_kernel,0,0,32,7328
+void at::native::vectorized_elementwise_kernel,0,0,1,3328
+void at::native::vectorized_elementwise_kernel,0,0,1,3264
+void at::native::vectorized_elementwise_kernel,0,0,32,6912
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,11616
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,32,6880
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,72,11872
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6752
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,7040
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,72,12096
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,32,6880
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6720
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,72,11680
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,7104
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,12128
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,32,6976
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6623
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,11712
+void at::native::vectorized_elementwise_kernel,0,0,1,4160
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,7136
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,32,6976
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,72,11616
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3776
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,32,6624
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,72,11552
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6848
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3264
+void at::native::vectorized_elementwise_kernel,0,0,32,7008
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,72,12000
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,32,7104
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,7072
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,72,18240
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,32,6912
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,11936
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,32,7296
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,7359
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,11616
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6784
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,32,6816
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,12064
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,1,3840
+void at::native::vectorized_elementwise_kernel,0,0,32,6912
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6560
+void at::native::vectorized_elementwise_kernel,0,0,1,3136
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,72,11616
+void at::native::vectorized_elementwise_kernel,0,0,1,4224
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,32,6848
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,32,6720
+void at::native::vectorized_elementwise_kernel,0,0,1,3200
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,72,11968
+void at::native::vectorized_elementwise_kernel,0,0,1,3296
+void at::native::vectorized_elementwise_kernel,0,0,1,3168
+void at::native::vectorized_elementwise_kernel,0,0,32,6720
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3104
+void at::native::vectorized_elementwise_kernel,0,0,64,11136
+void at::native::vectorized_elementwise_kernel,0,0,1,3072
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,288,36640
+void at::native::vectorized_elementwise_kernel,0,0,1,3551
+void at::native::vectorized_elementwise_kernel,0,0,1,3520
+void at::native::vectorized_elementwise_kernel,0,0,128,18656
+void at::native::vectorized_elementwise_kernel,0,0,1,3232
+void at::native::vectorized_elementwise_kernel,0,0,1,3297
+void at::native::vectorized_elementwise_kernel,0,0,256,33247
+void at::native::vectorized_elementwise_kernel,0,0,1,3776
+void at::native::vectorized_elementwise_kernel,0,0,1,3552
+void at::native::vectorized_elementwise_kernel,0,0,128,18656
+void at::native::vectorized_elementwise_kernel,0,0,1,3392
+void at::native::vectorized_elementwise_kernel,0,0,1,3872
+void at::native::vectorized_elementwise_kernel,0,0,288,36896
+void at::native::vectorized_elementwise_kernel,0,0,1,3616
+void at::native::vectorized_elementwise_kernel,0,0,1,3520
+void at::native::vectorized_elementwise_kernel,0,0,128,18656
+void at::native::vectorized_elementwise_kernel,0,0,1,3680
+void at::native::vectorized_elementwise_kernel,0,0,1,3424
+void at::native::vectorized_elementwise_kernel,0,0,128,19007
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,1,3328
+void at::native::vectorized_elementwise_kernel,0,0,288,37152
+void at::native::vectorized_elementwise_kernel,0,0,1,16448
+void at::native::vectorized_elementwise_kernel,0,0,1,3808
+void at::native::vectorized_elementwise_kernel,0,0,128,18560
+void at::native::vectorized_elementwise_kernel,0,0,1,3360
+void at::native::vectorized_elementwise_kernel,0,0,1,3360
+void at::native::vectorized_elementwise_kernel,0,0,250,32543
+void at::native::vectorized_elementwise_kernel,0,0,1,3744
