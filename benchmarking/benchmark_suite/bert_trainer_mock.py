@@ -59,10 +59,10 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
         sleep_times = [0]*num_iters
 
     barriers[0].wait()
-    
+
     if (train and tid==1):
         time.sleep(5)
-        
+
 
     if (not train):
         model_config = {
@@ -121,7 +121,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
     train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
-    
+
     #  open loop
     timings = []
     next_startup = time.time()
@@ -133,9 +133,9 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
 
         start = time.time()
         start_iter = time.time()
-                                
+
         while batch_idx < num_iters:
-    
+
             if train:
                 print(f"Start iter {batch_idx}")
                 optimizer.zero_grad()
@@ -157,23 +157,19 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                 if check_stop(backend_lib):
                     print("---- STOP!")
                     break
-                if batch_idx==290:
-                    torch.cuda.profiler.cudart().cudaProfilerStart()
             else:
                 with torch.no_grad():
                     cur_time = time.time()
                     #### OPEN LOOP ####
                     if open_loop:
                         if (cur_time >= next_startup):
-                            #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                            if batch_idx==50:
-                                torch.cuda.profiler.cudart().cudaProfilerStart()
+                            print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                             output = model(input_ids, segment_ids, input_mask)
                             block(backend_lib, batch_idx)
                             req_time = time.time()-next_startup
                             timings.append(req_time)
-                            #print(f"Client {tid} finished! Wait! It took {req_time}")
+                            print(f"Client {tid} finished! Wait! It took {req_time}")
                             if batch_idx>=10:
                                 next_startup += sleep_times[batch_idx]
                             else:
@@ -197,12 +193,12 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                         input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                         output = model(input_ids, segment_ids, input_mask)
                         print(f"Client {tid} finished! Wait!")
+                        batch_idx,batch = next(train_iter)
                         if ((batch_idx == 1) or (batch_idx == 10)):
                             barriers[0].wait()
-                        batch_idx,batch = next(train_iter)
 
 
-    torch.cuda.profiler.cudart().cudaProfilerStop()
+
     barriers[0].wait()
 
     if tid==1 and not train:
