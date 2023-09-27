@@ -105,7 +105,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
 
     #  open loop
     next_startup = time.time()
-    open_loop = False
+    open_loop = True
 
     for i in range(1):
         print("Start epoch: ", i)
@@ -129,6 +129,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                 if batch_idx == 10:
                     barriers[0].wait()
                     print("After sync!!")
+                    start = time.time()
                 if check_stop(backend_lib):
                     print("---- STOP!")
                     break
@@ -138,7 +139,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                     #### OPEN LOOP ####
                     if open_loop:
                         if (cur_time >= next_startup):
-                            #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                            print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                             if batch_idx==50:
                                 torch.cuda.profiler.cudart().cudaProfilerStart()
                             data, target = batch[0].to(local_rank), batch[1].to(local_rank)
@@ -146,7 +147,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                             block(backend_lib, batch_idx)
                             req_time = time.time()-next_startup
                             timings.append(req_time)
-                            #print(f"Client {tid} finished! Wait! It took {req_time}")
+                            print(f"Client {tid} finished! Wait! It took {req_time}")
                             if batch_idx>=10:
                                 next_startup += sleep_times[batch_idx]
                             else:
@@ -157,6 +158,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                                     # hp starts after
                                     if (batch_idx==10 and tid==1):
                                         next_startup = time.time()
+                                        start = time.time()
                             dur = next_startup-time.time()
                             if (dur>0):
                                 time.sleep(dur)
@@ -175,12 +177,27 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
 
 
     barriers[0].wait()
+    total_time = time.time() - start
 
     if tid==1 and not train:
-        timings = timings[50:]
-        timings = sorted(timings)
+        print(timings)
         p50 = np.percentile(timings, 50)
         p95 = np.percentile(timings, 95)
         p99 = np.percentile(timings, 99)
         print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
+        data = {
+            'p50_latency': p50,
+            'p95_latency': p95,
+            'p99_latency': p99,
+            'throughput': (batch_idx-10)/total_time
+        }
+        with open('hp.json', 'w') as f:
+            json.dump(data, f)
+    else:
+        data = {
+            'throughput': (batch_idx-10)/total_time
+        }
+        with open('be.json', 'w') as f:
+            json.dump(data, f)
+
     print("Finished! Ready to join!")
