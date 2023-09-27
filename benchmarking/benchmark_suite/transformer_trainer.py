@@ -44,7 +44,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
 
     seed_everything(42)
 
-    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/gpu_share_repo/cpp_backend/cuda_capture/libinttemp.so")
+    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/orion/src/cuda_capture/libinttemp.so")
 
     if rps > 0 and not input_file:
         if uniform:
@@ -117,7 +117,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
             if train:
                 print(f"Client {tid}, start iter {batch_idx}")
                 data, target = batch[0].to(local_rank), batch[1].to(local_rank)
-                optimizer.zero_grad()
+                #optimizer.zero_grad()
                 loss, mems = model(data, target, mems)
                 loss = loss.float().mean().type_as(loss)
                 loss.backward()

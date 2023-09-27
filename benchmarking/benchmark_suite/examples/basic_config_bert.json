@@ -1,18 +1,16 @@
 [
 
 	{
-		"arch": "bert",
-		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_8_fb0",
-		"additional_kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_8_fb1",
-		"num_kernels": 4777,
-		"additional_num_kernels": 4777,
-		"num_iters": 2000,
+        "arch": "bert",
+		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/bert_2_fwd",
+		"num_kernels": 572,
+		"num_iters": 125,
 		"args": {
-			"batchsize": 8,
-			"rps": 0,
-			"uniform": false,
-			"dummy_data": false,
-			"train": true
+			"batchsize": 2,
+			"rps": 8,
+			"uniform": true,
+			"dummy_data": true,
+			"train": false
 		}
-	}
+    }
 ]
