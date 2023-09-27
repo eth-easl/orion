@@ -41,7 +41,7 @@ def seed_everything(seed: int):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, run_eval):
+def launch_jobs(config_dict_list, input_args, run_eval):
 
     seed_everything(42)
 
@@ -53,7 +53,7 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
 
     # init
 
-    num_barriers = num_clients+1 if profile else 2
+    num_barriers = num_clients+1
     barriers = [threading.Barrier(num_barriers) for i in range(num_clients)]
     client_barrier = threading.Barrier(num_clients)
     home_directory = os.path.expanduser( '~' )
@@ -98,13 +98,13 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
             num_kernels,
             additional_num_kernels,
             num_iters,
-            profile,
+            True,
             run_eval,
-            False,
-            False,
-            reef_depth,
-            hp_limit,
-            update_start,
+            input_args.algo=='reef',
+            input_args.algo=='sequential',
+            input_args.reef_depth if input_args.algo=='reef' else input_args.orion_max_be_duration,
+            input_args.orion_hp_limit,
+            input_args.orion_start_update,
             train_list
         )
     )
@@ -122,14 +122,27 @@ def launch_jobs(config_dict_list, profile, reef_depth, hp_limit, update_start, r
     print("--------- all threads joined!")
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--algo', type=str, required=True,
+                        help='choose one of orion | reef | sequential')
+    parser.add_argument('--config_file', type=str, required=True,
+                        help='path to the experiment configuration file')
+    parser.add_argument('--reef_depth', type=int, default=1,
+                        help='If reef is used, this stands for the queue depth')
+    parser.add_argument('--orion_max_be_duration', type=int, default=1,
+                        help='If orion is used, the maximum aggregate duration of on-the-fly best-effort kernels')
+    parser.add_argument('--orion_start_update', type=int, default=1,
+                        help='If orion is used, and the high priority job is training, this is the kernel id after which the update phase starts')
+    parser.add_argument('--orion_hp_limit', type=int, default=1,
+                        help='If orion is used, and the high priority job is training, this shows the maximum tolerated training iteration time')
+
+    args = parser.parse_args()
+
     torch.cuda.set_device(0)
     # affinity_mask = {0,1,2,3}
     # os.sched_setaffinity(0, affinity_mask)
-    config_file = sys.argv[1]
-    reef_depth = int(sys.argv[2])
-    hp_limit = int(sys.argv[3])
-    update_start = int(sys.argv[4])
     profile = True
-    with open(config_file) as f:
+    with open(args.config_file) as f:
         config_dict = json.load(f)
-    launch_jobs(config_dict, profile, reef_depth, hp_limit, update_start, True)
+    launch_jobs(config_dict, args, True)

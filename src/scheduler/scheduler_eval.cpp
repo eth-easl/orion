@@ -140,7 +140,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 			if (frecords[i] != NULL)
 				penalty += 1;
 		}
-		if (penalty>=12) {
+		if (penalty>=depth) {
 			// schedule all
 			for (int i=0; i<hp_client; i++) {
 				if (frecords[i] != NULL) {

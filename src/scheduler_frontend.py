@@ -34,6 +34,8 @@ class PyScheduler:
         train
     ):
 
+        print(f"REEF IS {reef}, SEQUENTIAL IS {sequential}")
+
         model_names_ctypes = [x.encode('utf-8') for x in model_names]
         lib_names = [x.encode('utf-8') for x in kernel_files]
 
