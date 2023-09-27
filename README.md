@@ -24,7 +24,7 @@ Orion expects that each submitted job has a file where all of its operations, al
 
 Follow the instructions on [INSTALL](INSTALL.md), to install Orion and its dependencies, or launch a Docker container with Orion preinstalled.
 
-See [PROFILING](PROFILING.md) to generate profiling files for each workload.
+See [PROFILE](PROFILE.md) to generate profiling files for each workload.
 Create a json file containing all the info for the workloads that are about to share the GPU. See examples under 'eval'.
 
 The file 'launch_jobs.py' is responsible for spawning the scheduler and the application thread(s).
