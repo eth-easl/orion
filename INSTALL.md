@@ -1,6 +1,6 @@
 ### Use Docker image
 
-We have set up a docker image: [A]() with all packages pre-installed. We assume NVIDIA drivers are installed in the source machine, and that docker containers can use the host machine's GPUs.
+We have set up a docker image: [fotstrt/orion-ae](https://hub.docker.com/repository/docker/fotstrt/orion-ae/general) with all packages pre-installed. We assume NVIDIA drivers are installed in the source machine, and that docker containers can use the host machine's GPUs.
 
 * Start a container with `docker run --gpus=1 -it fotstrt/orion-ae:v1 bash`
 * Download the Orion repo and install:
@@ -8,6 +8,10 @@ We have set up a docker image: [A]() with all packages pre-installed. We assume 
     * `cd orion`
     * `bash compile.sh`
     * `pip install -e .`
+
+
+### Build Docker image
+TODO
 
 ### Without Docker image
 

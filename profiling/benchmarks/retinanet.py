@@ -3,7 +3,7 @@ import threading
 import time
 import sys
 
-sys.path.append("/home/image-varuna/mlcommons/single_stage_detector/ssd")
+sys.path.append(f"{os.path.expanduser( '~' )}/mlcommons/single_stage_detector/ssd")
 from model.retinanet import retinanet_from_backbone
 
 def retinanet(batchsize, local_rank, do_eval=True, profile=None):
