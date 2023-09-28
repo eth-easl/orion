@@ -1,0 +1,17 @@
+[
+    {
+		"arch": "resnet101",
+		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/resnet101_4_fwd",
+        "num_kernels": 345,
+        "num_iters": 6240,
+		"args": {
+			"model_name": "resnet101",
+			"batchsize": 4,
+            "rps": 0,
+			"uniform": false,
+            "input_file": "/home/image-varuna/orion/artifact_evaluation/fig10/inter_arrival_times.json",
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

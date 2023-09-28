@@ -80,24 +80,27 @@ def imagenet_loop(
     barriers,
     client_barrier,
     tid,
-    input_file=False
+    input_file=''
 ):
 
     seed_everything(42)
     print(model_name, batchsize, local_rank, barriers, tid)
     backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/orion/src/cuda_capture/libinttemp.so")
-    if rps > 0 and not input_file:
+    if rps > 0 and input_file=='':
         if uniform:
             sleep_times = [1/rps]*num_iters
         else:
             sleep_times = np.random.exponential(scale=1/rps, size=num_iters)
-    elif input_file:
-        with open('/home/image-varuna/gpu_share_repo/cpp_backend/inter_arrival_times.json') as f:
+    elif input_file != '':
+        with open(input_file) as f:
                 sleep_times = json.load(f)
+                num_iters = len(sleep_times)
     else:
         sleep_times = [0]*num_iters
 
-    print(f"size is {len(sleep_times)}")
+
+    print(f"SIZE is {len(sleep_times)}")
+    print(sleep_times)
 
     barriers[0].wait()
 
