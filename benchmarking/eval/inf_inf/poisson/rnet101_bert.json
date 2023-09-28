@@ -1,0 +1,29 @@
+[
+    {
+		"arch": "resnet101",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/resnet101_4_fwd",
+		"num_kernels": 345,
+		"num_iters": 120000,
+		"args": {
+			"model_name": "resnet101",
+			"batchsize": 4,
+            "rps": 25,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	},
+    {
+        "arch": "bert",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/bert_2_fwd",
+		"num_kernels": 572,
+		"num_iters": 1200,
+		"args": {
+			"batchsize": 2,
+			"rps": 5,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+    }
+]

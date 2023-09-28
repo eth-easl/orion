@@ -2,8 +2,8 @@ import logging
 import pickle
 import time
 
-from apex import amp
-from apex.optimizers import FusedAdam
+# from apex import amp
+# from apex.optimizers import FusedAdam
 import torch
 from torch.utils.data import DataLoader, RandomSampler, TensorDataset
 import random
@@ -275,7 +275,9 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
-    sync_info.write_kv(f'duration{tid}', duration)
-    sync_info.write_kv(f'iterations{tid}', batch_idx + 1)
+    sync_info.write_kv(f'duration-{tid}', duration)
+    sync_info.write_kv(f'iterations-{tid}', batch_idx + 1)
+    sync_info.write_kv(f'throughput-{tid}', (batch_idx-warm_up_iters)/duration)
+
     logging.info(f'tid {tid} it takes {duration} seconds to train bert')
     return duration

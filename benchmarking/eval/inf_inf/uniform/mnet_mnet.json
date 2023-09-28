@@ -1,0 +1,30 @@
+[
+    {
+		"arch": "mobilenet_v2",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_4_fwd",
+		"num_kernels": 152,
+		"num_iters": 1000,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 4,
+            "rps": 100,
+			"uniform": true,
+			"dummy_data": true,
+			"train": false
+		}
+	},
+    {
+		"arch": "mobilenet_v2",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/mobilenetv2_4_fwd",
+		"num_kernels": 152,
+		"num_iters": 1000,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 4,
+            "rps": 100,
+			"uniform": true,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

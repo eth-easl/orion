@@ -22,8 +22,8 @@ from torch.optim import Optimizer
 from torch.optim.optimizer import required
 from torch.nn.utils import clip_grad_norm_
 #from fused_adam_local import FusedAdam
-from apex.optimizers import FusedAdam
-from apex.multi_tensor_apply import multi_tensor_applier
+#from apex.optimizers import FusedAdam
+#from apex.multi_tensor_apply import multi_tensor_applier
 # TODO: uncomment those to enable fp16
 # import amp_C
 #
@@ -47,7 +47,7 @@ def warmup_linear(x, warmup=0.002):
     if x < warmup:
         return x/warmup
     return max((x - 1. )/ (warmup - 1.), 0.)
-    
+
 def warmup_poly(x, warmup=0.002, degree=0.5):
     if x < warmup:
         return x/warmup
@@ -119,7 +119,7 @@ class BertAdam(Optimizer):
         loss = None
         if closure is not None:
             loss = closure()
-                       
+
         for group in self.param_groups:
             for p in group['params']:
                 if p.grad is None:
@@ -144,7 +144,7 @@ class BertAdam(Optimizer):
                 # Add grad clipping
                 if group['max_grad_norm'] > 0:
                     clip_grad_norm_(p, group['max_grad_norm'], error_if_nonfinite=False)
-                    
+
                 # Decay the first and second moment running average coefficient
                 # In-place operations to update the averages at the same time
                 next_m.mul_(beta1).add_(1 - beta1, grad)

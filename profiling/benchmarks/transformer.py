@@ -51,9 +51,10 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
     batch_idx = 0
     mems = None
 
-    while batch_idx < 2:
+    while batch_idx < 10:
 
-        if batch_idx == 9:
+        start_iter = time.time()
+        if batch_idx == 0:
             if profile == 'ncu':
                 torch.cuda.nvtx.range_push("start")
             elif profile == 'nsys':
@@ -76,8 +77,9 @@ def transformer(batchsize, local_rank, do_eval=True, profile=None):
                 torch.cuda.profiler.cudart().cudaProfilerStop()
 
         batch_idx += 1
+        print(f"It took {time.time()-start_iter} sec")
 
     print("Done!")
 
 if __name__ == "__main__":
-    transformer(8, 0, False, 'ncu')
+    transformer(4, 0, True, 'ncu')

@@ -1,0 +1,18 @@
+[
+
+	{
+		"arch": "transformer",
+		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/transformer_xl_8_fb0",
+		"additional_kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/transformer_xl_8_fb1",
+		"num_kernels": 4396,
+		"additional_num_kernels": 4354,
+		"num_iters": 100,
+		"args": {
+			"batchsize": 8,
+			"rps": 0,
+			"dummy_data": true,
+			"uniform": false,
+			"train": true
+		}
+	}
+]

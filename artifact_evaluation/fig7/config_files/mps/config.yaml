@@ -1,0 +1,54 @@
+---
+policy: "MPS" # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
+models:
+  model0:
+    mode: eval # train or eval
+    name: bert # these two names should strictly correspond to the model names below
+  model1:
+    mode: eval # train or eval
+    name: mobilenet_v2
+shared_config:
+  distribution: poisson # poisson, uniform, or trace
+  trace_path: './inter_arrival_times.json' # only used when distribution is trace
+  pin_memory: true
+  seed: 42
+
+# configuration for each model
+resnet50:
+  arch: resnet50
+  batch_size: 4
+  num_iterations: 10000
+  request_rate: 15 # measured in 1/seconds. If 0 it means no sleep
+resnet101:
+  arch: resnet101
+  batch_size: 32
+  num_iterations: 10000
+  request_rate: 0 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2:
+  arch: mobilenet_v2
+  batch_size: 4
+  num_iterations: 10000
+  request_rate: 40 # measured in 1/seconds. If 0 it means no sleep
+bert:
+  batch_size: 8
+  arch: base # either base or large
+  num_iterations: 10000
+  request_rate: 0 # measured in 1/seconds. If 0 it means no sleep
+#  large_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-24_H-1024_A-16'
+#  base_model_dir: '/mnt/disks/disk-imagenet-gpu-share/home/fot/bert/download/google_pretrained_weights/uncased_L-12_H-768_A-12'
+transformer:
+  arch: base # either base or large
+  batch_size: 8
+  num_iterations: 10000
+  request_rate: 0 # measured in 1/seconds. If 0 it means no sleep
+
+resnet50-1:
+  arch: resnet50
+  batch_size: 32
+  num_iterations: 10000
+  request_rate: 80 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2-1:
+  arch: mobilenet_v2
+  batch_size: 64
+  num_iterations: 10000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep

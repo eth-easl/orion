@@ -84,16 +84,16 @@ class TickTockSyncInfo(BasicSyncInfo):
 
 
 class ConcurrentSyncInfo(BasicSyncInfo):
-    def __init__(self, data_manager: DataManager, isolation_level):
+    def __init__(self, data_manager: DataManager, num_clients, isolation_level):
         super().__init__(data_manager, no_sync_control=True)
         self.isolation_level = isolation_level
         assert isolation_level in ['thread', 'process']
         if isolation_level == 'thread':
-            self.barrier = threading.Barrier(2)
+            self.barrier = threading.Barrier(num_clients)
             self.lock = threading.Lock()
             self.stop_signal = threading.Event()
         else:
-            self.barrier = multiprocessing.Barrier(2)
+            self.barrier = multiprocessing.Barrier(num_clients)
             self.lock = multiprocessing.Lock()
             self.stop_signal = multiprocessing.Event()
         self.start_time = None
@@ -124,5 +124,3 @@ class ConcurrentSyncInfo(BasicSyncInfo):
             return super().should_continue_loop(tid, current_iteration, total_iterations)
         else:
             return not self.stop_signal.is_set()
-
-

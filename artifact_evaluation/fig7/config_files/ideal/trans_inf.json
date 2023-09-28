@@ -1,0 +1,15 @@
+[
+    {
+		"arch": "transformer",
+		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/transformer_xl_4_fwd",
+		"num_kernels": 459,
+		"num_iters": 100,
+		"args": {
+			"batchsize": 4,
+            "rps": 8,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

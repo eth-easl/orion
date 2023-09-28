@@ -9,18 +9,10 @@ import utils
 from utils.sync_info import *
 from utils.data_manager import DataManager
 from vision.train_imagenet import train_wrapper as vision_train_wrapper, eval_wrapper as vision_eval_wrapper
-# from nasnet.train_nasnet import train_wrapper as nasnet_train_wrapper
-# from dcgan.train_dcgan import train_wrapper as dcgan_train_wrapper
-# from gnmt.train_gnmt import train_wrapper as gnmt_train_wrapper, eval_wrapper as gnmt_eval_wrapper
-#from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
+from bert.train_bert_on_squad import train_wrapper as bert_train_wrapper, eval_wrapper as bert_eval_wrapper
 from transformer.train_transformer import train_wrapper as transformer_train_wrapper, eval_wrapper as transformer_eval_wrapper
-#from retinanet.train_retinanet import train_wrapper as retinanet_train_wrapper
 
 model_to_wrapper = {
-    'nasnet': {
-        'train': nasnet_train_wrapper,
-        'eval': None,
-    },
     'resnet50': {
         'train': vision_train_wrapper,
         'eval': vision_eval_wrapper,
@@ -33,25 +25,13 @@ model_to_wrapper = {
         'train': vision_train_wrapper,
         'eval': vision_eval_wrapper,
     },
-    # 'dcgan': {
-    #     'train': dcgan_train_wrapper,
-    #     'eval': None,
-    # },
-    # 'gnmt': {
-    #     'train': gnmt_train_wrapper,
-    #     'eval': gnmt_eval_wrapper,
-    # },
-    # 'bert': {
-    #     'train': bert_train_wrapper,
-    #     'eval': bert_eval_wrapper,
-    # },
+    'bert': {
+        'train': bert_train_wrapper,
+        'eval': bert_eval_wrapper,
+    },
     'transformer': {
         'train': transformer_train_wrapper,
         'eval': transformer_eval_wrapper,
-    },
-    'retinanet': {
-        'train': retinanet_train_wrapper,
-        'eval': None
     }
 }
 
@@ -66,17 +46,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with open(args.config, 'r') as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
-    model0_name = config['model0']['name']
-    model1_name = config['model1']['name']
-    model0_mode = config['model0']['mode']
-    model1_mode = config['model1']['mode']
-    model0_config = config[model0_name]
-    model1_config = config[model1_name]
+    models = config['models']
+    model_names = []
+    model_modes = []
+    model_configs = []
+
+    print(models)
+
+    model_names = [model_dict['name'] for _,model_dict in models.items()]
+    model_modes = [model_dict['mode'] for _,model_dict in models.items()]
+    model_configs = [config[mname] for mname in model_names]
+
+    print(model_names, model_modes, model_configs)
+    num_clients = len(models)
+    print(f"num_clients is {num_clients}")
 
     policy = config['policy']
+    if policy=="TickTock" and num_clients != 2:
+        raise ValueError("Tick-Tock scheduling policy requires exactly 2 clients!")
 
     if args.log is None:
-        args.log = f'{model0_mode}-{model0_name}-{model1_mode}-{model1_name}-{policy}.log'
+        args.log = ""
+        for mmode,mname in zip(model_modes, model_names):
+            args.log += f"{mmode}-{mname}"
+        args.log += ".log"
 
     logging.basicConfig(
         level=logging.INFO,
@@ -89,7 +82,7 @@ if __name__ == "__main__":
         ]
     )
 
-    logging.info(f'{model0_mode} {model0_name} and {model1_mode} {model1_name} using {policy}')
+
     shared_config = config['shared_config']
 
     logging.info(f'full config:\n{utils.dict2pretty_str(config)}')
@@ -98,6 +91,7 @@ if __name__ == "__main__":
     if policy == 'MPS':
         sync_info = ConcurrentSyncInfo(
             data_manager=data_manager,
+            num_clients=num_clients,
             isolation_level='process'
         )
     elif policy == 'TickTock':
@@ -107,6 +101,7 @@ if __name__ == "__main__":
     elif policy == 'Streams':
         sync_info = ConcurrentSyncInfo(
             data_manager=data_manager,
+            num_clients=num_clients,
             isolation_level='thread'
         )
     elif policy == 'Isolated':
@@ -114,53 +109,46 @@ if __name__ == "__main__":
     elif policy == 'Sequential':
         sync_info = ConcurrentSyncInfo(
             data_manager=data_manager,
+            num_clients=num_clients,
             isolation_level='thread'
         )
         shared_config['default'] = True
     else:
         raise NotImplementedError(f"unsupported policy {policy}")
 
+    for i in range(num_clients):
+        if model_names[i][-2:] == '-1':
+             model_names[i] =  model_names[i][:-2]
 
-
-    if model0_name[-2:] == '-1':
-        model0_name = model0_name[:-2]
-    if model1_name[-2:] == '-1':
-        model1_name = model1_name[:-2]
-    model0_wrapper = model_to_wrapper[model0_name][model0_mode]
-    #model1_wrapper = model_to_wrapper[model1_name][model1_mode]
-
-    model0_kwargs = {
-        'sync_info': sync_info,
-        'tid': 0,
-        'model_config': model0_config,
-        'shared_config': shared_config
-    }
-    model1_kwargs = {
-        'sync_info': sync_info,
-        'tid': 1,
-        'model_config': model1_config,
-        'shared_config': shared_config
-    }
+    model_wrappers = [model_to_wrapper[mname][mmode] for mname,mmode in zip(model_names, model_modes)]
+    model_kwargs = []
+    for i,mconfig in enumerate(model_configs):
+        model_kwargs.append(
+            {
+                'sync_info': sync_info,
+                'tid': i,
+                'model_config': mconfig,
+                'shared_config': shared_config
+            }
+        )
 
     if policy == "MPS":
-        process0 = multiprocessing.Process(target=model0_wrapper, kwargs=model0_kwargs)
-        process1 = multiprocessing.Process(target=model1_wrapper, kwargs=model1_kwargs)
-        process0.start()
-        process1.start()
+        processes = [multiprocessing.Process(target=mwrapper, kwargs=mkwargs) for mwrapper,mkwargs in zip(model_wrappers, model_kwargs)]
+        for i in range(num_clients):
+            processes[i].start()
 
-        process0.join()
-        process1.join()
+        for i in range(num_clients):
+            processes[i].join()
     elif policy == "Isolated":
-        model0_wrapper(**model0_kwargs)
-        model1_wrapper(**model1_kwargs)
+        for mwrapper, mkwargs in zip(model_wrappers, model0_kwargs):
+            mwrapper(**mkwargs)
     elif policy in {"Streams", 'TickTock', 'Sequential'}:
-        thread0 = threading.Thread(target=model0_wrapper, kwargs=model0_kwargs)
-        thread1 = threading.Thread(target=model1_wrapper, kwargs=model1_kwargs)
-        thread0.start()
-        thread1.start()
+        threads = [threading.Thread(target=mwrapper, kwargs=mkwargs) for mwrapper,mkwargs in zip(model_wrappers, model_kwargs)]
+        for i in range(num_clients):
+            threads[i].start()
 
-        thread0.join()
-        thread1.join()
+        for i in range(num_clients):
+            threads[i].join()
     else:
         raise NotImplementedError(f'unsupported policy {policy}')
 

@@ -1,0 +1,16 @@
+[
+	{
+		"arch": "resnet50",
+		"kernel_file": "/root/orion/artifact_evaluation/example/resnet50_4_fwd",
+        "num_kernels": 175,
+        "num_iters": 2000,
+		"args": {
+			"model_name": "resnet50",
+			"batchsize": 4,
+            "rps": 30,
+			"uniform": true,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

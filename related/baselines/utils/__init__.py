@@ -29,9 +29,12 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     """
     Invoke the func {num_requests} times with first {num_warm_up_reqs} iterations as warm up.
     Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
-    and finally write all data via {sync_info}. 
+    and finally write all data via {sync_info}.
     """
     distribution = shared_config['distribution']
+    if distribution=='trace' and tid==1:
+        # uniform distribution for tid 1
+        distribution = 'uniform'
 
     if request_rate == 0:
         intervals = [0] * num_requests
@@ -85,15 +88,17 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
     mean_latency = mean(latency_history)
     percentiles = np.percentile(latency_history, percentile_positions)
 
-    data_to_record = {
-        f'latencies{tid}': latency_history,
-        f'mean_latency{tid}': mean_latency,
-        f'duration{tid}': inference_duration,
-        f'iterations{tid}': iteration + 1,
-    }
+    # data_to_record = {
+    #     f'latencies{tid}': latency_history,
+    #     f'mean_latency{tid}': mean_latency,
+    #     f'duration{tid}': inference_duration,
+    #     f'iterations{tid}': iteration + 1,
+    # }
     # record percentiles
+    data_to_record = {}
     for idx, percentile_pos in enumerate(percentile_positions):
-        data_to_record[f'p{percentile_pos}-{tid}'] = percentiles[idx]
+        data_to_record[f'p{percentile_pos}-latency-{tid}'] = percentiles[idx]
+        data_to_record[f'throughput-{tid}'] = (iteration-num_warm_up_reqs)/inference_duration
     # write all data to the data file
     sync_info.write_kvs(data_to_record)
 
@@ -108,4 +113,3 @@ def seed_everything(seed: int):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
-

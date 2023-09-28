@@ -1,0 +1,48 @@
+bert:
+  arch: base
+  batch_size: 8
+  num_iterations: 10000
+  request_rate: 0
+mobilenet_v2:
+  arch: mobilenet_v2
+  batch_size: 4
+  num_iterations: 10000
+  request_rate: 40
+mobilenet_v2-1:
+  arch: mobilenet_v2
+  batch_size: 64
+  num_iterations: 10000
+  request_rate: 100
+models:
+  model0:
+    mode: eval
+    name: resnet50
+  model1:
+    mode: train
+    name: resnet50-1
+policy: MPS
+resnet101:
+  arch: resnet101
+  batch_size: 32
+  num_iterations: 10000
+  request_rate: 0
+resnet50:
+  arch: resnet50
+  batch_size: 4
+  num_iterations: 100
+  request_rate: 30
+resnet50-1:
+  arch: resnet50
+  batch_size: 32
+  num_iterations: 10000
+  request_rate: 80
+shared_config:
+  distribution: poisson
+  pin_memory: true
+  seed: 42
+  trace_path: ./inter_arrival_times.json
+transformer:
+  arch: base
+  batch_size: 8
+  num_iterations: 10000
+  request_rate: 0

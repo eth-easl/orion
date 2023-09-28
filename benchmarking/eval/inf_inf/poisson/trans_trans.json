@@ -1,0 +1,27 @@
+[   {
+        "arch": "transformer",
+        "kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_4_fwd",
+        "num_kernels": 459,
+        "num_iters": 340000,
+        "args": {
+            "batchsize": 4,
+            "rps": 12,
+            "uniform": false,
+            "dummy_data": true,
+            "train": false
+        }
+    },
+    {
+		"arch": "transformer",
+		"kernel_file": "/home/image-varuna/gpu_share_repo/cpp_backend/model_kernels/transformer_xl_4_fwd",
+		"num_kernels": 459,
+		"num_iters": 3400,
+		"args": {
+			"batchsize": 4,
+            "rps": 12,
+            "uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

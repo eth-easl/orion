@@ -24,14 +24,25 @@ Orion expects that each submitted job has a file where all of its operations, al
 
 Follow the instructions on [INSTALL](INSTALL.md), to install Orion and its dependencies, or launch a Docker container with Orion preinstalled.
 
-See [PROFILING](PROFILING.md) to generate profiling files for each workload.
+See [PROFILE](PROFILE.md) to generate profiling files for each workload.
 Create a json file containing all the info for the workloads that are about to share the GPU. See examples under 'eval'.
 
 The file 'launch_jobs.py' is responsible for spawning the scheduler and the application thread(s).
 `python launch_jobs.py <config file> <orion kernel time limit> <hp_limit> <update start>`
 
 ## Project Structure
-TODO
+```
+> tree .
+├── profiling                     # Scripts and instructions for profiling
+│   ├── benchmarks                # Scripts of DNN models for profiling
+│   ├── postprocessing            # Scripts for processing of profile files
+└── src                           # Source code
+│   ├── cuda_capture              # Code to intercept CUDA/CUDNN/CUBLAS calls
+│   └── scheduler                 # Implementation of the scheduling policy
+│   └── scheduler_frontend.py     # Python interface for the Orion scheduler
+└── benchmarking_suite            # Scripts and configuration files for benchmarking
+└── artifact_evaluation           # Scripts and instructions for artifact evaluation
+```
 
 ## Hardware Requirements
 Orion currently supports NVIDIA GPUs.
