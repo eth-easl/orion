@@ -17,7 +17,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock>* total_client_starts
 bool** client_starts_set;
 vector<vector<float>> client_durations;
 
-int max_sms = 108; // 80 for V100
+int max_sms = 80; // v100
 queue<struct func_record>** client_buffers;
 pthread_mutex_t** client_mutexes;
 queue<struct func_record>** buffers;
@@ -125,7 +125,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 		for (int i=0; i<hp_client; i++) {
 			if (frecords[i] != NULL) {
 				op_info op_info_0 = op_info_vector[i][seen[i]];
-				if (op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
+				if (1) { //(op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
 					// colocate
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);

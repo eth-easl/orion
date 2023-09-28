@@ -100,8 +100,6 @@ def imagenet_loop(
 
 
     print(f"SIZE is {len(sleep_times)}")
-    print(sleep_times)
-
     barriers[0].wait()
 
     print("-------------- thread id:  ", threading.get_native_id())

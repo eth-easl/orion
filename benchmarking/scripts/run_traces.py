@@ -2,40 +2,18 @@ import os
 import time
 
 trace_files = [
-    "rnet_rnet",
-    "rnet_mnet",
-    "rnet_rnet101",
-    "rnet_bert",
-    "rnet_trans",
-    "mnet_rnet",
-    "mnet_mnet",
-    "mnet_rnet101",
-    "mnet_bert",
-    "mnet_trans",
-    "rnet101_rnet",
-    "rnet101_mnet",
-    "rnet101_rnet101",
-    "rnet101_bert",
-    "rnet101_trans",
-    "bert_rnet",
-    "bert_mnet",
-    "bert_rnet101",
-    "bert_bert",
-    "bert_trans",
-    "trans_rnet",
-    "trans_mnet",
-    "trans_rnet101",
-    "trans_bert",
-    "trans_trans"
+    "rnet_rnet_ti",
+    "rnet_mnet_ti",
+    "mnet_rnet_ti",
+    "mnet_mnet_ti",
+    "rnet101_rnet_ti",
+    "rnet101_mnet_ti",
+    "bert_rnet_ti",
+    "bert_mnet_ti",
+    "trans_rnet_ti",
+    "trans_mnet_ti",
 ]
 
-# trace_files = [
-#     "rnet_rnet101",
-#     "mnet_rnet101",
-#     "rnet101_rnet101",
-#     "bert_rnet101",
-#     "trans_rnet",
-# ]
 
 
 #orion, hp is inference - uniform

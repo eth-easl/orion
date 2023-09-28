@@ -57,7 +57,6 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
     else:
         sleep_times = [0] * num_iters
 
-    print(sleep_times)
     barriers[0].wait()
 
     if (train and tid==1):
