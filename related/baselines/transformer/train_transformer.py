@@ -15,10 +15,10 @@ import transformer.lamb as lamb
 from transformer.data_utils import *
 from transformer.mem_transformer import MemTransformerLM
 import sys
-try:
-    from apex import amp
-except ModuleNotFoundError:
-    warnings.warn('APEX AMP is unavailable')
+# try:
+#     from apex import amp
+# except ModuleNotFoundError:
+#     warnings.warn('APEX AMP is unavailable')
 
 
 dataset = 'wt103'
@@ -289,7 +289,9 @@ def train_wrapper(sync_info: BasicSyncInfo, tid: int, model_config, shared_confi
     stream.synchronize()
     duration = time.time() - start_time
     sync_info.post_measurement_prep(tid)
-    sync_info.write_kv(f'duration{tid}', duration)
-    sync_info.write_kv(f'iterations{tid}', batch_idx + 1)
+    sync_info.write_kv(f'duration-{tid}', duration)
+    sync_info.write_kv(f'iterations-{tid}', batch_idx + 1)
+    sync_info.write_kv(f'throughput-{tid}', (batch_idx-warm_up_iters)/duration)
+
     logging.info(f'tid {tid} it takes {duration} seconds to train transformer')
     return duration

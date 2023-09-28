@@ -19,6 +19,8 @@ def run(config, combination_name, times=1, start_id = 0):
         log_file = f'log_{i}_{combination_name}.log'
         os.system(f"python main.py --log ./{log_file} --config ./{config_file_name}")
 
+        # TODO: copy data as needed here
+
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -37,7 +39,7 @@ if __name__ == "__main__":
     model0_mode = 'eval'
     model1_mode = 'train'
 
-    policy = 'Streams'
+    policy = 'MPS'
 
 
     train_batch_sizes = {
@@ -59,21 +61,15 @@ if __name__ == "__main__":
     request_rates = {
         'resnet50': 30,
         'mobilenet_v2': 40,
-        'resnet101': 18,
-        'bert': 4,
-        'transformer': 11
     }
 
     num_reqs = {
         'resnet50': 9200,
         'mobilenet_v2': 12000,
-        'resnet101': 5500,
-        'bert': 1200,
-        'transformer': 3400
     }
 
     models = ['resnet50', 'mobilenet_v2', 'resnet101', 'bert', 'transformer']
-    combinations = itertools.product(models, models)
+    combinations = itertools.product(models, models[:2])
     times = 1
     start_id = 0
     distribution = 'trace'
@@ -84,28 +80,7 @@ if __name__ == "__main__":
     default_full_config['shared_config']['distribution'] = distribution
 
     for model0, model1 in combinations:
-        if {model0_mode, model1_mode} == {'train', 'train'}:
-            default_full_config['model0']['name'] = model0
-            default_full_config['model0']['mode'] = model0_mode
-            default_full_config['model1']['name'] = model1
-            default_full_config['model1']['mode'] = model1_mode
-
-            default_full_config[model0]['batch_size'] = train_batch_sizes[model0]
-            default_full_config[model0]['num_iterations'] = 1000
-            default_full_config[model1]['batch_size'] = train_batch_sizes[model1]
-
-            if model0 == 'bert':
-                # for training use bert-basic
-                default_full_config[model0]['arch'] = 'base'
-            if model1 == 'bert':
-                # for training use bert-basic
-                default_full_config[model1]['arch'] = 'base'
-
-            default_full_config['policy'] = policy
-
-            combination_name = f'{model0_mode}-{model0}-{model1_mode}-{model1}-{policy}'
-            run(default_full_config, combination_name, times=times, start_id=start_id)
-        elif {model0_mode, model1_mode} == {'eval', 'train'}:
+        if {model0_mode, model1_mode} == {'eval', 'train'}:
             default_full_config['model0']['name'] = model0
             default_full_config['model0']['mode'] = model0_mode
             default_full_config['model1']['name'] = model1 if model0 != model1 else model1 + '-1'
