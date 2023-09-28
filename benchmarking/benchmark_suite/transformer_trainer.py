@@ -156,7 +156,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
                             if (batch_idx == 1 or (batch_idx == 10)):
                                     barriers[0].wait()
                                     # hp starts after
-                                    if (batch_idx==10 and tid==1):
+                                    if (batch_idx==10):
                                         next_startup = time.time()
                                         start = time.time()
                             dur = next_startup-time.time()
@@ -179,16 +179,16 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
     barriers[0].wait()
     total_time = time.time() - start
 
-    if tid==1 and not train:
+    if not train:
         print(timings)
         p50 = np.percentile(timings, 50)
         p95 = np.percentile(timings, 95)
         p99 = np.percentile(timings, 99)
         print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
         data = {
-            'p50_latency': p50,
-            'p95_latency': p95,
-            'p99_latency': p99,
+            'p50_latency': p50*1000,
+            'p95_latency': p95*1000,
+            'p99_latency': p99*1000,
             'throughput': (batch_idx-10)/total_time
         }
         with open('hp.json', 'w') as f:

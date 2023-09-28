@@ -3,13 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 models = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT', 'Transformer']
-model2id = {
-    'ResNet50': 0,
-    'MobileNetV2': 1,
-    'ResNet101': 2,
-    'BERT': 3,
-    'Transformer': 4
-}
 
 # %%
 
