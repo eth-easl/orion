@@ -24,7 +24,4 @@ for (be, hp, f, max_be_duration) in trace_files:
 
         # copy results
         os.system(f"cp client_1.json results/orion/{be}_{hp}_{run}_hp.json")
-        os.system(f"cp client_0.json results/orion/{be}_{hp}_{run}_be.json")
-
-        os.system("rm client_1.json")
-        os.system("rm client_0.json")
+        os.system("rm -rf client_1.json")

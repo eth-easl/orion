@@ -3,6 +3,7 @@ import threading
 import time
 import modeling
 import numpy as np
+import json
 
 from optimization import BertAdam
 
@@ -59,10 +60,10 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
         sleep_times = [0]*num_iters
 
     barriers[0].wait()
-
+    
     if (train and tid==1):
         time.sleep(5)
-
+        
 
     if (not train):
         model_config = {
@@ -121,7 +122,7 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
     train_loader = DummyDataLoader(batchsize)
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
-
+    
     #  open loop
     timings = []
     next_startup = time.time()
@@ -133,9 +134,9 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
 
         start = time.time()
         start_iter = time.time()
-
+                                
         while batch_idx < num_iters:
-
+    
             if train:
                 print(f"Start iter {batch_idx}")
                 optimizer.zero_grad()
@@ -154,9 +155,12 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                     barriers[0].wait()
                 if batch_idx == 10:
                     barriers[0].wait()
+                    start = time.time()
                 if check_stop(backend_lib):
                     print("---- STOP!")
                     break
+                if batch_idx==290:
+                    torch.cuda.profiler.cudart().cudaProfilerStart()
             else:
                 with torch.no_grad():
                     cur_time = time.time()
@@ -164,6 +168,8 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                     if open_loop:
                         if (cur_time >= next_startup):
                             print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
+                            if batch_idx==50:
+                                torch.cuda.profiler.cudart().cudaProfilerStart()
                             input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                             output = model(input_ids, segment_ids, input_mask)
                             block(backend_lib, batch_idx)
@@ -177,9 +183,10 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                             batch_idx,batch = next(train_iter)
                             if ((batch_idx == 1) or (batch_idx == 10)):
                                 barriers[0].wait()
-                                if (batch_idx==10 and tid==1):
+                                if (batch_idx==10):
                                     #time.sleep(1)
                                     next_startup = time.time()
+                                    start = time.time()
                             dur = next_startup-time.time()
                             if (dur>0):
                                 time.sleep(dur)
@@ -193,20 +200,35 @@ def bert_loop(batchsize, train, num_iters, rps, uniform, dummy_data, local_rank,
                         input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
                         output = model(input_ids, segment_ids, input_mask)
                         print(f"Client {tid} finished! Wait!")
-                        batch_idx,batch = next(train_iter)
                         if ((batch_idx == 1) or (batch_idx == 10)):
                             barriers[0].wait()
+                        batch_idx,batch = next(train_iter)
 
 
-
+    torch.cuda.profiler.cudart().cudaProfilerStop()
     barriers[0].wait()
+    total_time = time.time() - start
 
-    if tid==1 and not train:
+
+    if not train and len(timings)>50:
         timings = timings[50:]
         timings = sorted(timings)
-        p50 = np.percentile(timings, 50)
-        p95 = np.percentile(timings, 95)
-        p99 = np.percentile(timings, 99)
+        p50 = np.percentile(timings, 50) * 1000
+        p95 = np.percentile(timings, 95) * 1000
+        p99 = np.percentile(timings, 99) * 1000
         print(f"Client {tid} finished! p50: {p50} sec, p95: {p95} sec, p99: {p99} sec")
+
+        data = {
+            'p50_latency': p50,
+            'p95_latency': p95,
+            'p99_latency': p99,
+            'throughput': (batch_idx-10)/total_time
+        }
+    else:
+        data = {
+            'throughput': (batch_idx-10)/total_time
+        }
+    with open(f'client_{tid}.json', 'w') as f:
+        json.dump(data, f)
 
     print("Finished! Ready to join!")

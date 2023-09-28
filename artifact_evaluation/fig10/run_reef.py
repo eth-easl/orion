@@ -11,8 +11,8 @@ trace_files = [
     ("ResNet101", "MobileNetV2", "rnet101_mnet"),
     ("BERT", "ResNet50", "bert_rnet"),
     ("BERT", "MobileNetV2", "bert_mnet"),
-    #("Transformer", "ResNet50", "trans_rnet"),
-    #("Transformer", "MobileNetV2", "trans_mnet"),
+    ("Transformer", "ResNet50", "trans_rnet"),
+    ("Transformer", "MobileNetV2", "trans_mnet"),
 ]
 
 for (be, hp, f) in trace_files:
@@ -24,7 +24,4 @@ for (be, hp, f) in trace_files:
 
         # copy results
         os.system(f"cp client_1.json results/reef/{be}_{hp}_{run}_hp.json")
-        os.system(f"cp client_0.json results/reef/{be}_{hp}_{run}_be.json")
-
         os.system("rm client_1.json")
-        os.system("rm client_0.json")

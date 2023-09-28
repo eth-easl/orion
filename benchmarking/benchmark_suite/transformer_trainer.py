@@ -178,7 +178,7 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
     barriers[0].wait()
     total_time = time.time() - start
 
-    if not train:
+    if not train and len(timings)>0:
         print(timings)
         p50 = np.percentile(timings, 50)
         p95 = np.percentile(timings, 95)
@@ -190,13 +190,11 @@ def transformer_loop(batchsize, train, num_iters, rps, uniform, dummy_data, loca
             'p99_latency': p99*1000,
             'throughput': (batch_idx-10)/total_time
         }
-        with open('hp.json', 'w') as f:
-            json.dump(data, f)
     else:
         data = {
             'throughput': (batch_idx-10)/total_time
         }
-        with open('be.json', 'w') as f:
-            json.dump(data, f)
+    with open(f'client_{tid}.json', 'w') as f:
+        json.dump(data, f)
 
     print("Finished! Ready to join!")

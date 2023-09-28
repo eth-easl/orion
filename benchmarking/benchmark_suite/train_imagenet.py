@@ -94,7 +94,6 @@ def imagenet_loop(
     elif input_file != '':
         with open(input_file) as f:
                 sleep_times = json.load(f)
-                num_iters = len(sleep_times)
     else:
         sleep_times = [0]*num_iters
 
@@ -214,15 +213,14 @@ def imagenet_loop(
                             if ((batch_idx == 1) or (batch_idx == 10)):
                                 barriers[0].wait()
 
-
+        print(f"Client {tid} at barrier!")
         barriers[0].wait()
         total_time = time.time() - start
 
         timings = timings[10:]
         timings = sorted(timings)
 
-        if not train:
-            print(timings)
+        if not train and len(timings)>0:
             p50 = np.percentile(timings, 50)
             p95 = np.percentile(timings, 95)
             p99 = np.percentile(timings, 99)
@@ -233,13 +231,11 @@ def imagenet_loop(
                 'p99_latency': p99*1000,
                 'throughput': (batch_idx-10)/total_time
             }
-            with open('hp.json', 'w') as f:
-                json.dump(data, f)
         else:
             data = {
                 'throughput': (batch_idx-10)/total_time
             }
-            with open('be.json', 'w') as f:
-                json.dump(data, f)
+        with open(f'client_{tid}.json', 'w') as f:
+            json.dump(data, f)
 
         print("Finished! Ready to join!")
