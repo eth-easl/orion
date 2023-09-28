@@ -3,7 +3,7 @@ import threading
 import time
 import sys
 
-sys.path.insert(0, "/home/image-varuna/DeepLearningExamples/PyTorch/Translation/GNMT")
+sys.path.insert(0, f"{os.path.expanduser( '~' )}/DeepLearningExamples/PyTorch/Translation/GNMT")
 
 
 from seq2seq.models.gnmt import GNMT

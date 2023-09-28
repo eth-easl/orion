@@ -3,8 +3,7 @@ import threading
 import time
 import sys
 
-sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
-#sys.path.append("/home/image-varuna/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch/utils")
+sys.path.append(f"{os.path.expanduser( '~' )}/DeepLearningExamples/PyTorch/LanguageModeling/Transformer-XL/pytorch")
 
 from mem_transformer import MemTransformerLM
 import lamb

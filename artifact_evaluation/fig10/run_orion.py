@@ -20,7 +20,7 @@ for (be, hp, f, max_be_duration) in trace_files:
         print(be, hp, run, flush=True)
         # run
         file_path = f"config_files/{f}.json"
-        os.system(f"LD_PRELOAD='/home/image-varuna/orion/src/cuda_capture/libinttemp.so' python ../../benchmarking/launch_jobs.py --algo orion --config_file {file_path} --orion_max_be_duration {max_be_duration}")
+        os.system(f"LD_PRELOAD='{os.path.expanduser( '~' )}/orion/src/cuda_capture/libinttemp.so' python ../../benchmarking/launch_jobs.py --algo orion --config_file {file_path} --orion_max_be_duration {max_be_duration}")
 
         # copy results
         os.system(f"cp client_1.json results/orion/{be}_{hp}_{run}_hp.json")

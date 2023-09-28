@@ -1,11 +1,11 @@
 [
     {
 		"arch": "resnet50",
-		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/resnet50_32_fb0",
-		"additional_kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/resnet50_32_fb1",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_32_fb0",
+		"additional_kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_32_fb1",
         "num_kernels": 624,
         "additional_num_kernels": 946,
-        "num_iters": 100,
+        "num_iters": 200,
 		"args": {
 			"model_name": "resnet50",
 			"batchsize": 32,

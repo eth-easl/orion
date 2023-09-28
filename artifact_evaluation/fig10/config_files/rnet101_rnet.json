@@ -1,7 +1,7 @@
 [
     {
 		"arch": "resnet101",
-		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/resnet101_4_fwd",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet101_4_fwd",
 		"num_kernels": 345,
 		"num_iters": 2500000,
 		"args": {
@@ -15,7 +15,7 @@
 	},
     {
 		"arch": "resnet50",
-		"kernel_file": "/home/image-varuna/orion/benchmarking/model_kernels/resnet50_4_fwd",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_4_fwd",
 		"num_kernels": 175,
 		"num_iters": 100,
 		"args": {
@@ -23,7 +23,7 @@
 			"batchsize": 4,
             "rps": 0,
 			"uniform": true,
-			"input_file": "/home/image-varuna/orion/artifact_evaluation/fig10/inter_arrival_times.json",
+			"input_file": "/root/orion/artifact_evaluation/fig10/inter_arrival_times.json",
 			"dummy_data": true,
 			"train": false
 		}
