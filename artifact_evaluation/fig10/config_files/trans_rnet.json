@@ -6,8 +6,8 @@
         "num_iters": 2500000,
         "args": {
             "batchsize": 4,
-            "rps": 0,
-            "uniform": false,
+            "rps": 20,
+            "uniform": true,
             "dummy_data": true,
             "train": false
         }

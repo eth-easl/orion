@@ -1,7 +1,7 @@
 import os
 import time
 
-num_runs = 1
+num_runs = 3
 trace_files = [
     ("ResNet50", "ResNet50", "rnet_rnet", 160000),
     ("ResNet50", "MobileNetV2", "rnet_mnet", 100000),

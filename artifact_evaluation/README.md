@@ -21,6 +21,7 @@ After the VM is up and running, you can ssh by:
 
 ## Clone Orion repo and install
 
+* `cd root && rm -rf orion`
 * `git clone https://github.com/eth-easl/orion.git`
 * `cd orion`
 * `bash compile.sh`
