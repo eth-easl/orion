@@ -15,6 +15,10 @@ After the VM is up and running, you can ssh by:
 
 * `gcloud compute ssh <machine_name>`
 
+## Start Orion container
+
+* Start a container with `docker run --gpus=1 -it fotstrt/orion-ae:v1 bash`
+
 ## Clone Orion repo and install
 
 * `git clone https://github.com/eth-easl/orion.git`
