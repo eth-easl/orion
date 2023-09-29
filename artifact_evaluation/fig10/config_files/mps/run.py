@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     models = ['resnet50', 'mobilenet_v2', 'resnet101', 'bert', 'transformer']
     combinations = itertools.product(models[:2], models)
-    times = 1
+    times = 3
     start_id = 0
     distribution = 'trace'
 

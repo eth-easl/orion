@@ -32,6 +32,7 @@ The artifact has been tested on a GCP VM with the following specifications:
 Notes:
 * We provide scripts for reproducing Figures 7 and 10.
 * In order to reduce the GPU hours and cost of the experiments, we evaluate only ResNet50 and MobileNetV2 running as high-priority jobs in both cases, and compare Orion with the most competitive baselines (REEF and MPS), while also evaluating the ideal behavior.
+* All experiments are repeated 3 times.
 
 ## Start a VM
 
@@ -51,6 +52,15 @@ After the VM is up and running, you can ssh by:
 
 * `docker pull fotstrt/orion-ae:v1`
 * Start a container with `docker run --gpus=1 -it fotstrt/orion-ae:v1 bash`
+
+If you encounter an issue like:
+
+`Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Post "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/images/create?fromImage=fotstrt%2Forion-ae&tag=v1": dial unix /var/run/docker.sock: connect: permission denied`
+
+please do
+
+`sudo chmod 666 /var/run/docker.sock`
+
 
 ## Clone Orion repo and install
 
