@@ -1,5 +1,34 @@
+# Introduction
+
 We have set up a Google Cloud Platform (GCP) Project for VM creation and artifact evaluation.
+We have created a GCP VM image with the NVIDIA drivers installed, to allow for faster deployment.
 Please contact us with your GCP account to be added to the GCP project in order to conduct experiments.
+
+We have set up a docker image: [fotstrt/orion-ae](https://hub.docker.com/repository/docker/fotstrt/orion-ae/general) with all packages pre-installed. We encourage reviewers to deploy and evaluate Orion using this image, as described in the [Artifact Evaluation section](#artifact-evaluation).
+
+
+# Hardware Requirements
+
+The artifact has been tested on a GCP VM with the following specifications:
+* n1-standard-8 type (8 vCPUs, 30 GB DRAM)
+* 1 V100-16GB GPU
+
+# Software Requirements
+
+* Ubuntu 18.04
+* CMake 3.19
+* PyTorch 1.12 (installed from source, fully installed in the docker image)
+* TorchVision 0.13
+* Python >= 3.8
+* BERT and Transformer-XL benchmarks from the [NVIDIA benchmarking repo](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling). (already contained in the docker image)
+*
+
+
+# Artifact Evaluation
+
+Notes:
+* We provide scripts for reproducing Figures 7 and 10.
+* In order to reduce the GPU hours and cost of the experiments, we evaluate only ResNet50 and MobileNetV2 running as high-priority jobs in both cases, and compare Orion with the most competitive baselines (REEF and MPS), while also evaluating the ideal behavior.
 
 ## Start a VM
 
