@@ -17,11 +17,14 @@ The artifact has been tested on a GCP VM with the following specifications:
 
 * Ubuntu 18.04
 * CMake 3.19
+* CUDA 10.2
+* CUDNN 7.6.5
+* NVIDIA DRIVER version 510.47
 * PyTorch 1.12 (installed from source, fully installed in the docker image)
 * TorchVision 0.13
 * Python >= 3.8
 * BERT and Transformer-XL benchmarks from the [NVIDIA benchmarking repo](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling). (already contained in the docker image)
-*
+
 
 
 # Artifact Evaluation
