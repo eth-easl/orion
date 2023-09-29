@@ -77,9 +77,18 @@ This will populate the results under `fig7/results/mps`.
 
 The expected time for this experiment is 12 hours, and the expected cost is 16 USD in the proposed VM in GCP. See cost breakdown [here](https://cloud.google.com/products/calculator/#id=9b287eab-bcd6-496e-9ece-2116d69dd143)
 
-## Reproduce Fig 8
+## Reproduce Fig 10
+
+We assume we are at the `orion/artifact_evaluation/fig10` directory
+
+Run `bash prep_dirs.sh`
+This will create a `results` directory, with sub-directories for the baselines that we will evaluate.
 
 ### Run ideal
+
+Run `python run_ideal.py`
+
+This will populate the results under `fig10/results/ideal`.
 
 ### Run REEF
 
