@@ -19,27 +19,25 @@ def get_data(csv_file, error=False):
     df.index = models
 
     for model_row in models:
-        for model_col in models:
+        for model_col in models[:2]:
             cell = df.at[model_row, model_col]
             df.at[model_row, model_col] = float(cell.split('/')[0]) #float(cell.split('/')[1]) if error else float(cell.split('/')[0])
     if not error:
         return df.mean()
 
     df = df.std()
-    for i in range(len(models)):
-        df[i] = min(df[i],300)
     return df
 
 
 
 # %%
 method2file = {
-    'Temporal Sharing': 'results/latency/sequential.csv',
-    'Streams': 'results/latency/streams.csv',
-    'MPS': 'results/latency/mps.csv',
-    'REEF policy': 'results/latency/reef.csv',
-    'Orion': 'results/latency/orion.csv',
-    'Ideal': 'results/latency/ideal.csv'
+    #'Temporal Sharing': 'results/latency/sequential.csv',
+    #'Streams': 'results/latency/streams.csv',
+    'MPS': 'results/mps_latency.csv',
+    'REEF policy': 'results/reef_latency.csv',
+    'Orion': 'results/orion_latency.csv',
+    'Ideal': 'results/ideal_latency.csv'
 }
 
 label_font_size = 22
@@ -54,28 +52,29 @@ for method, file in method2file.items():
 
 width = 0.15
 fig, ax = plt.subplots(figsize=(14, 8))
-x = np.arange(len(models))
+x = np.arange(len(models[:2]))
 bars = []
 for method_id, method in enumerate(methods):
 
+    print(x,method2data[method])
     bar = ax.bar(
-        x + width * method_id, method2data[method], width,
-        label=method, yerr=method2err[method],
+        x + width * method_id, method2data[method][:2], width,
+        label=method, yerr=method2err[method][:2],
         align='edge'
     )
     bars.append(bar)
 
-for i,r in enumerate(bars[0]):
-    plt.text(r.get_x() + r.get_width()/2.0, 300, f"{method2data['Temporal Sharing'][i]:.0f}", ha='center', va='bottom', fontsize=13)
+#for i,r in enumerate(bars[0]):
+    #plt.text(r.get_x() + r.get_width()/2.0, 300, f"{method2data['Temporal Sharing'][i]:.0f}", ha='center', va='bottom', fontsize=13)
     #print(r.get_height())
 
 x_tick_positions = x + width * len(methods) / 2
 ax.set_xticks(
     ticks=x_tick_positions,
-    labels=models, fontsize=22
+    labels=models[:2], fontsize=22
 )
 plt.yticks(fontsize=22)
-ax.set_ylim(0,300)
+#ax.set_ylim(0,300)
 ax.set_ylabel('Average p95 inference latency (ms)', fontsize=label_font_size)
 ax.set_xlabel('High-priority inference job', fontsize=label_font_size)
 

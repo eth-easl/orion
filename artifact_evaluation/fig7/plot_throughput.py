@@ -32,7 +32,7 @@ def get_data(csv_files, error=False):
     df_inf_new = pd.DataFrame()
 
     for model_row in models:
-        for model_col in models:
+        for model_col in models[:2]:
             cell_train = df_train_input.at[model_row, model_col]
             cell_inf = df_inf_input.at[model_row, model_col]
 
@@ -45,12 +45,10 @@ def get_data(csv_files, error=False):
 
 # %%
 method2file = {
-    'Temporal Sharing': ['results/throughput/train_throughput_sequential.csv', 'results/throughput/inf_throughput_sequential.csv'],
-    'Streams': ['results/throughput/train_throughput_streams.csv', 'results/throughput/inf_throughput_streams.csv'],
-    'MPS': ['results/throughput/train_throughput_mps.csv', 'results/throughput/inf_throughput_mps.csv'],
-    'REEF policy': ['results/throughput/train_throughput_reef.csv', 'results/throughput/inf_throughput_reef.csv'],
-    'Orion': ['results/throughput/train_throughput_orion.csv', 'results/throughput/inf_throughput_orion.csv'],
-    'Ideal': ['results/throughput/train_throughput_ideal.csv', 'results/throughput/inf_throughput_ideal.csv'],
+    'MPS': ['results/train_throughput_mps.csv', 'results/inf_throughput_mps.csv'],
+    'REEF policy': ['results/train_throughput_reef.csv', 'results/inf_throughput_reef.csv'],
+    'Orion': ['results/train_throughput_orion.csv', 'results/inf_throughput_orion.csv'],
+    'Ideal': ['results/train_throughput_ideal.csv', 'results/inf_throughput_ideal.csv'],
 }
 
 label_font_size = 22
@@ -65,25 +63,25 @@ for method, file in method2file.items():
 
 width = 0.15
 fig, ax = plt.subplots(figsize=(14, 8))
-x = np.arange(len(models))
+x = np.arange(len(models[:2]))
 colors = ["royalblue", "darkorange", "green", "red", "mediumpurple", "saddlebrown"]
 
 for method_id, method in enumerate(methods):
 
     ax.bar(
-        x + width * method_id, method2data[method][1], width, yerr=method2err[method][1],
+         x + width * method_id, method2data[method][1][:2], width, yerr=method2err[method][1][:2],
         align='edge', hatch="\\", color = colors[method_id],
     )
     ax.bar(
-        x + width * method_id, method2data[method][0], width,
-        label=method, yerr=method2err[method][0], bottom=method2data[method][1],
+        x + width * method_id, method2data[method][0][:2], width,
+        label=method, yerr=method2err[method][0][:2], bottom=method2data[method][1][:2],
         align='edge', hatch="/", color = colors[method_id], alpha=0.6
     )
 
 x_tick_positions = x + width * len(methods) / 2
 ax.set_xticks(
     ticks=x_tick_positions,
-    labels=models, fontsize=22
+    labels=models[:2], fontsize=22
 )
 plt.yticks(fontsize=22)
 ax.set_ylabel('Total Throughput (requests/sec)', fontsize=label_font_size)

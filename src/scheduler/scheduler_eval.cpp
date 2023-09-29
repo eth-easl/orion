@@ -117,16 +117,20 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 
 	// if hp is found, schedule
 	if (frecords[hp_client] != NULL) {
+		int hp_idx = seen[hp_client];
+
 		schedule_kernel(*(frecords[hp_client]), sched_streams[hp_client], hp_client, events[hp_client][event_ids[hp_client]], seen, event_ids, hp_client);
 		pop_from_queue(client_buffers[hp_client], client_mutexes[hp_client], hp_client);
-		op_info op_info_1 = op_info_vector[hp_client][seen[hp_client]];
+
+		op_info op_info_1 = op_info_vector[hp_client][hp_idx];
 
 		// check all kernels, and find suitable
 		for (int i=0; i<hp_client; i++) {
 			if (frecords[i] != NULL) {
 				op_info op_info_0 = op_info_vector[i][seen[i]];
-				if (1) { //(op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
+				if (op_info_0.duration <= op_info_1.duration && op_info_0.sm_used >= op_info_1.sm_used) {
 					// colocate
+					DEBUG_PRINT("SCHEDULE seen[0]=%d\n", seen[0]);
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);
 					// if one is found, exit
@@ -144,6 +148,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 			// schedule all
 			for (int i=0; i<hp_client; i++) {
 				if (frecords[i] != NULL) {
+
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);
 					// TODO: check this
