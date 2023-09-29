@@ -53,7 +53,7 @@ This will populate the results under `fig7/results/ideal`.
 
 ### Do plots (Fig 7a, 7b)
 
-The expected time for this experiment is X hours, and the expected cost is Y USD
+The expected time for this experiment is 12 hours, and the expected cost is 16 USD in the proposed VM in GCP. See cost breakdown [here](https://cloud.google.com/products/calculator/#id=9b287eab-bcd6-496e-9ece-2116d69dd143)
 
 ## Reproduce Fig 8
 
@@ -69,4 +69,5 @@ The expected time for this experiment is X hours, and the expected cost is Y USD
 
 ### Do plot
 
-The expected time for this experiment is X hours, and the expected cost is Y USD
+The expected time for this experiment is 8 hours, and the expected cost is 17 USD in the proposed VM in GCP.
+See cost breakdown [here](https://cloud.google.com/products/calculator/#id=9b287eab-bcd6-496e-9ece-2116d69dd143).
