@@ -13,11 +13,6 @@ model2id = {
 
 # %%
 
-df_inf = pd.read_csv("inf_requests.csv")
-df_inf = df_inf.drop(df_inf.columns[0], axis=1)
-df_inf.index = models
-
-
 def get_data(csv_files, error=False):
 
     df_train_input = pd.read_csv(csv_files[0])
