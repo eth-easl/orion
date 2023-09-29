@@ -24,9 +24,9 @@ def run(model0, model1, config, combination_name, times=1, start_id = 0):
 
     for i in range(start_id, start_id + times):
         log_file = f'log_{i}_{combination_name}.log'
-        os.system(f"python {os.path.expanduser( '~' )}/orion/related/baselines/main.py --config ./{config_file_name}")
-        print(f"{combination_name}-{start_id+1}.log.json")
-        os.system(f"cp {combination_name}-{start_id+1}.log.json ../../results/mps/{mnames[model0]}_{mnames[model1]}_{i}")
+        os.system(f"python3.8 {os.path.expanduser( '~' )}/orion/related/baselines/main.py --config ./{config_file_name}")
+        print(f"{combination_name}.log.json")
+        os.system(f"cp {combination_name}.log.json ../../results/mps/{mnames[model0]}_{mnames[model1]}_{i}")
 
 
 

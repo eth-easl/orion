@@ -61,6 +61,7 @@ This will populate the results under `fig7/results/orion`.
 2. `cd config_files/mps`
 3. `python run.py`
 4. `cd ../..`
+5. `bash ../../related/baselines/stop_MPS_control_daemon.sh`
 
 This will populate the results under `fig7/results/mps`.
 
@@ -92,13 +93,31 @@ This will populate the results under `fig10/results/ideal`.
 
 ### Run REEF
 
+Run `python run_reef.py`
+
+This will populate the results under `fig10/results/reef`.
+
 ### Run Orion
+
+Run `python run_orion.py`
+
+This will populate the results under `fig10/results/orion`.
 
 ### Run MPS
 
+1. `bash ../../related/baselines/start_MPS_control_daemon.sh`
+2. `cd config_files/mps`
+3. `python run.py`
+4. `cd ../..`
+5. `bash ../../related/baselines/stop_MPS_control_daemon.sh`
+
 ### Gather all results
 
+Run `python gather_results.py`
+
 ### Do plot
+
+Run `python plot_latency.py`
 
 The expected time for this experiment is 8 hours, and the expected cost is 17 USD in the proposed VM in GCP.
 See cost breakdown [here](https://cloud.google.com/products/calculator/#id=9b287eab-bcd6-496e-9ece-2116d69dd143).
