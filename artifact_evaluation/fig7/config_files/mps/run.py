@@ -112,5 +112,5 @@ if __name__ == "__main__":
             default_full_config[model0]['batch_size'] = eval_batch_sizes[model0]
             default_full_config[model1_with_suffix]['batch_size'] = train_batch_sizes[model1]
 
-            combination_name = f'{model0_mode}-{model0}{model1_mode}-{model1}'
+            combination_name = f'{model0_mode}-{model0}{model1_mode}-{model1_with_suffix}'
             run(model0, model1, default_full_config, combination_name, times=times, start_id=start_id)

@@ -9,7 +9,7 @@ baselines = ['reef', 'orion', 'mps', 'ideal']
 
 hp_list = ['ResNet50', 'MobileNetV2']
 be_list = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT', 'Transformer']
-num_runs = 1
+num_runs = 3
 
 df_hp_ideal_throughput = pd.DataFrame(0.0, index=models, columns=models)
 df_be_ideal_throughput = pd.DataFrame(0.0, index=models, columns=models)

@@ -10,9 +10,6 @@ We have set up a docker image: [fotstrt/orion-ae](https://hub.docker.com/reposit
     * `pip install -e .`
 
 
-### Build Docker image
-TODO
-
 ### Without Docker image
 
 In order to use Orion without our pre-built image, a user must install:

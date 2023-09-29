@@ -139,7 +139,7 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 			}
 		}
 	}
-	else if (seen[hp_client]==0) {
+	else {
 		for (int i=0; i<hp_client; i++) {
 			if (frecords[i] != NULL)
 				penalty += 1;
