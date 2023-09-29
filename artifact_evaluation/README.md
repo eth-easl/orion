@@ -46,6 +46,7 @@ After the VM is up and running, you can ssh by:
 
 ## Start Orion container
 
+* `docker pull fotstrt/orion-ae:v1`
 * Start a container with `docker run --gpus=1 -it fotstrt/orion-ae:v1 bash`
 
 ## Clone Orion repo and install
