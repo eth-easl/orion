@@ -33,6 +33,8 @@ Notes:
 * We provide scripts for reproducing Figures 7 and 10.
 * In order to reduce the GPU hours and cost of the experiments, we evaluate only ResNet50 and MobileNetV2 running as high-priority jobs in both cases, and compare Orion with the most competitive baselines (REEF and MPS), while also evaluating the ideal behavior.
 * All experiments are repeated 3 times.
+* We provide the kernel profiles of the submitted workloads under [orion/benchmarking/model_kernels](../benchmarking/model_kernels/).
+
 
 ## Start a VM
 
@@ -40,7 +42,7 @@ We will need a machine with one V100-16GB GPU for the artifact evaluation.
 We have set up a VM image with NVIDIA-DRIVERS preinstalled.
 In order to create a VM, do
 
-* `gcloud compute instances create <machine_name> --machine-type=n1-standard-8 --zone=europe-west4-a --boot-disk-size 500GB  --maintenance-policy TERMINATE --restart-on-failure --boot-disk-type pd-ssd --image image-nvidia-drivers --accelerator=count=1,type=nvidia-tesla-v100`
+* `gcloud compute instances create <machine_name> --machine-type=n1-standard-8 --zone=europe-west4-a --boot-disk-size 500GB  --maintenance-policy TERMINATE --restart-on-failure --boot-disk-type pd-balanced --image image-nvidia-drivers --accelerator=count=1,type=nvidia-tesla-v100`
 
 ## SSH to the VM
 
@@ -124,7 +126,7 @@ This will populate the results under `fig7/results/mps`.
 2. `python plot_throughput.py`
 
 
-The expected time for this experiment is 12 hours, and the expected cost is 16 USD in the proposed VM in GCP. See cost breakdown [here](https://cloud.google.com/products/calculator/#id=9b287eab-bcd6-496e-9ece-2116d69dd143)
+The expected time for this experiment is 12 hours, and the expected cost is 53 USD in the proposed VM in GCP. See cost breakdown [here](https://cloud.google.com/products/calculator/#id=e94413fb-3e09-4cb9-b479-ce1b210b4cb8)
 
 ## Reproduce Fig 10
 
@@ -167,5 +169,5 @@ Run `python gather_results.py`
 
 Run `python plot_latency.py`
 
-The expected time for this experiment is 8 hours, and the expected cost is 17 USD in the proposed VM in GCP.
-See cost breakdown [here](https://cloud.google.com/products/calculator/#id=9b287eab-bcd6-496e-9ece-2116d69dd143).
+The expected time for this experiment is 8 hours, and the expected cost is 42 USD in the proposed VM in GCP.
+See cost breakdown [here](https://cloud.google.com/products/calculator/#id=0c85edeb-0e62-4ca1-b4c9-843ec7c91124).
