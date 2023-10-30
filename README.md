@@ -1,6 +1,6 @@
 # Orion
 
-Orion is a fine-grained scheduler for interference-free GPU sharing across ML workloads.
+Orion is a fine-grained scheduler for interference-free GPU sharing across ML workloads. It is based on our EuroSys'24 paper "Orion: Interference-aware, Fine-grained GPU Sharing for ML Applications".
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -50,6 +50,12 @@ The file 'launch_jobs.py' is responsible for spawning the scheduler and the appl
 ## Hardware Requirements
 Orion currently supports NVIDIA GPUs.
 
+## Hardware Configuration used in the paper
+For the experiments presented in the paper, we evaluated Orion in Google Cloud Platform VMs with the following configurations:
+* n1-standard-8 VM (8 vCPUs, 30GB of DRAM) with an V100-16GB GPU, with CUDA 10.2
+* a2-highgpu-1g VM (12 vCPUs, 85GB of DRAM) with an A100-40GB GPU, with CUDA 11.3
+In both cases, the machines have Ubuntu 18.04.
+
 ## Installation
 see [INSTALL](INSTALL.md).
 
@@ -57,4 +63,19 @@ see [INSTALL](INSTALL.md).
 see [DEBUGGING](DEBUGGING.md).
 
 ## Paper
-If you use Orion, please cite our paper: (TODO)
+If you use Orion, please cite our paper:
+```bibtex
+@inproceedings {eurosys24orion,
+  author = {Strati Foteini and Ma Xianzhe and Klimovic Ana},
+  title = {Orion: Interference-aware, Fine-grained GPU Sharing for ML Applications},
+  booktitle = {},
+  year = {2024},
+  isbn = {},
+  address = {},
+  pages = {},
+  url = {},
+  doi = {},
+  publisher = {Association for Computing Machinery},
+
+}
+```

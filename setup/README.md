@@ -1,5 +1,7 @@
 We have set up a docker image: [fotstrt/orion-ae](https://hub.docker.com/repository/docker/fotstrt/orion-ae/general) with all packages pre-installed.
-If the user does not want to use this image, then follow these steps:
+This directory contains the Dockerfile used to create the image.
+
+If the user does not want to use this image, then please follow these steps:
 
 * Install CUDA 10.2 and CUDNN 7.6.5 (or use a base image containing both, such as: `nvcr.io/nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04` )
 * Run `install.sh`

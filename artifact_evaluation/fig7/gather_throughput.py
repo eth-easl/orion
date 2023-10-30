@@ -11,8 +11,8 @@ hp_list = ['ResNet50', 'MobileNetV2']
 be_list = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT', 'Transformer']
 num_runs = 3
 
-df_hp_ideal_throughput = pd.DataFrame(0.0, index=models, columns=models)
-df_be_ideal_throughput = pd.DataFrame(0.0, index=models, columns=models)
+df_hp_ideal_throughput = pd.DataFrame("0", index=models, columns=models)
+df_be_ideal_throughput = pd.DataFrame("0", index=models, columns=models)
 for hp in hp_list:
     res_hp = []
     for run in range(num_runs):
@@ -21,6 +21,7 @@ for hp in hp_list:
             data = json.load(f)
             res_hp.append(float(data['throughput']))
     for be in be_list:
+        print(round(np.average(res_hp),2))
         df_hp_ideal_throughput.at[be, hp] = f"{round(np.average(res_hp),2)}/{round(np.std(res_hp),2)}"
 
 for be in be_list:
@@ -39,11 +40,11 @@ print("ideal")
 print(df_hp_ideal_throughput)
 print(df_be_ideal_throughput)
 
-df_hp_mps_throughput = pd.DataFrame(0.0, index=models, columns=models)
-df_be_mps_throughput = pd.DataFrame(0.0, index=models, columns=models)
+df_hp_mps_throughput = pd.DataFrame("0", index=models, columns=models)
+df_be_mps_throughput = pd.DataFrame("0", index=models, columns=models)
 for be,hp in itertools.product(be_list, hp_list):
     res_hp = []
-    res_bp = []
+    res_be = []
     for run in range(num_runs):
         input_file_hp = f"results/mps/{hp}_{be}_{run}.json"
         with open(input_file_hp, 'r') as f:
@@ -61,8 +62,8 @@ print(df_hp_mps_throughput)
 print(df_be_mps_throughput)
 
 for baseline in baselines[:-2]:
-    df_hp_throughput = pd.DataFrame(0.0, index=models, columns=models)
-    df_be_throughput = pd.DataFrame(0.0, index=models, columns=models)
+    df_hp_throughput = pd.DataFrame("0", index=models, columns=models)
+    df_be_throughput = pd.DataFrame("0", index=models, columns=models)
     for be,hp in itertools.product(be_list, hp_list):
         res_hp = []
         res_be = []
@@ -84,5 +85,5 @@ for baseline in baselines[:-2]:
     print(df_hp_throughput)
     print(df_be_throughput)
 
-    df_hp_throughput.to_csv(f'results/train_throughput_{baseline}.csv')
-    df_be_throughput.to_csv(f'results/inf_throughput_{baseline}.csv')
+    df_hp_throughput.to_csv(f'results/inf_throughput_{baseline}.csv')
+    df_be_throughput.to_csv(f'results/train_throughput_{baseline}.csv')
