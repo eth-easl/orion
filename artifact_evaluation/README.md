@@ -25,8 +25,6 @@ The artifact has been tested on a GCP VM with the following specifications:
 * Python >= 3.8
 * BERT and Transformer-XL benchmarks from the [NVIDIA benchmarking repo](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/LanguageModeling). (already contained in the docker image)
 
-
-
 # Artifact Evaluation
 
 Notes:
@@ -76,10 +74,22 @@ please do
 
 * `LD_PRELOAD="/root/orion/src/cuda_capture/libinttemp.so" python benchmarking/launch_jobs.py --algo orion --config_file /root/orion/artifact_evaluation/example/config.json`
 
+## Configuration files
+
+* The current API of Orion expects as input a `json` file, like the ones in  `orion/artifact_evaluation/fig7/config_files`.
+The number of entries in the json file represent the number of clients (e.g. 2 clients in `orion/artifact_evaluation/fig7/config_files/bert_mnet.json`, 1 client in `/root/orion/artifact_evaluation/example/config.json`).
+The information required for each client is:
+
+* `arch`: The submitted model
+* `kernel_file`: File containing profiling information for each of the kernels of the submitted model.
+You can find examples under [orion/benchmarking/model_kernels](../benchmarking/model_kernels/).
+* `num_kernels`: Number of kernels per iteration (forward pass for inference, forward-backward-update phase for training)
+* `num_iters`: Number of inference requests or training iterations the client will run for
+* `args`: Any extra arguments passed to the script (For example in our scripts we provide: batch size, rps, etc)
+
 ## Reproduce Fig 7
 
 We assume we are at the `orion/artifact_evaluation/fig7` directory
-
 
 ### Create result directories
 

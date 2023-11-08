@@ -4,6 +4,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--results_dir', type=str, required=True,
                         help='path to directory containing the profiling files')
+parser.add_argument('--ai_threshold', type=float, default=9.72,
+                        help='arithmetic intensity that seperates compute from memory bound kernels')
 args = parser.parse_args()
 
 df_raw = pd.read_csv(f'{args.results_dir}/raw_ncu.csv')
@@ -52,7 +54,7 @@ for index, row in df_raw.iterrows():
         ai = flops_sec/bytes
         ai_list.append(ai)
         print(index, ai)
-        if ai > 9.72:
+        if ai > args.ai_threshold:
             roofline_prof.append(1)
             comp_bound += 1
         else:
