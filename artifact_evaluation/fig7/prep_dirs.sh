@@ -5,5 +5,3 @@ mkdir results/ideal
 mkdir results/reef
 mkdir results/orion
 mkdir results/mps
-mkdir results/latency
-mkdir results/throughput

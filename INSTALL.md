@@ -10,15 +10,12 @@ We have set up a docker image: [fotstrt/orion-ae](https://hub.docker.com/reposit
     * `pip install -e .`
 
 
-### Build Docker image
-TODO
-
 ### Without Docker image
 
 In order to use Orion without our pre-built image, a user must install:
 * [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit). We have tested Orion with CUDA 10.2 and CUDA 11.3
 * (optionally) [NVIDIA CUDNN](https://developer.nvidia.com/cudnn)
-* Pytorch (from source)
+* Pytorch (from source) + TorchVision
 * Download the Orion repo and install:
     * `git clone https://github.com/eth-easl/orion.git`
     * `cd orion`

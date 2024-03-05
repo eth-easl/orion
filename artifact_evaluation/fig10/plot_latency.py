@@ -11,11 +11,12 @@ def get_data(csv_file, error=False):
     df = df.drop(df.columns[0], axis=1)
     df.index = models
 
+    df = df.drop(df.columns[-3], axis=1)
     df = df.drop(df.columns[-2], axis=1)
     df = df.drop(df.columns[-1], axis=1)
 
     for model_row in models:
-        for model_col in models[:3]:
+        for model_col in models[:2]:
             cell = df.at[model_row, model_col]
             df.at[model_row, model_col] = float(cell.split('/')[0]) #float(cell.split('/')[1]) if error else float(cell.split('/')[0])
     if error:
@@ -23,15 +24,12 @@ def get_data(csv_file, error=False):
     else:
         return df.mean()
 
-
 # %%
 method2file = {
-    'Temporal Sharing': 'results/sequential.csv',
-    'Streams': 'results/streams.csv',
-    'MPS': 'results/mps.csv',
-    'REEF policy': 'results/reef.csv',
-    'Orion': 'results/orion.csv',
-    'Ideal': 'results/ideal.csv'
+    'MPS': 'results/mps_latency.csv',
+    'REEF policy': 'results/reef_latency.csv',
+    'Orion': 'results/orion_latency.csv',
+    'Ideal': 'results/ideal_latency.csv'
 }
 
 label_font_size = 22
@@ -46,7 +44,7 @@ for method, file in method2file.items():
 
 width = 0.15
 fig, ax = plt.subplots(figsize=(14, 8))
-x = np.arange(3)
+x = np.arange(2)
 bars = []
 for method_id, method in enumerate(methods):
 
@@ -60,7 +58,7 @@ for method_id, method in enumerate(methods):
 x_tick_positions = x + width * len(methods) / 2
 ax.set_xticks(
     ticks=x_tick_positions,
-    labels=models[:3], fontsize=22
+    labels=models[:2], fontsize=22
 )
 plt.yticks(fontsize=22)
 ax.set_ylabel('Average p95 inference latency (ms)', fontsize=label_font_size)

@@ -15,6 +15,7 @@ import transformer.lamb as lamb
 from transformer.data_utils import *
 from transformer.mem_transformer import MemTransformerLM
 import sys
+import os
 # try:
 #     from apex import amp
 # except ModuleNotFoundError:
@@ -91,7 +92,7 @@ def setup(model_config, shared_config, device):
 
 
     arch = model_config['arch']
-    with open('./transformer/transformer_consts.yaml', 'r') as file:
+    with open(f"{os.path.expanduser( '~' )}/orion/related/baselines/transformer/transformer_consts.yaml", 'r') as file:
         model_consts = yaml.load(file, Loader=yaml.FullLoader)[arch]
 
     batch_size = model_config['batch_size']

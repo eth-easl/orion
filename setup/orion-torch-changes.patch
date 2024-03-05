@@ -1,0 +1,924 @@
+diff --git a/aten/src/ATen/native/cuda/CUDALoops.cuh b/aten/src/ATen/native/cuda/CUDALoops.cuh
+index c16fe2a06b..e41782a421 100644
+--- a/aten/src/ATen/native/cuda/CUDALoops.cuh
++++ b/aten/src/ATen/native/cuda/CUDALoops.cuh
+@@ -55,7 +55,10 @@ namespace at { namespace native {
+ 
+ template<int vec_size, typename func_t, typename array_t>
+ C10_LAUNCH_BOUNDS_1(num_threads())
+-__global__ void vectorized_elementwise_kernel(int N, func_t f, array_t data) {
++__global__ void vectorized_elementwise_kernel(int N, func_t f, int data_size, array_t data) {
++
++  //printf("Inside vectorized_elementwise_kernel, %d\n", blockIdx.x);
++  
+   using traits = function_traits<func_t>;
+   int remaining = N - block_work_size() * blockIdx.x;
+ 
+@@ -73,9 +76,17 @@ __global__ void vectorized_elementwise_kernel(int N, func_t f, array_t data) {
+   }
+ }
+ 
++template<int vec_size, typename func_t, typename array_t>
++C10_LAUNCH_BOUNDS_1(num_threads())
++__global__ void dummy(int N, func_t f, array_t data) {
++	printf("Hello! N is %ld\n", N);
++	return;
++}
++
++
+ template<typename func_t, typename array_t, typename inp_calc_t, typename out_calc_t, typename loader_t, typename storer_t>
+ C10_LAUNCH_BOUNDS_1(num_threads())
+-__global__ void unrolled_elementwise_kernel(int N, func_t f, array_t data,
++__global__ void unrolled_elementwise_kernel(int N, func_t f, int data_size, array_t data,
+                                             inp_calc_t ic, out_calc_t oc, loader_t l, storer_t s)
+ {
+   int remaining = N - block_work_size() * blockIdx.x;
+@@ -92,13 +103,22 @@ static inline void launch_vectorized_kernel(int64_t N, const func_t& f, array_t
+   auto stream = at::cuda::getCurrentCUDAStream();
+   int vec_size = memory::can_vectorize_up_to<func_t>(data);
+ 
++  //int64_t* N_ptr = (int64_t*)malloc(sizeof(int64_t));
++  //*N_ptr = N;
++
++  //printf("vec_size is %d, N is %ld, data.size is %d\n", vec_size, N, data.size());
++  //for (int i=0; i<data.size(); i++) 
++  //	  printf("%d, %p\n", i, data[i]);
++	
++
+   switch (vec_size) {
+   case 4:
+-    vectorized_elementwise_kernel<4, func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data);
++    vectorized_elementwise_kernel<4, func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data.size(), data);
++    //dummy<4, func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data);
+     C10_CUDA_KERNEL_LAUNCH_CHECK();
+     break;
+   case 2:
+-    vectorized_elementwise_kernel<2, func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data);
++    vectorized_elementwise_kernel<2, func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data.size(), data);
+     C10_CUDA_KERNEL_LAUNCH_CHECK();
+     break;
+   case 1: {
+@@ -106,13 +126,17 @@ static inline void launch_vectorized_kernel(int64_t N, const func_t& f, array_t
+     auto output_calc = TrivialOffsetCalculator<1>();
+     auto loader = memory::LoadWithoutCast();
+     auto storer = memory::StoreWithoutCast();
+-    unrolled_elementwise_kernel<func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data, input_calc, output_calc, loader, storer);
++    printf("DATA size is %d\n", data.size());
++    unrolled_elementwise_kernel<func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data.size(), data, input_calc, output_calc, loader, storer);
+     C10_CUDA_KERNEL_LAUNCH_CHECK();
+     break;
+   }
+   default:
+     TORCH_INTERNAL_ASSERT(false, "Unexpected vectorization size");
+   }
++
++
++
+ }
+ 
+ 
+@@ -123,7 +147,7 @@ static inline void launch_unrolled_kernel(int64_t N, const func_t& f, array_t da
+   TORCH_INTERNAL_ASSERT(N > 0 && N <= std::numeric_limits<int32_t>::max());
+   int64_t grid = (N + block_work_size() - 1) / block_work_size();
+   auto stream = at::cuda::getCurrentCUDAStream();
+-  unrolled_elementwise_kernel<func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data, ic, oc, l, s);
++  unrolled_elementwise_kernel<func_t, array_t><<<grid, num_threads(), 0, stream>>>(N, f, data.size(), data, ic, oc, l, s);
+   C10_CUDA_KERNEL_LAUNCH_CHECK();
+ }
+ 
+@@ -190,19 +214,28 @@ invoke(const func_t &f, char *const C10_RESTRICT data[], const index_t strides[]
+ 
+ template <typename func_t>
+ void gpu_kernel_impl(TensorIteratorBase& iter, const func_t& f) {
++  
++  //printf("**************************** Inside CUDALoops::gpu_kernel_impl\n");
++	
+   using traits = function_traits<func_t>;
+   using arg0_t = typename traits::result_type;
+   constexpr int ntensors = traits::arity + 1;
+ 
++
++  //printf("Ntensors is %d\n", ntensors);
++
+   TORCH_INTERNAL_ASSERT(iter.can_use_32bit_indexing());
+   TORCH_INTERNAL_ASSERT(iter.ninputs() == traits::arity);
+   TORCH_INTERNAL_ASSERT(iter.noutputs() == 1);
+ 
+-  at::detail::Array<char*, ntensors> data;
++  at::detail::Array<char*, ntensors> data; //_ptr = malloc(sizeof(at::detail::Array<char*, ntensors>()));
++  
+   for (int i = 0; i < ntensors; i++) {
+     data[i] = (char*)iter.data_ptr(i);
+   }
+ 
++
++  //at::detail::Array<char*, ntensors>* data = *data_ptr;
+   int64_t numel = iter.numel();
+ 
+   bool contiguous = iter.is_contiguous();
+@@ -210,18 +243,21 @@ void gpu_kernel_impl(TensorIteratorBase& iter, const func_t& f) {
+ 
+   if (!dynamic_casting) {
+     if (contiguous) {
++      //printf("1, contiguous\n");
+       launch_vectorized_kernel(numel, f, data);
+     } else {
++	//printf("1, not contiguous\n");
+         auto offset_calc = ::make_offset_calculator<traits::arity + 1>(iter);
+         constexpr int unroll_factor = sizeof(arg0_t) >= 4 ? 2 : 4;
+         launch_legacy_kernel<128,unroll_factor>(numel, [=]GPU_LAMBDA(int idx) {
+         auto offsets = offset_calc.get(idx);
+-        arg0_t* out = (arg0_t*)(data[0] + offsets[0]);
++        arg0_t* out = (arg0_t*)((data)[0] + offsets[0]);
+         *out = invoke(f, &data.data[1], &offsets.data[1], 1);
+         });
+     }
+   } else {
+     if (contiguous) {
++      //printf("2, contiguous\n");
+       at::detail::Array<ScalarType, traits::arity> dtypes;
+       for (int i = 0; i < traits::arity; i++) {
+         dtypes[i] = iter.dtype(i + 1);
+@@ -232,6 +268,7 @@ void gpu_kernel_impl(TensorIteratorBase& iter, const func_t& f) {
+       auto output_offset_calculator = TrivialOffsetCalculator<1>();
+       launch_unrolled_kernel(numel, f, data, input_offset_calculator, output_offset_calculator, loader, storer);
+     } else {
++      //printf("2, not contiguous\n");
+       at::detail::Array<ScalarType, ntensors> dtypes;
+       for (int i = 0; i < ntensors; i++) {
+         dtypes[i] = iter.dtype(i);
+diff --git a/aten/src/ATen/native/cuda/Copy.cu b/aten/src/ATen/native/cuda/Copy.cu
+index 57f04d481f..0a829c6e01 100644
+--- a/aten/src/ATen/native/cuda/Copy.cu
++++ b/aten/src/ATen/native/cuda/Copy.cu
+@@ -49,6 +49,8 @@ using namespace at::cuda;
+ 
+ // device-to-device copy, does type conversion
+ void copy_device_to_device(TensorIterator& iter, bool non_blocking) {
++  
++  //printf("Inside copy_device_to_device\n");	
+   int64_t numel = iter.numel();
+ 
+   // We can memcpy the memory if both tensors have the same type AND both
+@@ -68,6 +70,8 @@ void copy_device_to_device(TensorIterator& iter, bool non_blocking) {
+   // current streams for completion of the copy. We have to explicitly do this
+   // for non-contig copies. This mimics the behavior of cross-device
+   // cudaMemcpyAsync on the default stream.
++  
++  //printf("Inside Copy1\n");
+   CUDAStream copy_stream = getCurrentCUDAStream(src_device.index());
+   if (src_device != dst_device) {
+     // This is a cross-device copy on the src current stream and dst current
+@@ -78,8 +82,8 @@ void copy_device_to_device(TensorIterator& iter, bool non_blocking) {
+     // src waits on dst barrier (src already waits on src)
+     CUDAEvent dst_ready;
+     device_guard.set_device(dst_device);
+-    dst_ready.record(getCurrentCUDAStream(dst_device.index()));
+ 
++    //printf("Inside Copy2\n");
+     device_guard.set_device(src_device);
+     dst_ready.block(copy_stream);
+   }
+@@ -120,6 +124,8 @@ void copy_device_to_device(TensorIterator& iter, bool non_blocking) {
+     src_ready.record(copy_stream);
+ 
+     device_guard.set_device(dst_device);
++
++    //printf("Inside Copy3\n");
+     src_ready.block(getCurrentCUDAStream(dst_device.index()));
+   }
+ 
+@@ -226,9 +232,13 @@ static void copy_kernel_cuda(TensorIterator& iter, bool non_blocking) {
+   void* dst = iter.data_ptr(0);
+   void* src = iter.data_ptr(1);
+   int64_t nbytes = iter.numel() * iter.element_size(0);
++ 
++  //printf("Inside Copy 4!\n");
+   CUDAStream stream = getCurrentCUDAStream();
+ 
+   if (non_blocking) {
++    
++    //printf("Copy is sync\n");
+     AT_CUDA_CHECK(cudaMemcpyAsync(dst, src, nbytes, kind, stream));
+     // we use both the storage context and the tensor data pointer as the key
+     // for the caching host allocator. This allows us to better attribute the
+@@ -250,6 +260,7 @@ static void copy_kernel_cuda(TensorIterator& iter, bool non_blocking) {
+     CachingHostAllocator_recordEvent(ptr, ctx, stream);
+ 
+   } else {
++    //printf("Copy is async\n");
+     at::cuda::memcpy_and_sync(dst, src, nbytes, kind, stream);
+   }
+ 
+diff --git a/c10/cuda/CUDACachingAllocator.cpp b/c10/cuda/CUDACachingAllocator.cpp
+index a098003f95..97c7bc0c2c 100644
+--- a/c10/cuda/CUDACachingAllocator.cpp
++++ b/c10/cuda/CUDACachingAllocator.cpp
+@@ -20,6 +20,8 @@
+ #include <regex>
+ #include <set>
+ #include <vector>
++#include <thread>
++#include <iostream>
+ 
+ namespace c10 {
+ 
+@@ -168,6 +170,7 @@ struct BlockPool {
+ };
+ 
+ struct Block {
++  std::thread::id tid;
+   int device; // gpu
+   cudaStream_t stream; // allocation stream
+   stream_set stream_uses; // streams on which the block was used
+@@ -182,12 +185,14 @@ struct Block {
+                 // garbage collection
+ 
+   Block(
++      std::thread::id tid,
+       int device,
+       cudaStream_t stream,
+       size_t size,
+       BlockPool* pool,
+       void* ptr)
+-      : device(device),
++      : tid(tid),
++	device(device),
+         stream(stream),
+         stream_uses(),
+         size(size),
+@@ -200,8 +205,9 @@ struct Block {
+         gc_count(0) {}
+ 
+   // constructor for search key
+-  Block(int device, cudaStream_t stream, size_t size)
+-      : device(device),
++  Block(std::thread::id tid, int device, cudaStream_t stream, size_t size)
++      : tid(tid),
++	device(device),
+         stream(stream),
+         stream_uses(),
+         size(size),
+@@ -219,6 +225,9 @@ struct Block {
+ };
+ 
+ static bool BlockComparator(const Block* a, const Block* b) {
++  if (a->tid != b->tid) {
++	return a->tid < b->tid;
++  }
+   if (a->stream != b->stream) {
+     return (uintptr_t)a->stream < (uintptr_t)b->stream;
+   }
+@@ -249,13 +258,14 @@ static std::string format_size(uint64_t size) {
+ 
+ struct AllocParams {
+   AllocParams(
++      std::thread::id tid,
+       int device,
+       size_t size,
+       cudaStream_t stream,
+       BlockPool* pool,
+       size_t alloc_size,
+       DeviceStats& stats)
+-      : search_key(device, stream, size),
++      : search_key(tid, device, stream, size),
+         pool(pool),
+         alloc_size(alloc_size),
+         block(nullptr),
+@@ -270,6 +280,9 @@ struct AllocParams {
+   size_t size() const {
+     return search_key.size;
+   }
++  std::thread::id tid() const {
++    return search_key.tid;
++  }
+ 
+   Block search_key;
+   BlockPool* pool;
+@@ -315,6 +328,7 @@ cudaError_t cudaMallocMaybeCapturing(void** p, size_t size) {
+   if (at::cuda::currentStreamCaptureStatusMayInitCtx() ==
+       at::cuda::CaptureStatus::None) {
+ #endif
++    //printf("cudaMalloc 2\n");
+     return C10_CUDA_ERROR_HANDLED(cudaMalloc(p, size));
+ #if defined(CUDA_VERSION) && CUDA_VERSION >= 11000
+   } else {
+@@ -323,6 +337,7 @@ cudaError_t cudaMallocMaybeCapturing(void** p, size_t size) {
+     // Capturing cudaMalloc behaves nicely: it gives the graph new VA,
+     // but is ignored (won't leakily allocate new memory) in replays.
+     at::cuda::CUDAStreamCaptureModeGuard g{cudaStreamCaptureModeRelaxed};
++    //printf("cudaMalloc 3\n");
+     return C10_CUDA_ERROR_HANDLED(cudaMalloc(p, size));
+   }
+ #endif
+@@ -505,13 +520,21 @@ class DeviceCachingAllocator {
+       //    Dumb simple solution: defer reclaiming these allocations until after
+       //    capture. Cross-stream memory use is uncommon, so the deferral's
+       //    effect on memory use during capture should be small.
++      //printf("About to call process_events\n");
+       process_events();
+     }
+ 
+     size = round_size(size);
++    
++    std::thread::id this_id = std::this_thread::get_id();    
++    //std::cout << "In malloc, thread " << this_id << std::endl;
++
+     auto& pool = get_pool(size, stream);
+     const size_t alloc_size = get_allocation_size(size);
+-    AllocParams params(device, size, stream, &pool, alloc_size, stats);
++    
++    //printf("size to allocate is %ld\n", alloc_size);
++    
++    AllocParams params(this_id, device, size, stream, &pool, alloc_size, stats);
+     params.stat_types[static_cast<size_t>(StatType::AGGREGATE)] = true;
+     params.stat_types[static_cast<size_t>(get_stat_type_for_pool(pool))] = true;
+ 
+@@ -609,9 +632,12 @@ class DeviceCachingAllocator {
+ 
+     const bool already_split = block->is_split();
+     if (should_split(block, size)) {
++      
++      //printf("should split the block\n");
++
+       remaining = block;
+ 
+-      block = new Block(device, stream, size, &pool, block->ptr);
++      block = new Block(this_id, device, stream, size, &pool, block->ptr);
+       block->prev = remaining->prev;
+       if (block->prev) {
+         block->prev->next = block;
+@@ -637,6 +663,8 @@ class DeviceCachingAllocator {
+         });
+       }
+     } else if (already_split) {
++
++      //printf("block already split!\n");
+       // An already-split block is becoming active
+       for_each_selected_stat_type(params.stat_types, [&](size_t stat_type) {
+         update_stat(stats.inactive_split_bytes[stat_type], -block->size);
+@@ -668,6 +696,8 @@ class DeviceCachingAllocator {
+   }
+ 
+   void free(Block* block) {
++    
++    //printf("Inside free, arg is block!!!!!\n");	  
+     std::lock_guard<std::recursive_mutex> lock(mutex);
+ 
+     block->allocated = false;
+@@ -688,6 +718,7 @@ class DeviceCachingAllocator {
+     if (block->size >= CachingAllocatorConfig::max_split_size())
+       update_stat(stats.oversize_allocations, -1);
+ 
++    //printf("Stream_uses size is %ld\n", block->stream_uses.size());
+     if (!block->stream_uses.empty()) {
+       if (C10_UNLIKELY(captures_underway)) {
+         // It's forbidden to cudaEventQuery an event recorded during CUDA graph
+@@ -748,6 +779,7 @@ class DeviceCachingAllocator {
+ 
+   /** returns cached blocks to the system allocator **/
+   void emptyCache() {
++    //printf("Inside emptyCache3\n");
+     std::lock_guard<std::recursive_mutex> lock(mutex);
+     release_cached_blocks();
+   }
+@@ -991,6 +1023,7 @@ class DeviceCachingAllocator {
+ 
+   /** moves a block into a pool of cached free blocks */
+   void free_block(Block* block) {
++    
+     TORCH_INTERNAL_ASSERT(
+         !block->allocated && block->event_count == 0 &&
+         block->stream_uses.empty());
+@@ -1011,7 +1044,7 @@ class DeviceCachingAllocator {
+       }
+     }
+ 
+-    active_blocks.erase(block);
++    //active_blocks.erase(block);
+     // Makes sure the Block* isn't already present in the pool we're freeing it
+     // back into.
+     bool inserted = pool.blocks.insert(block).second;
+@@ -1039,11 +1072,13 @@ class DeviceCachingAllocator {
+   /** combine previously split blocks. returns the size of the subsumed block,
+    * or 0 on failure. */
+   size_t try_merge_blocks(Block* dst, Block* src, BlockPool& pool) {
++    	  
+     if (!src || src->allocated || src->event_count > 0 ||
+         !src->stream_uses.empty()) {
+       return 0;
+     }
+ 
++
+     AT_ASSERT(dst->is_split() && src->is_split());
+ 
+     if (dst->prev == src) {
+@@ -1053,6 +1088,7 @@ class DeviceCachingAllocator {
+         dst->prev->next = dst;
+       }
+     } else {
++
+       dst->next = src->next;
+       if (dst->next) {
+         dst->next->prev = dst;
+@@ -1117,6 +1153,8 @@ class DeviceCachingAllocator {
+   }
+ 
+   static size_t get_allocation_size(size_t size) {
++    
++    //printf("size is %ld\n", size);
+     if (size <= kSmallSize) {
+       return kSmallBuffer;
+     } else if (size < kMinLargeAlloc) {
+@@ -1138,7 +1176,15 @@ class DeviceCachingAllocator {
+       }
+     }
+     auto it = pool.blocks.lower_bound(&p.search_key);
+-    if (it == pool.blocks.end() || (*it)->stream != p.stream())
++    
++    /*std::set<cudaStream_t> streams_set;
++    for (auto jt: pool.blocks) {
++	 streams_set.insert(jt->stream);
++	//printf("Stream at pool is %ld\n", jt->stream);
++    }
++    printf("Set size is %ld\n", streams_set.size());*/
++    
++    if (it == pool.blocks.end() || (*it)->stream != p.stream() || (*it)->tid != p.tid())
+       return false;
+     // Do not return an oversized block for a large request
+     if ((p.size() < CachingAllocatorConfig::max_split_size()) &&
+@@ -1263,7 +1309,9 @@ class DeviceCachingAllocator {
+     }
+ 
+     total_allocated_memory += size;
+-    p.block = new Block(p.device(), p.stream(), size, p.pool, (char*)ptr);
++
++    std::thread::id this_id = std::this_thread::get_id();
++    p.block = new Block(this_id, p.device(), p.stream(), size, p.pool, (char*)ptr);
+     for_each_selected_stat_type(p.stat_types, [&](size_t stat_type) {
+       update_stat(stats.segment[stat_type], 1);
+       update_stat(stats.reserved_bytes[stat_type], size);
+@@ -1280,7 +1328,9 @@ class DeviceCachingAllocator {
+    * **/
+   /** to satisfy the target size **/
+   bool release_available_cached_blocks(const AllocParams& p) {
+-    if (CachingAllocatorConfig::max_split_size() ==
++   
++   //printf("Inside release_available_cached_blocks!\n"); 
++   if (CachingAllocatorConfig::max_split_size() ==
+         std::numeric_limits<size_t>::max())
+       return false;
+     BlockPool& pool = *p.pool;
+@@ -1289,7 +1339,7 @@ class DeviceCachingAllocator {
+         ? CachingAllocatorConfig::max_split_size()
+         : key.size;
+     auto it = pool.blocks.lower_bound(&key);
+-    if (it == pool.blocks.end() || (*it)->stream != p.stream()) {
++    if (it == pool.blocks.end() || (*it)->stream != p.stream() || (*it)->tid != p.tid()) {
+       // No single block is large enough; free multiple oversize blocks,
+       // starting with the largest
+       if (it == pool.blocks.begin())
+@@ -1299,7 +1349,7 @@ class DeviceCachingAllocator {
+             // stream
+       while ((totalReleased < key.size) &&
+              ((*it)->size >= CachingAllocatorConfig::max_split_size()) &&
+-             ((*it)->stream == p.stream())) {
++             ((*it)->stream == p.stream()) && ((*it)->tid == p.tid())) {
+         auto cur = it;
+         totalReleased += (*it)->size;
+         if (it != pool.blocks.begin()) {
+@@ -1319,6 +1369,8 @@ class DeviceCachingAllocator {
+   }
+ 
+   bool release_cached_blocks() {
++
++    //printf("Inside release_cached_blocks!\n");
+     // First ensure that all blocks that can't currently be allocated due to
+     // outstanding events are returned to the pool.
+     synchronize_and_free_events();
+@@ -1346,6 +1398,7 @@ class DeviceCachingAllocator {
+   }
+ 
+   void release_block(Block* block) {
++    //printf("Call release_block!\n");
+     C10_CUDA_CHECK(cudaFree((void*)block->ptr));
+     total_allocated_memory -= block->size;
+ 
+@@ -1372,6 +1425,7 @@ class DeviceCachingAllocator {
+ 
+   void release_blocks(BlockPool& pool) {
+     // Frees all non-split blocks
++    //printf("Inside release_blocks!\n");
+     auto it = pool.blocks.begin();
+     while (it != pool.blocks.end()) {
+       Block* block = *it;
+@@ -1551,12 +1605,16 @@ class THCCachingAllocator {
+         "Allocator not initialized for device ",
+         device,
+         ": did you call init?");
++    //printf("Inside malloc, size is %ld\n", size);
+     Block* block = device_allocator[device]->malloc(device, size, stream);
+     add_allocated_block(block);
+     *devPtr = (void*)block->ptr;
+   }
+ 
+   void free(void* ptr) {
++    //printf("Free pointer %p\n", ptr);
++    
++    //printf("Inside free, arg is ptr\n");
+     if (!ptr) {
+       return;
+     }
+@@ -1587,6 +1645,7 @@ class THCCachingAllocator {
+   }
+ 
+   void emptyCache() {
++    //printf("Inside emptyCache1\n");
+     for (auto& da : device_allocator)
+       da->emptyCache();
+   }
+@@ -1643,6 +1702,7 @@ bool forceUncachedAllocator() {
+ }
+ 
+ static void uncached_delete(void* ptr) {
++  //printf("Inside uncached_delete!\n");
+   C10_CUDA_CHECK(cudaFree(ptr));
+ }
+ 
+@@ -1656,16 +1716,20 @@ struct CudaCachingAllocator : public Allocator {
+         CUDAOutOfMemoryError,
+         size < one_exa_bytes,
+         "CUDA out of memory. Tried to allocate more than 1EB memory.");
++    
++    //printf("Inside allocate! allocate mem of size %ld\n", size);
+     int device;
+     C10_CUDA_CHECK(cudaGetDevice(&device));
+     void* r = nullptr;
+     if (forceUncachedAllocator()) {
+       // Deliberately don't use cudaMallocMaybeCapturing here, to force an error
+       // if someone tries to use forceUncachedAllocator while capturing.
++      //printf("Call CUDAMalloc 1\n");
+       C10_CUDA_CHECK(cudaMalloc(&r, size));
+       return {r, r, &uncached_delete, Device(DeviceType::CUDA, device)};
+     }
+     if (size != 0) {
++      //printf("Inside CudaCachingAllocator, allocate\n");
+       caching_allocator.malloc(
+           &r, device, size, cuda::getCurrentCUDAStream(device));
+     }
+@@ -1683,6 +1747,7 @@ struct CudaCachingAllocator : public Allocator {
+ CudaCachingAllocator device_allocator;
+ 
+ Allocator* get(void) {
++  //printf("allocator address is %p\n", &device_allocator);
+   return &device_allocator;
+ }
+ 
+@@ -1695,7 +1760,8 @@ void setMemoryFraction(double fraction, int device) {
+ }
+ 
+ void emptyCache(void) {
+-  caching_allocator.emptyCache();
++   //printf("Inside emptyCache2\n");
++   caching_allocator.emptyCache();
+ }
+ 
+ void cacheInfo(int dev_id, size_t* cachedAndFree, size_t* largestBlock) {
+@@ -1825,12 +1891,16 @@ void* raw_alloc(size_t nbytes) {
+   int device;
+   C10_CUDA_CHECK(cudaGetDevice(&device));
+   void* r = nullptr;
++  //printf("Inside CUDACachingAllocator, raw_alloc\n");
+   caching_allocator.malloc(
+       &r, device, nbytes, cuda::getCurrentCUDAStream(device));
+   return r;
+ }
+ 
+ void* raw_alloc_with_stream(size_t nbytes, cudaStream_t stream) {
++  
++  //printf("Inside CUDACachingAllocator, raw_alloc with stream\n");
++
+   if (nbytes == 0) {
+     return nullptr;
+   }
+@@ -1842,6 +1912,8 @@ void* raw_alloc_with_stream(size_t nbytes, cudaStream_t stream) {
+ }
+ 
+ void raw_delete(void* ptr) {
++
++  //printf("Inside raw_delete!\n");
+   caching_allocator.free(ptr);
+ }
+ 
+diff --git a/torch/csrc/autograd/engine.cpp b/torch/csrc/autograd/engine.cpp
+index 401f679d3d..46408ac141 100644
+--- a/torch/csrc/autograd/engine.cpp
++++ b/torch/csrc/autograd/engine.cpp
+@@ -38,6 +38,11 @@
+ #include <sstream>
+ #include <queue>
+ 
++#include <sys/types.h>
++#include <syscall.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++
+ namespace torch { namespace autograd {
+ 
+ namespace {
+@@ -197,6 +202,10 @@ CheckpointValidGuard::~CheckpointValidGuard() {
+ auto ReadyQueue::push(NodeTask item, bool incrementOutstandingTasks) -> void {
+   {
+     // Lock mutex for writing to heap_
++    
++    pid_t tid = syscall(SYS_gettid);
++    //printf("---------- In push, tid is %d\n", tid);
++
+     std::lock_guard<std::mutex> lock(mutex_);
+     if (incrementOutstandingTasks) {
+       std::shared_ptr<GraphTask> graph_task = item.base_.lock();
+@@ -225,9 +234,15 @@ size_t ReadyQueue::size() const {
+ auto ReadyQueue::pop() -> NodeTask {
+   // Lock mutex for accesses to heap_
+   std::unique_lock<std::mutex> lock(mutex_);
++
+   not_empty_.wait(lock, [this]{ return !heap_.empty(); });
++
+   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+-  auto task = std::move(const_cast<NodeTask&>(heap_.top())); heap_.pop();
++  auto task = std::move(const_cast<NodeTask&>(heap_.top()));
++  pid_t tid = syscall(SYS_gettid); 
++  //printf("*************** In pop, tid is %d\n", tid);
++
++  heap_.pop();
+   return task;
+ }
+ 
+@@ -330,8 +345,13 @@ void Engine::thread_init(int device, const std::shared_ptr<ReadyQueue>& ready_qu
+ 
+   // initialize each device thread's thread local ready queue with the ready queue
+   // that is created before the thread initialization
++  
++  printf("At thread init, init local queue\n");
+   init_local_ready_queue(ready_queue);
+ 
++  pid_t tid = syscall(SYS_gettid);
++  printf("At thread init, call thread main, pid is %d\n", tid);
++
+   std::shared_ptr<GraphTask> graph_task = nullptr;
+   thread_main(graph_task);
+   if (should_increment) {
+@@ -396,16 +416,27 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void {
+ 
+   // local_ready_queue should already been initialized when we get into thread_main
+   TORCH_INTERNAL_ASSERT(local_ready_queue != nullptr);
++
++  //std::thread::id this_id = std::this_thread::get_id();
++  
++  pid_t tid = syscall(SYS_gettid);
++  //printf("At Engine::thread_main, tid is %d\n", tid);
++  //std::cout << "TID is " << tid << ", my local_ready_queue is " << local_ready_queue << std::endl;  
++
+   while (graph_task == nullptr || !graph_task->future_result_->completed()) {
+     // local_graph_task represents the graph_task we retrieve from the queue.
+     // The outer graph_task represents the overall graph_task we need to execute
+     // for reentrant execution.
++
+     std::shared_ptr<GraphTask> local_graph_task;
+     {
++
+       // Scope this block of execution since NodeTask is not needed after this
+       // block and can be deallocated (release any references to grad tensors
+       // as part of inputs_).
++
+       NodeTask task = local_ready_queue->pop();
++      
+       // This will only work if the worker is running a non backward task
+       // TODO Needs to be fixed this to work in all cases
+       if (task.isShutdownTask_) {
+@@ -439,7 +470,9 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void {
+                     "autograd::engine::evaluate_function: ",
+                     task.fn_.get()->name()),
+                 c10::ArrayRef<const c10::IValue>());
+-            evaluate_function(
++	    //printf("Call evaluate_function\n");
++            pid_t ntid = syscall(SYS_gettid);
++	    evaluate_function(
+                 local_graph_task,
+                 task.fn_.get(),
+                 task.inputs_,
+@@ -469,7 +502,8 @@ auto Engine::thread_main(const std::shared_ptr<GraphTask>& graph_task) -> void {
+       // NB: This is not necessary if the current thread is the owning thread.
+       if (worker_device != base_owner) {
+         // Synchronize outstanding_tasks_ with queue mutex
+-        std::atomic_thread_fence(std::memory_order_release);
++        //printf("----------------- In thread_main, ready queue, push\n");
++	std::atomic_thread_fence(std::memory_order_release);
+         ready_queue_by_index(local_graph_task->cpu_ready_queue_, base_owner)
+             ->push(NodeTask(local_graph_task, nullptr, InputBuffer(0)));
+       }
+@@ -807,6 +841,8 @@ void Engine::evaluate_function(
+   // ensure they're safe to consume in the context of the present
+   // func's stream (if applicable). So we guard onto that stream
+   // before working with the grads in any capacity.
++  
++  pid_t tid = syscall(SYS_gettid);
+   const auto opt_parent_stream = (*func).stream(c10::DeviceType::CUDA);
+   c10::OptionalStreamGuard parent_stream_guard{opt_parent_stream};
+ 
+@@ -908,8 +944,9 @@ void Engine::evaluate_function(
+                        opt_next_stream);
+ 
+       if (is_ready) {
+-        auto queue = ready_queue(cpu_ready_queue, input_buffer.device());
+-        queue->push(
++        //auto queue = ready_queue(cpu_ready_queue, input_buffer.device());
++	//std::cout << "In evaluate_function, queue is " << local_ready_queue << std::endl;
++	local_ready_queue->push(
+             NodeTask(graph_task, next.function, std::move(input_buffer)));
+       } else {
+         not_ready.emplace(next.function.get(), std::move(input_buffer));
+@@ -925,8 +962,10 @@ void Engine::evaluate_function(
+                        opt_parent_stream,
+                        opt_next_stream);
+       if (is_ready) {
+-        auto queue = ready_queue(cpu_ready_queue, input_buffer.device());
+-        queue->push(
++        //auto queue = ready_queue(cpu_ready_queue, input_buffer.device());
++	//printf("----------------- In evaluate_function, push 2\n");
++	//std::cout << "In evaluate_function 2, queue is " << queue << std::endl;
++	local_ready_queue->push(
+             NodeTask(graph_task, next.function, std::move(input_buffer)));
+         not_ready.erase(not_ready_it);
+       }
+@@ -1000,6 +1039,8 @@ auto Engine::execute(const edge_list& roots,
+       "your parameters to None after use to break the cycle and avoid the leak.");
+   }
+ 
++  //printf("Inside Engine::execute\n");
++
+   // accumulate_grad is true if and only if the frontend call was to
+   // grad(), not backward(). grad() returns the sum of the gradients
+   // w.r.t. the inputs and thus needs the inputs to be present.
+@@ -1030,6 +1071,7 @@ auto Engine::execute(const edge_list& roots,
+   compute_dependencies(graph_root.get(), *graph_task, min_topo_nr);
+ 
+   if (!outputs.empty()) {
++    printf("call init_to_execute!\n");
+     graph_task->init_to_execute(*graph_root, outputs, accumulate_grad, min_topo_nr);
+   }
+ 
+@@ -1047,6 +1089,7 @@ auto Engine::execute(const edge_list& roots,
+ 
+     execute_with_graph_task(graph_task, graph_root, std::move(input_buffer));
+   } else {
++
+     execute_with_graph_task(graph_task, graph_root, InputBuffer(variable_list()));
+   }
+   // Avoid a refcount bump for the Future, since we check for refcount in
+@@ -1072,12 +1115,36 @@ c10::intrusive_ptr<at::ivalue::Future> Engine::execute_with_graph_task(
+   initialize_device_threads_pool();
+   // Lock mutex for GraphTask.
+   std::unique_lock<std::mutex> lock(graph_task->mutex_);
++  
++  // Lock for backward
++  std::unique_lock<std::mutex> bmlock(bmutex_);
++  pid_t tid = syscall(SYS_gettid);
++  //printf("bmap_ size is %lu\n", bmap_.size());
++  
++  if (bmap_.find(tid) == bmap_.end()) {
++    if (bmap_.empty()) {
++    	bmap_[tid] = 0;
++    }
++    else {
++        // get max
++	int max_idx = 0;
++        for (auto p: bmap_) {
++		max_idx = std::max(max_idx, p.second);
++	}
++	bmap_[tid] = max_idx+1;
++    
++    }
++  }
++  bmlock.unlock();
+ 
+   auto queue = ready_queue(graph_task->cpu_ready_queue_, input_buffer.device());
+ 
+   // worker_device == NO_DEVICE it's a CPU thread and it's trying to drive the
+   // autograd engine with corresponding GraphTask, and its NOT a re-entrant call
+   if (worker_device == NO_DEVICE) {
++
++    //printf("worker device is NO_DEVICE\n");
++
+     // We set the worker_device to CPU_DEVICE only if worker_device was previously
+     // NO_DEVICE. Setting it to CPU afterwards allow us to detect whether this is
+     // a re-entrant call or not.
+@@ -1088,6 +1155,7 @@ c10::intrusive_ptr<at::ivalue::Future> Engine::execute_with_graph_task(
+ 
+     // Now that all the non-thread safe fields of the graph_task have been populated,
+     // we can enqueue it.
++    
+     queue->push(NodeTask(graph_task, std::move(graph_root), std::move(input_buffer)));
+ 
+     // The owning thread start to drive the engine execution for any CPU task that
+@@ -1103,6 +1171,8 @@ c10::intrusive_ptr<at::ivalue::Future> Engine::execute_with_graph_task(
+   } else {
+     // If worker_device is any devices (i.e. CPU, CUDA): this is a re-entrant
+     //    backward call from that device.
++    
++    printf("VALID WORKER DEVICE\n");
+     graph_task->owner_ = worker_device;
+ 
+     // Now that all the non-thread safe fields of the graph_task have been populated,
+@@ -1185,12 +1255,17 @@ void Engine::init_local_ready_queue(std::shared_ptr<ReadyQueue> ready_queue) {
+ auto Engine::ready_queue(std::shared_ptr<ReadyQueue> cpu_ready_queue, at::Device device) -> std::shared_ptr<ReadyQueue>{
+   if (should_run_in_cpu_ready_queue(device.type())) {
+     // return the cpu ready queue passed in
++    printf("GET ready queue 1\n");
+     TORCH_INTERNAL_ASSERT(cpu_ready_queue);
+     return cpu_ready_queue;
+   } else {
+     TORCH_INTERNAL_ASSERT(0 <= device.index() && device.index() < static_cast<c10::DeviceIndex>(device_ready_queues_.size()));
+     // See Note [Allocating GPUs to autograd threads]
+-    return device_ready_queues_.at(device.index());
++    //return device_ready_queues_.at(device.index());
++    pid_t tid = syscall(SYS_gettid);
++    int index = bmap_[tid];
++    //printf("GET ready queue, at index %d\n", index);  
++    return device_ready_queues_.at(index);  
+   }
+ }
+ 
+@@ -1212,6 +1287,8 @@ auto Engine::start_device_threads() -> void {
+   // First always initialize the thread pool for re-entrant threads
+   thread_pool_shared_ = std::make_shared<ThreadPoolShared>();
+ 
++  pid_t tid = syscall(SYS_gettid);
++
+   // Second, create special threads for each non-CPU device
+   // See Note [Allocating GPUs to autograd threads]
+   c10::DeviceIndex num_devices = 0;
+@@ -1229,24 +1306,26 @@ auto Engine::start_device_threads() -> void {
+     return;
+   }
+ 
++  printf("Inside start_device_threads, tid is %d, num_devices is %d\n", tid, num_devices);
++  
+   // Since we're about to create threads, forking is not possible anymore
+   track_bad_autograd_forks();
+ 
+   // allocate one thread for every GPU device (but colocate GPUs of different
+   // types), and pre-allocate the device_ready_queues_ to ensure safe reading on it.
+-  device_ready_queues_ = std::vector<std::shared_ptr<ReadyQueue>>(num_devices);
++  device_ready_queues_ = std::vector<std::shared_ptr<ReadyQueue>>(2*num_devices);
+   for (auto& queue : device_ready_queues_)    {
+     queue = std::make_shared<ReadyQueue>();
+   }
+ 
+-  for (const auto i : c10::irange(num_devices)) {
++  for (const auto i : c10::irange(2*num_devices)) {
+     std::thread t(&Engine::thread_init, this, i, device_ready_queues_[i], true);
+     t.detach();
+   }
+   // Wait for the threads to start
+   {
+     std::unique_lock<std::mutex> lk(non_reentrant_device_thread_mutex_);
+-    while(non_reentrant_device_thread_count_.load() != static_cast<uint32_t>(num_devices)) {
++    while(non_reentrant_device_thread_count_.load() != static_cast<uint32_t>(2*num_devices)) {
+       non_reentrant_device_thread_condvar_.wait(lk);
+     }
+   }
+@@ -1257,7 +1336,10 @@ void Engine::add_thread_pool_task(const std::weak_ptr<GraphTask>& graph_task) {
+   // There may already be some items on the graphtasks_queue_ added by other
+   // threads but not enough workers to get to the new task that will be
+   // added
++  
+   bool create_thread = (thread_pool_shared_->num_workers_ <= thread_pool_shared_->graphtasks_queue_.size());
++  
++  printf("--------- Inside thread_pool_task, push\n");
+   thread_pool_shared_->graphtasks_queue_.push(graph_task);
+   // Don't need to be holding the lock while actually creating the thread
+   lck.unlock();
+diff --git a/torch/csrc/autograd/engine.h b/torch/csrc/autograd/engine.h
+index 6aae048432..bded89528d 100644
+--- a/torch/csrc/autograd/engine.h
++++ b/torch/csrc/autograd/engine.h
+@@ -63,6 +63,7 @@ struct GraphTask: std::enable_shared_from_this<GraphTask> {
+   std::unordered_map<Node*, InputBuffer> not_ready_;
+   std::unordered_map<Node*, int> dependencies_;
+ 
++
+   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+   struct ExecInfo {
+     struct Capture {
+@@ -383,6 +384,10 @@ struct TORCH_API Engine {
+   // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+   std::vector<std::shared_ptr<ReadyQueue>> device_ready_queues_;
+ 
++  // thread-dependent backward
++  std::mutex bmutex_;
++  std::unordered_map<int, int> bmap_;
++
+   // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+   std::vector<std::function<void()>> final_callbacks_;
+   // To protect reads and writes to final_callbacks_

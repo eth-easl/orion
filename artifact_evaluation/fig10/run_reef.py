@@ -1,7 +1,7 @@
 import os
 import time
 
-num_runs = 1
+num_runs = 3
 trace_files = [
     ("ResNet50", "ResNet50", "rnet_rnet"),
     ("ResNet50", "MobileNetV2", "rnet_mnet"),
@@ -20,7 +20,7 @@ for (be, hp, f) in trace_files:
         print(be, hp, run, flush=True)
         # run
         file_path = f"config_files/{f}.json"
-        os.system(f"LD_PRELOAD='{os.path.expanduser( '~' )}/orion/src/cuda_capture/libinttemp.so' python ../../benchmarking/launch_jobs.py --algo reef --config_file {file_path} --reef_depth 12")
+        os.system(f"LD_PRELOAD='{os.path.expanduser( '~' )}/orion/src/cuda_capture/libinttemp.so' python3.8 ../../benchmarking/launch_jobs.py --algo reef --config_file {file_path} --reef_depth 12")
 
         # copy results
         os.system(f"cp client_1.json results/reef/{be}_{hp}_{run}_hp.json")
