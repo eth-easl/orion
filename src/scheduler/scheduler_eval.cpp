@@ -555,7 +555,7 @@ extern "C" {
 		char *homedir = pw->pw_dir;
 		char* lib_path = "/orion/src/cuda_capture/libinttemp.so";
 
-		klib = dlopen(strcat(homedir, lib_path), RTLD_NOW | RTLD_GLOBAL);
+		klib = dlopen(lib_path, RTLD_NOW | RTLD_GLOBAL);
 
 		if (!klib) {
 			fprintf(stderr, "Error: %s\n", dlerror());

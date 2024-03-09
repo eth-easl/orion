@@ -58,9 +58,9 @@ def launch_jobs(config_dict_list, input_args, run_eval):
     client_barrier = threading.Barrier(num_clients)
     home_directory = os.path.expanduser( '~' )
     if run_eval:
-        sched_lib = cdll.LoadLibrary(home_directory + "/orion/src/scheduler/scheduler_eval.so")
+        sched_lib = cdll.LoadLibrary("/orion/src/scheduler/scheduler_eval.so")
     else:
-        sched_lib = cdll.LoadLibrary(home_directory + "/orion/src/scheduler/scheduler.so")
+        sched_lib = cdll.LoadLibrary("/orion/src/scheduler/scheduler.so")
     py_scheduler = PyScheduler(sched_lib, num_clients)
 
     print(torch.__version__)
