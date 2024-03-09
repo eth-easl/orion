@@ -85,7 +85,7 @@ def imagenet_loop(
 
     seed_everything(42)
     print(model_name, batchsize, local_rank, barriers, tid)
-    backend_lib = cdll.LoadLibrary("/orion/src/cuda_capture/libinttemp.so")
+    backend_lib = cdll.LoadLibrary(os.path.expanduser('~') + "/orion/src/cuda_capture/libinttemp.so")
     if rps > 0 and input_file=='':
         if uniform:
             sleep_times = [1/rps]*num_iters
