@@ -13,6 +13,5 @@ __pycache__/
 orion.egg-info/
 benchmarking/examples/*
 benchmarking/eval/*
-benchmarking/model_kernels/*
 benchmarking/results/*
 results

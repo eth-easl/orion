@@ -34,10 +34,15 @@ int get_idx() {
 		}
 
 		// set per-thread affinity
+		int offset = 1;
+		if (clients==2) {
+			// for compatibility with AE experiments
+			offset = 4;
+		}
 		if (idx > -1 && !affinity_set[idx]) {
 			cpu_set_t  mask;
 			CPU_ZERO(&mask);
-			CPU_SET(idx+4, &mask);
+			CPU_SET(idx+offset, &mask);
 			int result = sched_setaffinity(0, sizeof(mask), &mask);
 			assert (result==0);
 			affinity_set[idx] = true;
