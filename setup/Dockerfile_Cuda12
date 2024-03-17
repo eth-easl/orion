@@ -26,13 +26,14 @@ RUN python3.10 -m pip install --upgrade pip
 RUN python3.10 -m pip install pyyaml typing_extensions
 RUN python3.10 -m pip install Pillow
 RUN python3.10 -m pip install numpy
+RUN python3.10 -m pip install mpmath==1.3.0
 
 RUN git clone --recursive https://github.com/pytorch/pytorch
 COPY orion-torch-changes.patch /root/pytorch/
 RUN cd pytorch && git reset --hard 7bcf7da3a268b435777fe87c7794c382f444e86d && git apply orion-torch-changes.patch && git submodule sync && git submodule update --init --recursive --jobs 0 && python3.10 setup.py develop && cd ..
 
 RUN git clone https://github.com/pytorch/vision.git
-RUN cd vision && git reset --hard da3794e90c7cf69348f5446471926729c55f243e && python3.10 setup.py develop && cd ..
+RUN cd vision && git reset --hard fbb4cc54ed521ba912f50f180dc16a213775bf5c && python3.10 setup.py develop && cd ..
 
 RUN echo "alias python=python3.10" >> /root/.bashrc
 SHELL ["source" , "/root/.bashrc"]
