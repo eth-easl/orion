@@ -8,7 +8,7 @@ args = parser.parse_args()
 
 df = pd.read_csv(f'{args.results_dir}/output_ncu.csv', index_col=0)
 kernels = []
-metrics_to_get = ['Duration', 'Block Size', 'Grid Size', 'Compute (SM) [%]', 'DRAM Throughput', 'Registers Per Thread', 'Static Shared Memory Per Block']
+metrics_to_get = ['Duration', 'Block Size', 'Grid Size', 'Compute (SM) Throughput', 'DRAM Throughput', 'Registers Per Thread', 'Static Shared Memory Per Block']
 
 unique_kernel_names = set()
 
@@ -36,8 +36,6 @@ for kernel in kernels:
 print(len(kernels))
 #print(kernels[0])
 labels = ['Kernel_Name', 'DRAM_Throughput(%)', 'Duration(ns)', 'Compute(SM)(%)',  'Block', 'Grid', 'Registers_Per_Thread', 'Static_shmem_per_block', 'Number_of_threads', 'Number_of_registers']
-
-
 
 df_new = pd.DataFrame(kernels, columns=labels)
 print(df_new)
