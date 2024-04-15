@@ -9,6 +9,7 @@ cudaError_t (*memset_function)(void* devPtr, int  value, size_t count);
 cudaError_t (*memset_async_function)(void* devPtr, int  value, size_t count, cudaStream_t stream);
 
 cudnnStatus_t (*cudnn_create_function)(cudnnHandle_t *handle);
+cudnnStatus_t (*cudnn_backend_func)(cudnnHandle_t handle, const cudnnBackendDescriptor_t executionPlan, const cudnnBackendDescriptor_t varianPack);
 cudnnStatus_t (*cudnn_bnorm_reserve_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t xDesc, size_t *sizeInBytes);
 cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 cudnnStatus_t (*cudnn_bnorm_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
@@ -195,6 +196,10 @@ void register_functions() {
 	assert(cudnn_bnorm_reserve_function != NULL);
 
 	// for cudnn conv
+	*(void **)(&cudnn_backend_func) = dlsym(RTLD_DEFAULT, "cudnnBackendExecute");
+	assert(cudnn_backend_func != NULL);
+
+	// for cudnn conv
 	*(void **)(&cudnn_conv_function) = dlsym(RTLD_DEFAULT, "cudnnConvolutionForward");
 	assert(cudnn_conv_function != NULL);
 
@@ -279,6 +284,16 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 				DEBUG_PRINT("found a new MEMSET-ASYNC record from idx %d!\n", idx);
 				(*memset_function)(record.devPtr, record.value, record.count);
 			}
+			break;
+		}
+		case CUDNN_BACKEND_RECORD: {
+			cudnnBackend_record record = frecord.data.cudnnBackendRecord;
+			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+			status = cudnnSetStream(record.handle, *sched_stream);
+			assert (status == CUDNN_STATUS_SUCCESS);
+			(*cudnn_backend_func)(record.handle, record.executionPlan, record.varianPack);
+			event_ids[evid] += 1;
+			seen[idx] += 1;
 			break;
 		}
 		case CUDNN_CONV_RECORD: {
