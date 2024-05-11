@@ -6,6 +6,7 @@ parser.add_argument('--results_dir', type=str, required=True,
                         help='path to directory containing the profiling files')
 parser.add_argument('--ai_threshold', type=float, default=9.72,
                         help='arithmetic intensity that seperates compute from memory bound kernels')
+
 args = parser.parse_args()
 
 df_raw = pd.read_csv(f'{args.results_dir}/raw_ncu.csv')
