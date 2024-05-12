@@ -73,6 +73,8 @@ while i < num_rows:
             or ('convolve_common_engine_float_NHWC' in x)
             or ('cutlass_cudnn::Kernel' in x)
             or ('xmma_cudnn::gemm::kernel' in x)
+            or ('precomputed_convolve_sgemm' in x)
+
         ):
             conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
             print(conv_info)
@@ -96,6 +98,7 @@ while i < num_rows:
             or ('foldedNhwcToNhwcKernel' in x)
             or ('nhwcAddPaddingKernel' in x)
             or ('im2col4d_kernel' in x)
+            or ('kern_precompute_indices' in x)
         ):
             # part of cudnn mm
             conv_info.append([row["SM_needed"], row["Duration(ns)"], row["Roofline_prof"]])
@@ -122,7 +125,7 @@ while i < num_rows:
             processed_kernel_names.append(['Conv', row['GrdX'], row['GrdY'], row['GrdZ'], row['BlkX'], row['BlkY'], row['BlkZ']])
         found = 1
 
-    elif 'splitKreduce_kernel' in x:
+    elif 'reduce_kernel' in x:
         # part of cublas mm
         found = 0
         pass

@@ -57,7 +57,7 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
     start = time.time()
 
 
-    for batch_idx in range(1000): #batch in train_iter:
+    for batch_idx in range(10): #batch in train_iter:
 
         #data, target = batch[0].to(local_rank), batch[1].to(local_rank)
         start = time.time()
@@ -85,8 +85,6 @@ def vision(model_name, batchsize, local_rank, do_eval=True, profile=None):
         #batch_idx += 1
 
         print(f"Iteration took {time.time()-start} sec")
-
-    print(f"Done!, It took {time.time()-start_all} sec")
 
 if __name__ == "__main__":
     vision('mobilenet_v2', 4, 0, True, 'ncu')
