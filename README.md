@@ -71,17 +71,20 @@ see [DEBUGGING](DEBUGGING.md).
 ## Paper
 If you use Orion, please cite our paper:
 ```bibtex
-@inproceedings {eurosys24orion,
-  author = {Strati Foteini and Ma Xianzhe and Klimovic Ana},
+@inproceedings{eurosys24orion,
+  author = {Strati, Foteini and Ma, Xianzhe and Klimovic, Ana},
   title = {Orion: Interference-aware, Fine-grained GPU Sharing for ML Applications},
-  booktitle = {},
   year = {2024},
-  isbn = {},
-  address = {},
-  pages = {},
-  url = {},
-  doi = {},
+  isbn = {9798400704376},
   publisher = {Association for Computing Machinery},
-
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/3627703.3629578},
+  doi = {10.1145/3627703.3629578},
+  booktitle = {Proceedings of the Nineteenth European Conference on Computer Systems},
+  pages = {1075–1092},
+  numpages = {18},
+  keywords = {GPUs, Machine Learning},
+  location = {Athens, Greece},
+  series = {EuroSys '24}
 }
 ```
