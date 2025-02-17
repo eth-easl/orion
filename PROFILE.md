@@ -3,6 +3,8 @@
 ### Notes:
 1. the locations of nsys and nsight-cu-cli may vary from this guide
 2. This guide assumes the user has setup a `script.py` to profile
+3. If profiling is done in a docker container, make sure to run the container in a privileged mode
+4. If profiling in a container, make sure the container runs in a **privileged** mode.
 
 ### Profiling
 1. Setup Torch-addons for NCU: Use `torch.cuda.nvtx.range_push("start")`  and `torch.cuda.nvtx.range_pop()` around the region to profile.
