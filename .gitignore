@@ -5,8 +5,10 @@
 *.so
 *.o
 *.ncu-rep
+*.nsys-rep
 *.svg
 *.png
+*.json
 .DS_Store
 .idea/
 __pycache__/

@@ -17,7 +17,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock>* total_client_starts
 bool** client_starts_set;
 vector<vector<float>> client_durations;
 
-int max_sms = 80; // v100
+int max_sms = 132; // h100
 queue<struct func_record>** client_buffers;
 pthread_mutex_t** client_mutexes;
 queue<struct func_record>** buffers;
@@ -76,6 +76,9 @@ void Scheduler::profile_prep(queue<func_record>** qbuffers, int num_clients, boo
 	create_streams(sched_streams, num, reef);
 	create_events(events, num);
 
+	for (int i=0; i<num_clients; i++)
+		printf("Stream for client %d is %d\n", i, *(sched_streams[i]));
+
 	seen = (int*)calloc(num,sizeof(int));
 	event_ids = (int*)calloc(num, sizeof(int));
 
@@ -103,7 +106,6 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 	}
 
 	int hp_client = num_clients-1;
-
 	// check for malloc operations
 	for (int i=0; i<num_clients; i++) {
 		if (frecords[i] != NULL) {
@@ -151,12 +153,6 @@ void Scheduler::schedule_reef(vector<func_record*> frecords, int num_clients, in
 
 					schedule_kernel(*(frecords[i]), sched_streams[i], i, events[i][event_ids[i]], seen, event_ids, i);
 					pop_from_queue(client_buffers[i], client_mutexes[i], i);
-					// TODO: check this
-					// if (lp_idx == depth) {
-					// 	CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_streams[i]));
-					// 	lp_idx = 0;
-					// }
-					// lp_idx += 1;
 				}
 			}
 			penalty = 0;
@@ -168,7 +164,6 @@ int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_client
 
 	// schedule based on temporal sharing
 
-	// TODO: fix this!
 	// 1 client
 	if (num_clients==1) {
 		if (frecords[0] != NULL) {
@@ -182,7 +177,7 @@ int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_client
 	int hp_client = num_clients-1;
 	// check high priority first
 	if (frecords[hp_client] != NULL) {
-		bool schedule = false;
+		bool schedule = true;
 		if ((num_client_cur_iters[hp_client] <= 10) || (frecords[hp_client]->type == MALLOC_RECORD))  {
 			schedule = true;
 		}
@@ -208,7 +203,7 @@ int Scheduler::schedule_sequential(vector<func_record*> frecords, int num_client
 	for (int t=start+1; t<end; t++) {
 		int i = t%(num_clients-1);
 		if (frecords[i] != NULL) {
-			bool schedule = false; //false;
+			bool schedule = true;
 			if (num_client_cur_iters[i] <= 10 || (frecords[i]->type == MALLOC_RECORD))
 				schedule = true;
 			else {
@@ -379,7 +374,7 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 
 		int finished = 0;
 		for (int i=0; i<num_clients; i++) {
-
+			//printf("Client %d, seen is %d, all is %d\n", i, seen[i], num_client_kernels[i]);
 			if (
 				(num_client_cur_iters[i] == num_client_max_iters[i])
 				|| (warmup && (num_client_cur_iters[i]==warmup_iters))
@@ -396,13 +391,15 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 				bool ready = true;
 				if (seq) {
 					if (event_ids[0] >= 1) {
-						if (cudaEventQuery(*(events[0][event_ids[0]-1])) != cudaSuccess)
+						cudaError_t status = cudaEventQuery(*(events[0][event_ids[0]-1]));
+						if (status != cudaSuccess)
 							ready &= false;
 					}
 				}
 				else {
 					if (event_ids[i] >= 1) {
-						if (cudaEventQuery(*(events[i][event_ids[i]-1])) != cudaSuccess)
+						cudaError_t status = cudaEventQuery(*(events[i][event_ids[i]-1]));
+						if (status != cudaSuccess)
 							ready &= false;
 					}
 				}
@@ -415,8 +412,8 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 					streams[i] = -1;
 					fidx[i] = 0;
 					request_status[i][num_client_cur_iters[i]] = true;
-					//printf("UNLOCK CLIENT %d\n", i);
 					pthread_mutex_unlock(client_mutexes[i]);
+					DEBUG_PRINT("UNLOCK CLIENT %d\n", i);
 					num_client_cur_iters[i] += 1;
 					locked[i] = false;
 
@@ -471,8 +468,10 @@ void* Scheduler::busy_wait_profile(int num_clients, int iter, bool warmup, int w
 			}
 		}
 
-		if (finished==num_clients)
+		if (finished==num_clients) {
+			printf("EXIT LOOP!\n");
 			break;
+		}
 
 	}
 	if (!warmup) {
@@ -518,6 +517,7 @@ extern "C" {
     		}
 
 			op_info info = {v[0], stoi(v[1]), stoi(v[2]), stoi(v[3]), stof(v[4])};
+
 			ops.push_back(info);
 		}
 
@@ -548,7 +548,8 @@ extern "C" {
 		int* num_kernels,
 		int* num_iters,
 		bool* train,
-		bool reef
+		bool reef,
+		bool sequential
 	) {
 
 		struct passwd *pw = getpwuid(getuid());
@@ -640,6 +641,12 @@ extern "C" {
 		bool*** request_status_ptr = (bool***)dlsym(klib, "client_request_status");
 		*request_status_ptr = (bool**)malloc(num_clients*sizeof(bool*));
 		request_status = *request_status_ptr;
+
+		bool* is_sequential = (bool*)dlsym(klib, "is_sequential");
+		*is_sequential = sequential;
+
+		cudaStream_t*** client_sched_streams_ptr = (cudaStream_t***)dlsym(klib, "client_streams");
+		*client_sched_streams_ptr = sched_streams;
 
 		// check!
 		bool** stops_ptr = (bool**)dlsym(klib, "client_stop");

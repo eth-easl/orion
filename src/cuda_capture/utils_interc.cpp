@@ -23,14 +23,18 @@ int get_idx() {
 			}
 		}
 		if (idx == -1) {
+			printf("SET FOR BACKWARD PASS: TID %d, NUM CLIENTS IS %d\n", tid, clients);
 			// set threads for backward pass
 			// In PyTorch training, a different thread is used for the backward pass
 			for (int i=clients+1; i<num_tids; i++) {
+				printf("CHECKING SLOT %d WITH TID %d\n", i, thread_ids[i]);
 				if (thread_ids[i] == 0) {
 					thread_ids[i] = tid;
 					idx = i%(clients+1);
+					break;
 				}
 			}
+			printf("IDX FOUND IS %d\n", idx);
 		}
 
 		// set per-thread affinity

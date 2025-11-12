@@ -24,17 +24,24 @@ class DummyDataLoader:
         return itertools.repeat(self.batch)
 
 
-percentile_positions = [50, 90, 95, 99]
+percentile_positions = [50, 95, 99]
 def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_config, stream, sync_info: BasicSyncInfo):
     """
     Invoke the func {num_requests} times with first {num_warm_up_reqs} iterations as warm up.
     Measure how long each invocation takes and calculate statistics (average and percentiles) over them,
     and finally write all data via {sync_info}.
     """
+
     distribution = shared_config['distribution']
+
     if distribution=='trace' and tid==1:
-        # uniform distribution for tid 1
-        distribution = 'uniform'
+        # poisson distribution for tid 1
+        distribution = 'poisson' # or uniform? needs to be consistent
+
+    if tid==1:
+        num_requests = 10000000
+
+    print(f"tid is {tid}, distribution is {distribution}, num_requests is {num_requests}, rate is {request_rate}")
 
     if request_rate == 0:
         intervals = [0] * num_requests
@@ -53,10 +60,14 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
 
 
     latency_history = []
+    closed_latency_history = []
+    start_times = []
+    torch.cuda.set_stream(stream)
 
     with torch.no_grad():
         next_startup = time.time()
         iteration = 0
+
         while True:
             if time.time() >= next_startup:
                 if iteration == num_warm_up_reqs:
@@ -65,9 +76,11 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
                     # reset next_startup to have clear setup
                     next_startup = entire_inference_start_time
 
-                with torch.cuda.stream(stream):
-                    func()
                 stream.synchronize()
+                closed_start = time.time()
+                func()
+                stream.synchronize()
+                closed_latency_history.append(1000 * (time.time() - closed_start))
                 latency_history.append(1000 * (time.time() - next_startup))
 
                 if not sync_info.should_continue_loop(tid, iteration, num_requests):
@@ -76,17 +89,21 @@ def measure(func, num_requests, num_warm_up_reqs, request_rate, tid, shared_conf
                 next_startup += intervals[iteration]
 
                 duration = next_startup - time.time()
-
-                if duration > 0:
-                    time.sleep(duration)
+                # if duration > 0:
+                #     #print(f"sleep for {duration} seconds")
+                #     time.sleep(duration)
+                while time.time() < next_startup:
+                    time.sleep(0.001)
                 iteration += 1
 
     inference_duration = time.time() - entire_inference_start_time
     sync_info.post_measurement_prep(tid)
     # discard the first {num_warm_up_reqs} latencies
     latency_history = latency_history[num_warm_up_reqs:]
+    closed_latency_history = closed_latency_history[num_warm_up_reqs:]
     mean_latency = mean(latency_history)
     percentiles = np.percentile(latency_history, percentile_positions)
+    #print(closed_latency_history)
 
     # data_to_record = {
     #     f'latencies{tid}': latency_history,

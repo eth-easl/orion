@@ -4,7 +4,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--results_dir', type=str, required=True,
                         help='path to directory containing the profiling files')
-parser.add_argument('--ai_threshold', type=float, default=9.72,
+parser.add_argument('--ai_threshold', type=float, default=9.2,
                         help='arithmetic intensity that seperates compute from memory bound kernels')
 args = parser.parse_args()
 
@@ -16,16 +16,14 @@ df_raw = df_raw.iloc[startp:]
 l = list(df_raw.iloc[0])
 print(l)
 df_basic = pd.read_csv(f'{args.results_dir}/output_ncu_sms.csv', index_col=0)
-
-
 dram_throughput = df_basic['DRAM_Throughput(%)']
 comp_throughput = df_basic['Compute(SM)(%)']
 
 fadd = 'smsp__sass_thread_inst_executed_op_fadd_pred_on.sum.per_cycle_elapsed [inst/cycle]'
 fmul = 'smsp__sass_thread_inst_executed_op_fmul_pred_on.sum.per_cycle_elapsed [inst/cycle]'
 ffma = 'smsp__sass_thread_inst_executed_op_ffma_pred_on.sum.per_cycle_elapsed [inst/cycle]'
-cycles_sec = 'smsp__cycles_elapsed.avg.per_second [cycle/nsecond]'
-bytes_sec = 'dram__bytes.sum.per_second [Gbyte/second]'
+cycles_sec = 'smsp__cycles_elapsed.avg.per_second [Ghz]'
+bytes_sec = 'dram__bytes.sum.per_second [Tbyte/s]'
 
 ai_list = []
 roofline_prof = [] # 1: comp, 0: mem, -1: invalid
@@ -34,26 +32,40 @@ comp_bound = 0
 mem_bound = 0
 rest = 0
 
-for index, row in df_raw.iterrows():
-    add = str(row[fadd])
-    mul = str(row[fmul])
-    fma = row[ffma]
-    cycles = row[cycles_sec]
-    bytes = row[bytes_sec]
-    #print(add, mul, fma, cycles, bytes)
+df_add = list(df_raw[df_raw.iloc[:, 0] == fadd].iloc[0, 1:])
+df_mul = list(df_raw[df_raw.iloc[:, 0] == fmul].iloc[0, 1:])
+df_fma = list(df_raw[df_raw.iloc[:, 0] == ffma].iloc[0, 1:])
+df_cycles = list(df_raw[df_raw.iloc[:, 0] == cycles_sec].iloc[0, 1:])
+df_bytes = list(df_raw[df_raw.iloc[:, 0] == bytes_sec].iloc[0, 1:])
+
+print(df_cycles, df_bytes)
+num_kernels = len(df_add)
+
+for i in range(num_kernels):
+    add = df_add[i]
+    mul = df_mul[i]
+    fma = df_fma[i]
+
+    if df_bytes[i] == "0.00":
+        df_bytes[i] = 0.00001 # to avoid division by zero
+
+    cycles = float(df_cycles[i])
+    bytes = float(df_bytes[i])*1000
 
     if not isinstance(fma, float):
         fma = float(fma.replace("'", ''))
     add = float(add.replace("'", ''))
     mul = float(mul.replace("'", ''))
 
+    print(i, add, mul, fma, cycles, bytes)
+    # if add or mul or fma:
+    #     print(f"HERE!")
 
     if add or mul or fma:
         flops_cycle = add+mul+fma*2
         flops_sec = flops_cycle * cycles
         ai = flops_sec/bytes
         ai_list.append(ai)
-        print(index, ai)
         if ai > args.ai_threshold:
             roofline_prof.append(1)
             comp_bound += 1
@@ -62,13 +74,50 @@ for index, row in df_raw.iterrows():
             mem_bound += 1
     else:
         ai_list.append(0.0)
-        if comp_throughput[index-startp] >= 60.0:
+        if comp_throughput[i] >= 60.0:
             roofline_prof.append(1)
-        elif dram_throughput[index-startp] >= 60.0:
+        elif dram_throughput[i] >= 60.0:
             roofline_prof.append(0)
         else:
             roofline_prof.append(-1)
         rest += 1
+
+# older NCU version
+# for index, row in df_raw.iterrows():
+#     add = str(row[fadd])
+#     mul = str(row[fmul])
+#     fma = row[ffma]
+#     cycles = row[cycles_sec]
+#     bytes = row[bytes_sec]
+#     #print(add, mul, fma, cycles, bytes)
+
+#     if not isinstance(fma, float):
+#         fma = float(fma.replace("'", ''))
+#     add = float(add.replace("'", ''))
+#     mul = float(mul.replace("'", ''))
+
+
+#     if add or mul or fma:
+#         flops_cycle = add+mul+fma*2
+#         flops_sec = flops_cycle * cycles
+#         ai = flops_sec/bytes
+#         ai_list.append(ai)
+#         print(index, ai)
+#         if ai > args.ai_threshold:
+#             roofline_prof.append(1)
+#             comp_bound += 1
+#         else:
+#             roofline_prof.append(0)
+#             mem_bound += 1
+#     else:
+#         ai_list.append(0.0)
+#         if comp_throughput[index-startp] >= 60.0:
+#             roofline_prof.append(1)
+#         elif dram_throughput[index-startp] >= 60.0:
+#             roofline_prof.append(0)
+#         else:
+#             roofline_prof.append(-1)
+#         rest += 1
 
 
 print(df_basic)

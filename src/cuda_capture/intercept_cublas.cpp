@@ -111,6 +111,97 @@ cublasStatus_t cublasSgemm(cublasHandle_t handle, cublasOperation_t transa, cubl
 }
 
 
+cublasStatus_t cublasLtMatmul(
+      cublasLtHandle_t               lightHandle,
+      cublasLtMatmulDesc_t           computeDesc,
+      const void                    *alpha,
+      const void                    *A,
+      cublasLtMatrixLayout_t         Adesc,
+      const void                    *B,
+      cublasLtMatrixLayout_t         Bdesc,
+      const void                    *beta,
+      const void                    *C,
+      cublasLtMatrixLayout_t         Cdesc,
+      void                          *D,
+      cublasLtMatrixLayout_t         Ddesc,
+      const cublasLtMatmulAlgo_t    *algo,
+      void                          *workspace,
+      size_t                         workspaceSizeInBytes,
+      cudaStream_t                   stream
+)
+{
+
+	int idx = get_idx();
+	assert (idx >= 0);
+	cublasStatus_t status = CUBLAS_STATUS_SUCCESS;
+
+	cublasLtMatmul_record matmul_record = {
+		lightHandle,
+		computeDesc,
+		alpha,
+		A,
+		Adesc,
+		B,
+		Bdesc,
+		beta,
+		C,
+		Cdesc,
+		D,
+		Ddesc,
+		algo,
+		workspace,
+		workspaceSizeInBytes,
+		stream
+	};
+
+	union func_data new_func_data;
+	new_func_data.cublasLtMatmulRecord = matmul_record;
+	func_record new_record = {CUBLAS_MATMUL_RECORD, new_func_data};
+
+	if (idx < *num_total_clients) {
+
+		pthread_mutex_lock(mutexes[idx]);
+		//DEBUG_PRINT("[INTERCEPTER-CATCH]-[%d] Caught cublasLtMatmul, handle is %p, index %d\n", func_indexes[idx], lightHandle, idx);
+		kqueues[idx]->push(new_record);
+		func_indexes[idx] += 1;
+		pthread_mutex_unlock(mutexes[idx]);
+
+		block(idx,  mutexes, kqueues);
+
+	}
+	else {
+
+		*(void **)(&cublas_lt_matmul_func) = dlsym(RTLD_NEXT, "cublasLtMatmul");
+		assert(cublas_lt_matmul_func != NULL);
+
+		status = (*cublas_lt_matmul_func)(
+			lightHandle,
+			computeDesc,
+			alpha,
+			A,
+			Adesc,
+			B,
+			Bdesc,
+			beta,
+			C,
+			Cdesc,
+			D,
+			Ddesc,
+			algo,
+			workspace,
+			workspaceSizeInBytes,
+			stream
+		);
+		assert (status == CUBLAS_STATUS_SUCCESS);
+		DEBUG_PRINT("CUBLAS status is %d\n", status);
+
+	}
+
+	return status;
+
+}
+
+
 cublasStatus_t cublasSgemmStridedBatched(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount) {
 
 	int idx = get_idx();

@@ -1,7 +1,7 @@
 [
     {
 		"arch": "resnet101",
-		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet101_4_fwd",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/v100/resnet101_4_fwd",
 		"num_kernels": 345,
 		"num_iters": 2500000,
 		"args": {
@@ -15,7 +15,7 @@
 	},
     {
 		"arch": "resnet50",
-		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_4_fwd",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/v100/resnet50_4_fwd",
 		"num_kernels": 175,
 		"num_iters": 6240,
 		"args": {

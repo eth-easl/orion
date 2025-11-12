@@ -17,6 +17,8 @@ volatile bool** client_request_status;
 volatile bool* client_stop;
 volatile bool* client_stop_ack;
 volatile bool* affinity_set;
+volatile cudaStream_t** client_streams;
+volatile bool is_sequential=false;
 
 
 cudaError_t (*kernel_func)(const void* func, dim3 gridDim, dim3 blockDim, void** args, size_t sharedMem, cudaStream_t stream) = NULL;
@@ -27,6 +29,8 @@ cudaError_t (*free_func)(void* devPtr) = NULL;
 cudaError_t (*memset_func)(void* devPtr, int  value, size_t count) = NULL;
 cudaError_t (*memset_async_func)(void* devPtr, int  value, size_t count, cudaStream_t stream) = NULL;
 
+cudnnStatus_t (*cudnn_setstream_func)(cudnnHandle_t handle, cudaStream_t streamId);
+cudnnStatus_t (*cudnn_backend_func)(cudnnHandle_t handle, const cudnnBackendDescriptor_t executionPlan, const cudnnBackendDescriptor_t varianPack) = NULL;
 cudnnStatus_t (*cudnn_conv_func)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) = NULL;
 cudnnStatus_t (*cudnn_bnorm_func)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes) = NULL;
 cudnnStatus_t (*cudnn_bnorm_infer_func)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnTensorDescriptor_t yDesc, void *y, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScale, const void *bnBias, const void *estimatedMean, const void *estimatedVariance, double epsilon) = NULL;
@@ -34,6 +38,7 @@ cudnnStatus_t (*cudnn_rnn_func)(cudnnHandle_t handle, const cudnnRNNDescriptor_t
 cudnnStatus_t (*cudnn_rnn_train_func)(cudnnHandle_t handle, const cudnnRNNDescriptor_t rnnDesc, const int seqLength, const cudnnTensorDescriptor_t *xDesc, const void *x, const cudnnTensorDescriptor_t hxDesc, const void *hx, const cudnnTensorDescriptor_t cxDesc, const void *cx, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnTensorDescriptor_t *yDesc, void *y, const cudnnTensorDescriptor_t hyDesc, void *hy, const cudnnTensorDescriptor_t cyDesc, void *cy, void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes) = NULL;
 cublasStatus_t (*cublas_sgemm_func)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc) = NULL;
 cublasStatus_t (*cublas_sgemm_strided_func)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount) = NULL;
+cublasStatus_t (*cublas_lt_matmul_func)(cublasLtHandle_t lightHandle, cublasLtMatmulDesc_t computeDesc, const void *alpha, const void *A, cublasLtMatrixLayout_t Adesc, const void *B, cublasLtMatrixLayout_t Bdesc, const void *beta, const void *C, cublasLtMatrixLayout_t Cdesc, void *D, cublasLtMatrixLayout_t Ddesc, const cublasLtMatmulAlgo_t *algo, void *workspace, size_t workspaceSizeInBytes, cudaStream_t stream);
 
 cudnnStatus_t (*cudnn_bnorm_bw_func)(
 	cudnnHandle_t handle,
@@ -139,6 +144,13 @@ extern "C" {
 		pthread_mutex_unlock(mutexes[idx]);
 		return res;
 	}
+
+	void* get_stream_ptr(int idx) {
+		printf("At get streams, idx is %d, is_sequential is %d\n", idx, is_sequential);
+		if (is_sequential)
+			return *(client_streams[0]);
+		return *(client_streams[idx]);
+	}
 }
 
 
@@ -159,10 +171,7 @@ cudaError_t cudaMalloc(void** devPtr, size_t size) {
 	if (idx < *num_total_clients) {
 
 		//wait for all kernels or memory operations to finish
-		DEBUG_PRINT("About to block!\n");
 		block(idx,  mutexes, kqueues);
-		DEBUG_PRINT("Exit block!\n");
-
 
 		malloc_record new_malloc_record = {devPtr, size};
 		union func_data new_func_data;
@@ -434,6 +443,10 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 		pthread_mutex_lock(mutexes[idx]);
 
+		int grid_size = gridDim.x * gridDim.y * gridDim.z;
+		int block_size = blockDim.x * blockDim.y * blockDim.z;
+		DEBUG_PRINT("[INTERCEPTER-CATCH-%d]-[%d] Caught cudaLaunchKernel, block size: %d, grid size: %d\n", idx, func_indexes[idx], block_size, grid_size);
+
 
 		new_kernel_record = {func, gridDim, blockDim, args, sharedMem, stream, false, 0};
 		union func_data new_func_data;
@@ -447,11 +460,11 @@ cudaError_t cudaLaunchKernel ( const void* func, dim3 gridDim, dim3 blockDim, vo
 
 	}
 	else {
-		DEBUG_PRINT("[INTERCEPTER] about to submit %p\n", func);
+		//DEBUG_PRINT("[INTERCEPTER] about to call cudaLaunchKernel with func %p\n", func);
 
 		err = (*kernel_func)(func, gridDim, blockDim, args, sharedMem, stream);
 		CHECK_CUDA_ERROR(err); // this checks kernel-launching errors
-		DEBUG_PRINT("SUBMITTED\n");
+		//DEBUG_PRINT("SUBMITTED\n");
 
 	}
 	return err;

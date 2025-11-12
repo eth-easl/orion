@@ -1,0 +1,152 @@
+Name,Profile,Memory_footprint,SM_usage,Duration
+Conv,1,0,131,18144
+BatchNorm,0,0,32,18528
+void at::vectorized_elementwise_kernel,-1,0,98,8032
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,784,30400
+BatchNorm,0,0,32,18592
+void at::vectorized_elementwise_kernel,-1,0,98,8288
+Conv,0,0,112,12704
+BatchNorm,0,0,16,18240
+Conv,0,0,224,19584
+BatchNorm,0,0,96,21248
+void at::vectorized_elementwise_kernel,-1,0,294,15776
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,588,25088
+BatchNorm,0,0,96,9280
+void at::vectorized_elementwise_kernel,-1,0,74,7136
+Conv,0,0,45,10208
+BatchNorm,0,0,24,8736
+Conv,0,0,128,12704
+BatchNorm,0,0,144,13376
+void at::vectorized_elementwise_kernel,-1,0,111,8512
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,882,34336
+BatchNorm,0,0,144,13792
+void at::vectorized_elementwise_kernel,-1,0,111,8288
+Conv,0,0,45,11552
+BatchNorm,0,0,24,8384
+void at::vectorized_elementwise_kernel,0,0,19,5312
+Conv,0,0,128,12736
+BatchNorm,0,0,144,13472
+void at::vectorized_elementwise_kernel,-1,0,111,8480
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,221,13792
+BatchNorm,0,0,72,7488
+void at::vectorized_elementwise_kernel,-1,0,28,5376
+Conv,0,0,13,9504
+BatchNorm,0,0,16,6976
+Conv,0,0,39,8736
+BatchNorm,0,0,96,7616
+void at::vectorized_elementwise_kernel,-1,0,37,5536
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,294,15168
+BatchNorm,0,0,96,7712
+void at::vectorized_elementwise_kernel,-1,0,37,5504
+Conv,0,0,13,10304
+BatchNorm,0,0,16,6976
+void at::vectorized_elementwise_kernel,0,0,7,4512
+Conv,0,0,39,8768
+BatchNorm,0,0,96,7680
+void at::vectorized_elementwise_kernel,-1,0,37,5536
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,294,15200
+BatchNorm,0,0,96,7456
+void at::vectorized_elementwise_kernel,-1,0,37,5536
+Conv,0,0,13,10240
+BatchNorm,0,0,16,6944
+void at::vectorized_elementwise_kernel,0,0,7,4768
+Conv,0,0,39,8640
+BatchNorm,0,0,96,7744
+void at::vectorized_elementwise_kernel,-1,0,37,5408
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,74,9120
+BatchNorm,0,0,24,6784
+void at::vectorized_elementwise_kernel,-1,0,10,4736
+Conv,0,0,4,10176
+BatchNorm,0,0,8,6624
+Conv,0,0,20,8320
+BatchNorm,0,0,48,7104
+void at::vectorized_elementwise_kernel,-1,0,19,4832
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10656
+BatchNorm,0,0,48,7040
+void at::vectorized_elementwise_kernel,-1,0,19,5024
+Conv,0,0,4,13088
+BatchNorm,0,0,8,6752
+void at::vectorized_elementwise_kernel,0,0,4,4256
+Conv,0,0,20,8512
+BatchNorm,0,0,48,7072
+void at::vectorized_elementwise_kernel,-1,0,19,4896
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10592
+BatchNorm,0,0,48,7072
+void at::vectorized_elementwise_kernel,-1,0,19,5024
+Conv,0,0,4,12992
+BatchNorm,0,0,8,6592
+void at::vectorized_elementwise_kernel,0,0,4,4448
+Conv,0,0,20,8448
+BatchNorm,0,0,48,7104
+void at::vectorized_elementwise_kernel,-1,0,19,4896
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10720
+BatchNorm,0,0,48,7040
+void at::vectorized_elementwise_kernel,-1,0,19,4928
+Conv,0,0,4,12992
+BatchNorm,0,0,8,6976
+void at::vectorized_elementwise_kernel,0,0,4,4288
+Conv,0,0,20,8480
+BatchNorm,0,0,48,7040
+void at::vectorized_elementwise_kernel,-1,0,19,4864
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,147,10784
+BatchNorm,0,0,48,7104
+void at::vectorized_elementwise_kernel,-1,0,19,4928
+Conv,0,0,7,13280
+BatchNorm,0,0,12,6720
+Conv,0,0,29,10720
+BatchNorm,0,0,72,7680
+void at::vectorized_elementwise_kernel,-1,0,28,5216
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,221,12864
+BatchNorm,0,0,72,7680
+void at::vectorized_elementwise_kernel,-1,0,28,5376
+Conv,0,0,7,16416
+BatchNorm,0,0,12,6720
+void at::vectorized_elementwise_kernel,0,0,5,4480
+Conv,0,0,29,10656
+BatchNorm,0,0,72,7936
+void at::vectorized_elementwise_kernel,-1,0,28,5248
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,221,12832
+BatchNorm,0,0,72,7680
+void at::vectorized_elementwise_kernel,-1,0,28,5248
+Conv,0,0,7,16288
+BatchNorm,0,0,12,6624
+void at::vectorized_elementwise_kernel,0,0,5,4704
+Conv,0,0,29,10880
+BatchNorm,0,0,72,7680
+void at::vectorized_elementwise_kernel,-1,0,28,5120
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,56,7488
+BatchNorm,0,0,72,6624
+void at::vectorized_elementwise_kernel,-1,0,7,4736
+sm80_xmma_gemm_f32f32_tf32f32_f32_nn_n_tilesize32x32x64_stage3_warpsize2x2x1_tensor16x8x8_aligna4_alignc4_execute_kernel__5x_cublas,0,0,6,18048
+BatchNorm,0,0,20,5248
+Conv,0,0,12,13184
+BatchNorm,0,0,120,7872
+void at::vectorized_elementwise_kernel,-1,0,12,4992
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,92,8544
+BatchNorm,0,0,120,7904
+void at::vectorized_elementwise_kernel,-1,0,12,4896
+sm80_xmma_gemm_f32f32_tf32f32_f32_nn_n_tilesize32x32x64_stage3_warpsize2x2x1_tensor16x8x8_aligna4_alignc4_execute_kernel__5x_cublas,0,0,6,25856
+BatchNorm,0,0,20,5600
+void at::vectorized_elementwise_kernel,0,0,2,4512
+Conv,0,0,12,13216
+BatchNorm,0,0,120,7872
+void at::vectorized_elementwise_kernel,-1,0,12,4992
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,92,8544
+BatchNorm,0,0,120,8000
+void at::vectorized_elementwise_kernel,-1,0,12,5024
+sm80_xmma_gemm_f32f32_tf32f32_f32_nn_n_tilesize32x32x64_stage3_warpsize2x2x1_tensor16x8x8_aligna4_alignc4_execute_kernel__5x_cublas,0,0,6,25600
+BatchNorm,0,0,20,5312
+void at::vectorized_elementwise_kernel,0,0,2,4448
+Conv,0,0,12,13152
+BatchNorm,0,0,120,7904
+void at::vectorized_elementwise_kernel,-1,0,12,5024
+void at::(anonymous namespace)::conv_depthwise2d_forward_kernel,0,0,92,8608
+BatchNorm,0,0,120,7936
+void at::vectorized_elementwise_kernel,-1,0,12,5088
+sm80_xmma_gemm_f32f32_tf32f32_f32_nn_n_tilesize32x32x64_stage3_warpsize2x2x1_tensor16x8x8_aligna4_alignc4_execute_kernel__5x_cublas,0,0,12,25728
+BatchNorm,0,0,40,5728
+Conv,0,0,16,18720
+BatchNorm,0,0,160,9024
+void at::vectorized_elementwise_kernel,-1,0,16,4864
+void at::reduce_kernel,0,0,80,7936
+void gemmSN_TN_kernel,0,0,25,14624

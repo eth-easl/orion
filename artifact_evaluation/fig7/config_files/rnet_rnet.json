@@ -1,8 +1,8 @@
 [
     {
 		"arch": "resnet50",
-		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_32_fb0",
-		"additional_kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_32_fb1",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/v100/resnet50_32_fb0",
+		"additional_kernel_file": "/root/orion/benchmarking/model_kernels/v100/resnet50_32_fb1",
         "num_kernels": 624,
         "additional_num_kernels": 946,
         "num_iters": 550000,
@@ -17,7 +17,7 @@
 	},
 	{
 		"arch": "resnet50",
-		"kernel_file": "/root/orion/benchmarking/model_kernels/resnet50_4_fwd",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/v100/resnet50_4_fwd",
         "num_kernels": 175,
         "num_iters": 9200,
 		"args": {

@@ -1,0 +1,36 @@
+---
+policy: "MPS" # "MPS", "TickTock", "Streams", "Isolated", or "Sequential"
+models:
+  model0:
+    mode: eval # train or eval
+    name: bert # these two names should strictly correspond to the model names below
+  model1:
+    mode: eval # train or eval
+    name: mobilenet_v2
+shared_config:
+  distribution: poisson # poisson, uniform, or trace
+  trace_path: './inter_arrival_times.json' # only used when distribution is trace
+  pin_memory: true
+  seed: 42
+
+# configuration for each model
+resnet50:
+  arch: resnet50
+  batch_size: 8
+  num_iterations: 9200
+  request_rate: 200 # measured in 1/seconds. If 0 it means no sleep
+resnet101:
+  arch: resnet101
+  batch_size: 8
+  num_iterations: 5000
+  request_rate: 100 # measured in 1/seconds. If 0 it means no sleep
+mobilenet_v2:
+  arch: mobilenet_v2
+  batch_size: 16
+  num_iterations: 9200
+  request_rate: 200 # measured in 1/seconds. If 0 it means no sleep
+bert:
+  batch_size: 2
+  arch: large # either base or large
+  num_iterations: 3000
+  request_rate: 25 # measured in 1/seconds. If 0 it means no sleep

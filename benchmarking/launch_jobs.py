@@ -16,8 +16,6 @@ sys.path.append(f"{home_directory}/DeepLearningExamples/PyTorch/LanguageModeling
 from bert_trainer import bert_loop
 
 from benchmark_suite.train_imagenet import imagenet_loop
-from benchmark_suite.toy_models.bnorm_trainer import bnorm_loop
-from benchmark_suite.toy_models.conv_bn_trainer import conv_bn_loop
 
 from src.scheduler_frontend import PyScheduler
 
@@ -25,8 +23,6 @@ function_dict = {
     "resnet50": imagenet_loop,
     "resnet101": imagenet_loop,
     "mobilenet_v2": imagenet_loop,
-    "bnorm": bnorm_loop,
-    "conv_bnorm": conv_bn_loop,
     "bert": bert_loop,
     "transformer": transformer_loop,
 }

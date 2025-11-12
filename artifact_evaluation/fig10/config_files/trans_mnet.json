@@ -1,7 +1,7 @@
 [
     {
         "arch": "transformer",
-        "kernel_file": "/root/orion/benchmarking/model_kernels/transformer_xl_4_fwd",
+        "kernel_file": "/root/orion/benchmarking/model_kernels/v100/transformer_xl_4_fwd",
         "num_kernels": 459,
         "num_iters": 2500000,
         "args": {
@@ -14,7 +14,7 @@
     },
     {
 		"arch": "mobilenet_v2",
-		"kernel_file": "/root/orion/benchmarking/model_kernels/mobilenetv2_4_fwd",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/v100/mobilenetv2_4_fwd",
 		"num_kernels": 152,
 		"num_iters": 6240,
 		"args": {

@@ -9,6 +9,7 @@ cudaError_t (*memset_function)(void* devPtr, int  value, size_t count);
 cudaError_t (*memset_async_function)(void* devPtr, int  value, size_t count, cudaStream_t stream);
 
 cudnnStatus_t (*cudnn_create_function)(cudnnHandle_t *handle);
+cudnnStatus_t (*cudnn_backend_func)(cudnnHandle_t handle, const cudnnBackendDescriptor_t executionPlan, const cudnnBackendDescriptor_t varianPack);
 cudnnStatus_t (*cudnn_bnorm_reserve_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const cudnnActivationDescriptor_t activationDesc, const cudnnTensorDescriptor_t xDesc, size_t *sizeInBytes);
 cudnnStatus_t (*cudnn_conv_function)(cudnnHandle_t handle, const void *alpha, const cudnnTensorDescriptor_t xDesc, const void *x, const cudnnFilterDescriptor_t wDesc, const void *w, const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo, void *workSpace, size_t workSpaceSizeInBytes, const void *beta, const cudnnTensorDescriptor_t yDesc, void *y) ;
 cudnnStatus_t (*cudnn_bnorm_function)(cudnnHandle_t handle, cudnnBatchNormMode_t mode, cudnnBatchNormOps_t bnOps, const void *alpha, const void *beta, const cudnnTensorDescriptor_t xDesc, const void *xData, const cudnnTensorDescriptor_t zDesc,  const void *zData, const cudnnTensorDescriptor_t yDesc, void *yData, const cudnnTensorDescriptor_t bnScaleBiasMeanVarDesc, const void *bnScaleData, const void *bnBiasData, double exponentialAverageFactor, void *resultRunningMeanData, void *resultRunningVarianceData, double epsilon, void *saveMean, void *saveInvVariance, const cudnnActivationDescriptor_t activationDesc,  void *workspace, size_t workSpaceSizeInBytes, void *reserveSpace, size_t reserveSpaceSizeInBytes);
@@ -83,6 +84,7 @@ cudnnStatus_t (*cudnn_conv_bw_filter_function)(
 
 cublasStatus_t (*cublas_sgemm_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, const float *B, int ldb, const float *beta, float *C, int ldc);
 cublasStatus_t (*cublas_sgemm_strided_function)(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float *alpha, const float *A, int lda, long long int strideA, const float *B, int ldb, long long int strideB, const float *beta, float *C, int ldc, long long int strideC, int batchCount);
+cublasStatus_t (*cublas_lt_matmul_func)(cublasLtHandle_t lightHandle, cublasLtMatmulDesc_t computeDesc, const void *alpha, const void *A, cublasLtMatrixLayout_t Adesc, const void *B, cublasLtMatrixLayout_t Bdesc, const void *beta, const void *C, cublasLtMatrixLayout_t Cdesc, void *D, cublasLtMatrixLayout_t Ddesc, const cublasLtMatmulAlgo_t *algo, void *workspace, size_t workspaceSizeInBytes, cudaStream_t stream);
 
 extern cudnnHandle_t* global_handle0;
 extern cudnnHandle_t* global_handle1;
@@ -195,6 +197,10 @@ void register_functions() {
 	assert(cudnn_bnorm_reserve_function != NULL);
 
 	// for cudnn conv
+	*(void **)(&cudnn_backend_func) = dlsym(RTLD_DEFAULT, "cudnnBackendExecute");
+	assert(cudnn_backend_func != NULL);
+
+	// for cudnn conv
 	*(void **)(&cudnn_conv_function) = dlsym(RTLD_DEFAULT, "cudnnConvolutionForward");
 	assert(cudnn_conv_function != NULL);
 
@@ -205,14 +211,6 @@ void register_functions() {
 	// for bnorm infer
 	*(void **)(&cudnn_bnorm_infer_function) = dlsym(RTLD_DEFAULT, "cudnnBatchNormalizationForwardInference");
 	assert(cudnn_bnorm_infer_function != NULL);
-
-	// for rnn infer
-	*(void **)(&cudnn_rnn_function) = dlsym(RTLD_DEFAULT, "cudnnRNNForwardInference");
-	assert(cudnn_rnn_function != NULL);
-
-	// for rnn train
-	*(void **)(&cudnn_rnn_train_function) = dlsym(RTLD_DEFAULT, "cudnnRNNForwardTraining");
-	assert(cudnn_rnn_train_function != NULL);
 
 	// for bnorm backward
 	*(void **)(&cudnn_bnorm_bw_function) = dlsym(RTLD_DEFAULT, "cudnnBatchNormalizationBackwardEx");
@@ -234,16 +232,19 @@ void register_functions() {
 	*(void **)(&cublas_sgemm_strided_function) = dlsym(RTLD_DEFAULT, "cublasSgemmStridedBatched");
 	assert(&cublas_sgemm_strided_function != NULL);
 
+	// CUBLAS matmul
+	*(void **)(&cublas_lt_matmul_func) = dlsym(RTLD_DEFAULT, "cublasLtMatmul");
+	assert(&cublas_lt_matmul_func != NULL);
 }
 
 void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int idx, cudaEvent_t* event, int* seen, int* event_ids, int evid) {
 
 	switch (frecord.type) {
 		case KERNEL_RECORD: {
-			DEBUG_PRINT("found a new kernel record from idx %d! kernel func is %p\n", idx, kernel_function);
+			//DEBUG_PRINT("found a new kernel record from idx %d! kernel func is %p\n", idx, kernel_function);
 			kernel_record record = frecord.data.krecord;
-			(*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, *sched_stream);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			cudaError status = (*kernel_function)(record.func, record.gridDim, record.blockDim, record.args, record.sharedMem, *sched_stream);
+			assert(status == cudaSuccess);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -281,6 +282,20 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			}
 			break;
 		}
+		case CUDNN_BACKEND_RECORD: {
+			cudnnBackend_record record = frecord.data.cudnnBackendRecord;
+			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
+			//printf("found a new cudnn backend record, handle is %p, stream is %d!\n", record.handle, *sched_stream);
+			status = cudnnSetStream(record.handle, *sched_stream);
+			assert (status == CUDNN_STATUS_SUCCESS);
+			status = (*cudnn_backend_func)(record.handle, record.executionPlan, record.varianPack);
+			assert (status == CUDNN_STATUS_SUCCESS);
+
+			//CHECK_CUDA_ERROR(cudaStreamSynchronize(*sched_stream));
+			event_ids[evid] += 1;
+			seen[idx] += 1;
+			break;
+		}
 		case CUDNN_CONV_RECORD: {
 
 			DEBUG_PRINT("found a new cudnn conv record from idx %d!\n", idx);
@@ -288,8 +303,8 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
-			(*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			status = (*cudnn_conv_function)(record.handle, record.alpha, record.xDesc, record.x, record.wDesc, record.w, record.convDesc, record.algo, record.workSpace, record.workSpaceSizeInBytes, record.beta, record.yDesc, record.y);
+			assert (status == CUDNN_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -304,7 +319,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			//printf("Stream is %d\n", *sched_stream);
 			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
-			(*cudnn_bnorm_function)(
+			status = (*cudnn_bnorm_function)(
 				record.handle,
 				record.mode,
 				record.bnOps,
@@ -331,8 +346,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 				record.reserveSpace,
 				record.reserveSpaceSizeInBytes
 			);
-			//cudnnSetStream(record.handle, 0);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			assert (status == CUDNN_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -344,9 +358,16 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnStatus_t status = CUDNN_STATUS_SUCCESS;
 			status = cudnnSetStream(record.handle, *sched_stream);
 			assert (status == CUDNN_STATUS_SUCCESS);
-			(*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
-			//cudnnSetStream(record.handle, 0);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+
+			// cudaStream_t cur_stream;
+			// status = cudnnGetStream(record.handle, &cur_stream);
+			// assert (status == CUDNN_STATUS_SUCCESS);
+			// if (cur_stream != *sched_stream) {
+			// 	status = cudnnSetStream(record.handle, *sched_stream);
+			// 	assert (status == CUDNN_STATUS_SUCCESS);
+			// }
+			status = (*cudnn_bnorm_infer_function)(record.handle, record.mode, record.alpha, record.beta, record.xDesc, record.x, record.yDesc, record.y, record.bnScaleBiasMeanVarDesc, record.bnScale, record.bnBias, record.estimatedMean, record.estimatedVariance, record.epsilon);
+			assert (status == CUDNN_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -355,9 +376,8 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			DEBUG_PRINT("found a new cudnn rnn inf record from idx %d!\n", idx);
 			cudnnRNNForwardInf_record record = frecord.data.cudnnRnnInfRecord;
 			cudnnSetStream(record.handle, *sched_stream);
-			(*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
-			//cudnnSetStream(record.handle, 0);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			cudnnStatus_t status = (*cudnn_rnn_function)(record.handle, record.rnnDesc, record.seqLength, record.xDesc, record.x, record.hxDesc, record.hx, record.cxDesc, record.cx, record.wDesc, record.w, record.yDesc, record.y, record.hyDesc, record.hy, record.cyDesc, record.cy, record.workspace, record.workSpaceSizeInBytes);
+			assert (status == CUDNN_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -366,7 +386,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			DEBUG_PRINT("found a new cudnn rnn train record from idx %d!\n", idx);
 			cudnnRNNForwardTraining_record record = frecord.data.cudnnRnnTrainRecord;
 			cudnnSetStream(record.handle, *sched_stream);
-			(*cudnn_rnn_train_function)(
+			cudnnStatus_t status = (*cudnn_rnn_train_function)(
 				record.handle,
 				record.rnnDesc,
 				record.seqLength,
@@ -389,8 +409,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 				record.reserveSpace,
 				record.reserveSpaceSizeInBytes
 			);
-			//cudnnSetStream(record.handle, 0);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			assert (status == CUDNN_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -400,7 +419,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 
 			cudnnBatchNormalizationBackwardEx_record record = frecord.data.cudnnBNormBackRecord;
 			cudnnSetStream(record.handle, *sched_stream);
-			(*cudnn_bnorm_bw_function)(
+			cudnnStatus_t status = (*cudnn_bnorm_bw_function)(
 					record.handle,
 					record.mode,
 					record.bnOps,
@@ -432,6 +451,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 					record.reserveSpace,
 					record.reserveSpaceSizeInBytes
 			);
+			assert (status == CUDNN_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -442,7 +462,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			cudnnConvolutionBackwardData_record record = frecord.data.cudnnConvBackDataRecord;
 			cudnnSetStream(record.handle, *sched_stream);
 			DEBUG_PRINT("submit!\n");
-			(*cudnn_conv_bw_data_function)(
+			cudnnStatus_t status = (*cudnn_conv_bw_data_function)(
 					record.handle,
 					record.alpha,
 					record.wDesc,
@@ -457,6 +477,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 					record.dxDesc,
 					record.dx
 			);
+			assert (status == CUDNN_STATUS_SUCCESS);
 
 			event_ids[evid] += 1;
 			seen[idx] += 1;
@@ -467,7 +488,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 
 			cudnnConvolutionBackwardFilter_record record = frecord.data.cudnnConvBackFilterRecord;
 			cudnnSetStream(record.handle, *sched_stream);
-			(*cudnn_conv_bw_filter_function)(
+			cudnnStatus_t status = (*cudnn_conv_bw_filter_function)(
 					record.handle,
 					record.alpha,
 					record.xDesc,
@@ -482,6 +503,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 					record.dwDesc,
 					record.dw
 			);
+			assert (status == CUDNN_STATUS_SUCCESS);
 
 			event_ids[evid] += 1;
 			seen[idx] += 1;
@@ -492,9 +514,9 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 
 			cublasSgemm_record record = frecord.data.cublasSgemmRecord;
 			cublasSetStream_v2(record.handle, *sched_stream);
-			(*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
+			cublasStatus_t status = (*cublas_sgemm_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.B, record.ldb, record.beta, record.C, record.ldc);
 			//cublasSetStream_v2(record.handle, 0);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			assert (status == CUBLAS_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -504,9 +526,35 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 
 			cublasSgemmStridedBatched_record record = frecord.data.cublasSgemmStridedRecord;
 			cublasSetStream_v2(record.handle, *sched_stream);
-			(*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
+			cublasStatus_t status = (*cublas_sgemm_strided_function)(record.handle, record.transa, record.transb, record.m, record.n, record.k, record.alpha, record.A, record.lda, record.strideA, record.B, record.ldb, record.strideB, record.beta, record.C, record.ldc, record.strideC, record.batchCount);
 			//cublasSetStream_v2(record.handle, 0);
-			// CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
+			assert (status == CUBLAS_STATUS_SUCCESS);
+			event_ids[evid] += 1;
+			seen[idx] += 1;
+			break;
+		}
+		case CUBLAS_MATMUL_RECORD: {
+			DEBUG_PRINT("found a new cublas matmul record from idx %d, func is %p!\n", idx, cublas_lt_matmul_func);
+			cublasLtMatmul_record record = frecord.data.cublasLtMatmulRecord;
+			cublasStatus_t status = (*cublas_lt_matmul_func)(
+				record.lightHandle,
+				record.computeDesc,
+				record.alpha,
+				record.A,
+				record.Adesc,
+				record.B,
+				record.Bdesc,
+				record.beta,
+				record.C,
+				record.Cdesc,
+				record.D,
+				record.Ddesc,
+				record.algo,
+				record.workspace,
+				record.workspaceSizeInBytes,
+				*sched_stream
+			);
+			assert (status == CUBLAS_STATUS_SUCCESS);
 			event_ids[evid] += 1;
 			seen[idx] += 1;
 			break;
@@ -516,7 +564,7 @@ void schedule_kernel(struct func_record frecord, cudaStream_t* sched_stream, int
 			abort();
 
 	}
-	DEBUG_PRINT("Return from schedule, seen[%d] is %d!\n", idx, seen[idx]);
+	//DEBUG_PRINT("Return from schedule, seen[%d] is %d!\n", idx, seen[idx]);
 	CHECK_CUDA_ERROR(cudaEventRecord(*event, *sched_stream));
 	//event_ids[evid] += 1;
 }

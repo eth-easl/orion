@@ -5,9 +5,9 @@ import modeling
 
 from optimization import BertAdam
 
-def bert(batchsize, local_rank, do_eval=True, profile=True):
+def bert(batchsize, local_rank, do_eval=True):
 
-    model_config = {
+    model_config_base = {
         "attention_probs_dropout_prob": 0.1,
         "hidden_act": "gelu",
         "hidden_dropout_prob": 0.1,
@@ -21,7 +21,25 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
         "vocab_size": 30522
     }
 
-    config = modeling.BertConfig.from_dict(model_config)
+    model_config_large = {
+        "attention_probs_dropout_prob": 0.1,
+        "hidden_act": "gelu",
+        "hidden_dropout_prob": 0.1,
+        "hidden_size": 1024,
+        "initializer_range": 0.02,
+        "intermediate_size": 4096,
+        "max_position_embeddings": 512,
+        "num_attention_heads": 16,
+        "num_hidden_layers": 24,
+        "type_vocab_size": 2,
+        "vocab_size": 30522
+    }
+
+
+    if do_eval:
+        config = modeling.BertConfig.from_dict(model_config_large)
+    else:
+        config = modeling.BertConfig.from_dict(model_config_base)
     # Padding for divisibility by 8
     if config.vocab_size % 8 != 0:
         config.vocab_size += 8 - (config.vocab_size % 8)
@@ -35,6 +53,7 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
 
 
     model = modeling.BertForQuestionAnswering(config).to(0)
+    print(model)
 
     if do_eval:
         model.eval()
@@ -54,13 +73,10 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
     batch_idx = 0
     torch.cuda.synchronize()
 
-    while batch_idx < 1:
+    while batch_idx < 10:
 
-        if batch_idx == 0:
-            if profile == 'ncu':
-                torch.cuda.nvtx.range_push("start")
-            elif profile == 'nsys':
-                torch.cuda.profiler.cudart().cudaProfilerStart()
+        if batch_idx == 9:
+            torch.cuda.profiler.cudart().cudaProfilerStart()
 
         if do_eval:
             with torch.no_grad():
@@ -76,15 +92,12 @@ def bert(batchsize, local_rank, do_eval=True, profile=True):
             loss.backward()
             optimizer.step()
 
-        if batch_idx == 0:
-            if profile == 'ncu':
-                torch.cuda.nvtx.range_pop()
-            elif profile == 'nsys':
-                torch.cuda.profiler.cudart().cudaProfilerStop()
+        if batch_idx == 9:
+            torch.cuda.profiler.cudart().cudaProfilerStop()
 
         batch_idx += 1
 
     print("Done!")
 
 if __name__ == "__main__":
-    bert(8, 0,False, 'nsys')
+    bert(8, 0, True)

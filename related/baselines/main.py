@@ -140,7 +140,7 @@ if __name__ == "__main__":
         for i in range(num_clients):
             processes[i].join()
     elif policy == "Isolated":
-        for mwrapper, mkwargs in zip(model_wrappers, model0_kwargs):
+        for mwrapper, mkwargs in zip(model_wrappers, model_kwargs[:1]):
             mwrapper(**mkwargs)
     elif policy in {"Streams", 'TickTock', 'Sequential'}:
         threads = [threading.Thread(target=mwrapper, kwargs=mkwargs) for mwrapper,mkwargs in zip(model_wrappers, model_kwargs)]
@@ -155,5 +155,6 @@ if __name__ == "__main__":
     # post-processing: sum two durations
     if policy == 'Isolated':
         dict_data = data_manager.read_dict()
+        print(dict_data)
         duration = dict_data['duration0'] #+ dict_data['duration1']
         data_manager.write_kv('duration', duration)

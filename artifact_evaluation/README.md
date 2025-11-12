@@ -31,7 +31,7 @@ Notes:
 * We provide scripts for reproducing Figures 7 and 10.
 * In order to reduce the GPU hours and cost of the experiments, we evaluate only ResNet50 and MobileNetV2 running as high-priority jobs in both cases, and compare Orion with the most competitive baselines (REEF and MPS), while also evaluating the ideal behavior.
 * All experiments are repeated 3 times.
-* We provide the kernel profiles of the submitted workloads under [orion/benchmarking/model_kernels](../benchmarking/model_kernels/).
+* We provide the kernel profiles of the submitted workloads under [orion/benchmarking/model_kernels/v100](../benchmarking/model_kernels/v100/).
 
 
 ## Start a VM
@@ -82,7 +82,7 @@ The information required for each client is:
 
 * `arch`: The submitted model
 * `kernel_file`: File containing profiling information for each of the kernels of the submitted model.
-You can find examples under [orion/benchmarking/model_kernels](../benchmarking/model_kernels/).
+You can find examples under [orion/benchmarking/model_kernels](../benchmarking/model_kernels/v100/).
 * `num_kernels`: Number of kernels per iteration (forward pass for inference, forward-backward-update phase for training)
 * `num_iters`: Number of inference requests or training iterations the client will run for
 * `args`: Any extra arguments passed to the script (For example in our scripts we provide: batch size, rps, etc)
