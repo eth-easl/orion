@@ -1,6 +1,7 @@
 # Orion
 
 Orion is a fine-grained scheduler for interference-free GPU sharing across ML workloads. It is based on our EuroSys'24 paper "Orion: Interference-aware, Fine-grained GPU Sharing for ML Applications".
+**If you are looking for the artifact for the EuroSys'24 paper, please go to the 'cuda1011_version' branch**
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -20,16 +21,6 @@ Orion intercepts CUDA, CUDNN, and CUBLAS calls and submits them into software qu
 The _Scheduler_ polls these queues and schedules operations based on their resource requirements and their priority. See [ARCHITECTURE](ARCHITECTURE.md) for more details on the system and the scheduling policy.
 
 Orion expects that each submitted job has a file where all of its operations, along with their profiles and Straming Multiprocessor (SM) requirements are listed. See [PROFILE](PROFILE.md) for detailed instructions on how to profile a client applications, and how to generate the profile files.
-
-## Example
-
-We have set up a docker image: [fotstrt/orion-ae](https://hub.docker.com/repository/docker/fotstrt/orion-ae/general) with all packages pre-installed.
-Alternatively, follow the instructions on the 'setup' directory, and check [INSTALL](INSTALL.md), to install Orion and its dependencies.
-
-See [PROFILE](PROFILE.md) to generate profiling files for each workload.
-Create a json file containing all the info for the workloads that are about to share the GPU. See examples under 'artifact_evaluation/example'.
-
-The file 'launch_jobs.py' is responsible for spawning the scheduler and the application thread(s).
 
 ## Project Structure
 ```
@@ -55,11 +46,12 @@ The file 'launch_jobs.py' is responsible for spawning the scheduler and the appl
 ## Hardware Requirements
 Orion currently supports NVIDIA GPUs.
 
-## Hardware Configuration used in the paper
+## Hardware Configuration
+The current version of Orion has been tested on NVIDIA H100 and RTX-3090, with CUDA 12.6.
+
 For the experiments presented in the paper, we evaluated Orion in Google Cloud Platform VMs with the following configurations:
 * n1-standard-8 VM (8 vCPUs, 30GB of DRAM) with an V100-16GB GPU, with CUDA 10.2
 * a2-highgpu-1g VM (12 vCPUs, 85GB of DRAM) with an A100-40GB GPU, with CUDA 11.3
-
 In both cases, the machines have Ubuntu 18.04.
 
 ## Installation
@@ -67,6 +59,19 @@ see [INSTALL](INSTALL.md).
 
 ## Debugging
 see [DEBUGGING](DEBUGGING.md).
+
+## Example
+
+See [PROFILE](PROFILE.md) to generate profiling files for each workload.
+Create a json file containing all the info for the workloads that are about to share the GPU. See examples under 'artifact_evaluation/example'.
+
+The file 'launch_jobs.py' is responsible for spawning the scheduler and the application thread(s). Orion uses *LD_PRELOAD* to overwrite calls in CUDA runtime, CUDNN and CUBLAS.
+This is an example of running the 'launch_jobs.py' script with only one client using a config found [here](benchmarking/config.json):
+
+```bash
+LD_PRELOAD=/root/orion/src/cuda_capture/libinttemp.so:/usr/local/lib/python3.10/dist-packages/torch/lib/../../nvidia/cudnn/lib/libcudnn.so.9:/usr/local/lib/python3.10/dist-packages/torch/lib/../../nvidia/cublas/lib/libcublasLt.so.12:/usr/local/lib/python3.10/dist-packages/torch/lib/../../nvidia/cublas/lib/libcublas.so.12 python3 benchmarking/launch_jobs.py --algo orion --config_file benchmarking/config.json
+```
+
 
 ## Paper
 If you use Orion, please cite our paper:

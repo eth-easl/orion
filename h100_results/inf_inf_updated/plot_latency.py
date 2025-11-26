@@ -65,7 +65,7 @@ ax.set_xticks(
     labels=models, fontsize=22
 )
 plt.yticks(fontsize=22)
-ax.set_ylim(0, 160)
+ax.set_ylim(0, 1000)
 ax.set_ylabel('Average p95 inference latency (ms)', fontsize=label_font_size)
 ax.set_xlabel('High-priority inference job', fontsize=label_font_size)
 

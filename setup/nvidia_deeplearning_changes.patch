@@ -198,7 +198,7 @@ new file mode 100644
 index 00000000..7561506d
 --- /dev/null
 +++ b/PyTorch/LanguageModeling/BERT/bert_trainer.py
-@@ -0,0 +1,241 @@
+@@ -0,0 +1,240 @@
 +import torch
 +import threading
 +import time
@@ -376,8 +376,6 @@ index 00000000..7561506d
 +                    if open_loop:
 +                        if (cur_time >= next_startup):
 +                            print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-+                            if batch_idx==50:
-+                                torch.cuda.profiler.cudart().cudaProfilerStart()
 +                            input_ids, segment_ids, input_mask = batch[0].to(local_rank), batch[1].to(local_rank), batch[2].to(local_rank)
 +                            output = model(input_ids, segment_ids, input_mask)
 +                            block(backend_lib, batch_idx)
@@ -397,7 +395,8 @@ index 00000000..7561506d
 +                                    start = time.time()
 +                            dur = next_startup-time.time()
 +                            if (dur>0):
-+                                time.sleep(dur)
++                                while time.time() < next_startup:
++                                     time.sleep(0.001)
 +                            if check_stop(backend_lib):
 +                                print("---- STOP!")
 +                                break
@@ -709,7 +708,7 @@ index c978b02e..41b58bf0 100755
 -python3 /workspace/bert/data/bertPrep.py --action download --dataset sst-2
 +#download_wikipedia --outdir ${BERT_PREP_WORKING_DIR}/wikipedia/
 +python3 data/bertPrep.py --action download --dataset google_pretrained_weights  # Includes vocab
-+python3 data/bertPrep.py --action download --dataset squad
++#python3 data/bertPrep.py --action download --dataset squad
 +#python3 /workspace/bert/data/bertPrep.py --action download --dataset mrpc
 +#python3 /workspace/bert/data/bertPrep.py --action download --dataset sst-2
 diff --git a/PyTorch/LanguageModeling/BERT/modeling.py b/PyTorch/LanguageModeling/BERT/modeling.py

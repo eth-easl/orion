@@ -42,30 +42,21 @@ class DummyDataLoader():
     def __next__(self):
         return self.data, self.target
 
-class RealDataLoader():
-    def __init__(self, batchsize):
-        train_transform =  transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406),(0.229, 0.224, 0.225))]
-        )
-        train_dataset = \
-                datasets.ImageFolder("/mnt/data/home/fot/imagenet/imagenet-raw-euwest4",transform=train_transform)
-        self.train_loader = torch.utils.data.DataLoader(
-                train_dataset, batch_size=batchsize, num_workers=8)
-
-    def __iter__(self):
-        print("Inside iter")
-        return iter(self.train_loader)
-
-
 def block(backend_lib, it):
     # block client until request served
     backend_lib.block(it)
 
 def check_stop(backend_lib):
     return backend_lib.stop()
+
+def set_stream(backend_lib, idx):
+    backend_lib.get_stream_ptr.restype = c_void_p
+    stream_id = backend_lib.get_stream_ptr(idx)
+    print("Setting stream to ", stream_id)
+    new_stream = torch.cuda.get_stream_from_external(
+        stream_id
+    )
+    torch.cuda.set_stream(new_stream)
 
 
 def imagenet_loop(
@@ -106,6 +97,8 @@ def imagenet_loop(
     if (train and tid==1):
         time.sleep(5)
 
+    set_stream(backend_lib, tid)
+
     #data = torch.rand([batchsize, 3, 224, 224]).contiguous()
     #target = torch.ones([batchsize]).to(torch.long)
     model = models.__dict__[model_name](num_classes=1000)
@@ -118,10 +111,7 @@ def imagenet_loop(
     else:
         model.eval()
 
-    if dummy_data:
-        train_loader = DummyDataLoader(batchsize)
-    else:
-        train_loader = RealDataLoader(batchsize)
+    train_loader = DummyDataLoader(batchsize)
 
     train_iter = enumerate(train_loader)
     batch_idx, batch = next(train_iter)
@@ -145,8 +135,6 @@ def imagenet_loop(
                 if train:
                     #client_barrier.wait()
                     print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                    # if tid==0 and batch_idx==20:
-                    #     torch.cuda.profiler.cudart().cudaProfilerStart()
                     gpu_data, gpu_target = batch[0].to(local_rank), batch[1].to(local_rank)
                     optimizer.zero_grad()
                     output = model(gpu_data)
@@ -166,25 +154,19 @@ def imagenet_loop(
                     if check_stop(backend_lib):
                         print("---- STOP!")
                         break
-                    # if batch_idx==20:
-                    #     torch.cuda.profiler.cudart().cudaProfilerStart()
                 else:
                     with torch.no_grad():
                         cur_time = time.time()
                         #### OPEN LOOP ####
                         if open_loop:
                             if (cur_time >= next_startup):
-                                print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
-                                if batch_idx==100:
-                                    torch.cuda.profiler.cudart().cudaProfilerStart()
+                                #print(f"Client {tid}, submit!, batch_idx is {batch_idx}")
                                 gpu_data = batch[0].to(local_rank)
                                 output = model(gpu_data)
                                 block(backend_lib, batch_idx)
-                                # if batch_idx==250:
-                                #     torch.cuda.profiler.cudart().cudaProfilerStop()
                                 req_time = time.time()-next_startup
                                 timings.append(req_time)
-                                print(f"Client {tid} finished! Wait! It took {req_time}")
+                                #print(f"Client {tid} finished! Wait! It took {req_time}")
                                 if batch_idx>=10:
                                     next_startup += sleep_times[batch_idx]
                                 else:
@@ -198,7 +180,8 @@ def imagenet_loop(
                                         start = time.time()
                                 dur = next_startup-time.time()
                                 if (dur>0):
-                                    time.sleep(dur)
+                                    while time.time() < next_startup:
+                                        time.sleep(0.001)
                                 if check_stop(backend_lib):
                                     print("---- STOP!")
                                     break

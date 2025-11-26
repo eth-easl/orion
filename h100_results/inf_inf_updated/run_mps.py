@@ -55,9 +55,6 @@ if __name__ == "__main__":
     start_id = 0
     distribution = 'poisson'
 
-
-    # ----configuration region ended----
-
     for model0, model1 in combinations:
         default_full_config['shared_config']['distribution'] = copy.deepcopy(distribution)
 

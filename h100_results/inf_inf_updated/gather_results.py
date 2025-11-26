@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import itertools
+import os
 
 models = ['ResNet50', 'MobileNetV2', 'ResNet101', 'BERT']
 baselines = ['temporal', 'orion' , 'reef', 'ideal']
@@ -46,7 +47,7 @@ print("ideal")
 print(df_hp_ideal_throughput)
 print(df_be_ideal_throughput)
 
-# # # mps
+# mps
 df_mps = pd.DataFrame(0.0, index=models, columns=models)
 for hp in hp_list:
     for be,hp in itertools.product(be_list, hp_list):
@@ -55,7 +56,8 @@ for hp in hp_list:
             input_file = f"results/mps/{hp}_{be}_{run}.json"
             with open(input_file, 'r') as f:
                 data = json.load(f)
-                results.append(float(data['p95-latency-0']))
+                if data:
+                    results.append(float(data['p95-latency-0']))
         df_mps.at[be, hp] = f"{round(np.average(results),2)}/{round(np.std(results),2)}"
 df_mps.to_csv(f'results/mps_latency.csv')
 print("------------- mps")
@@ -70,8 +72,9 @@ for be,hp in itertools.product(be_list, hp_list):
         input_file_hp = f"results/mps/{hp}_{be}_{run}.json"
         with open(input_file_hp, 'r') as f:
             data = json.load(f)
-            res_be.append(float(data['throughput-1']))
-            res_hp.append(float(data['throughput-0']))
+            if data:
+                res_be.append(float(data['throughput-1']))
+                res_hp.append(float(data['throughput-0']))
 
     df_hp_mps_throughput.at[be, hp] = f"{round(np.average(res_hp),2)}/{round(np.std(res_hp),2)}"
     df_be_mps_throughput.at[be, hp] = f"{round(np.average(res_be),2)}/{round(np.std(res_be),2)}"
@@ -95,6 +98,9 @@ for baseline in baselines[:-1]:
         results_be = []
         for run in range(num_runs):
             input_file_hp = f"results/{baseline}/{be}_{hp}_{run}_hp.json"
+            if not os.path.exists(input_file_hp):
+                continue
+
             with open(input_file_hp, 'r') as f:
                 data = json.load(f)
                 results_lat_hp.append(float(data['p95_latency']))
