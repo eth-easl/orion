@@ -1,0 +1,30 @@
+[
+	{
+		"arch": "resnet101",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/resnet101_8_fwd",
+        "num_kernels": 344,
+        "num_iters": 1000000,
+		"args": {
+			"model_name": "resnet101",
+			"batchsize": 8,
+            "rps": 100,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	},
+    {
+		"arch": "resnet101",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/resnet101_8_fwd",
+        "num_kernels": 344,
+        "num_iters": 5000,
+		"args": {
+			"model_name": "resnet101",
+			"batchsize": 8,
+            "rps": 100,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

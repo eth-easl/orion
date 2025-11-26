@@ -1,0 +1,30 @@
+[
+	{
+		"arch": "resnet50",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/resnet50_8_fwd",
+        "num_kernels": 174,
+        "num_iters": 10000000,
+		"args": {
+			"model_name": "resnet50",
+			"batchsize": 8,
+            "rps": 200,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	},
+	{
+		"arch": "resnet50",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/resnet50_8_fwd",
+        "num_kernels": 174,
+        "num_iters": 9200,
+		"args": {
+			"model_name": "resnet50",
+			"batchsize": 8,
+            "rps": 200,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

@@ -1,0 +1,15 @@
+[
+    {
+		"arch": "bert",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/bert_2_fwd",
+        "num_kernels": 429,
+        "num_iters": 3000,
+		"args": {
+			"batchsize": 2,
+            "rps": 25,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]

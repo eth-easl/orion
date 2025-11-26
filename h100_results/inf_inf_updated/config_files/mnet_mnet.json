@@ -1,0 +1,30 @@
+[
+    {
+		"arch": "mobilenet_v2",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/mobilenet_16_fwd",
+        "num_kernels": 151,
+        "num_iters": 10000000,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 16,
+            "rps": 200,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	},
+	{
+		"arch": "mobilenet_v2",
+		"kernel_file": "/root/orion/benchmarking/model_kernels/h100/mobilenet_16_fwd",
+        "num_kernels": 151,
+        "num_iters": 9200,
+		"args": {
+			"model_name": "mobilenet_v2",
+			"batchsize": 16,
+            "rps": 200,
+			"uniform": false,
+			"dummy_data": true,
+			"train": false
+		}
+	}
+]
